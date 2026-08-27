@@ -91,7 +91,7 @@ function NoticeFormDialog({ notice, trigger }: { notice?: Notice; trigger: React
         ...draft,
         id: isEdit ? notice.id : `${slugify(draft.title)}-${Date.now().toString(36)}`,
         ...(draft.externalUrl ? { externalUrl: draft.externalUrl.trim() } : {}),
-        ...(file ? { fileType: noticeFileTypeFor(file), filePath } : removeExistingFile ? { fileType: "Text", fileLabel: "", filePath: "" } : {}),
+        ...(file ? { fileType: noticeFileTypeFor(file), filePath: filePath! } : removeExistingFile ? { fileType: "Text", fileLabel: "", filePath: "" } : {}),
       };
       if (isEdit) {
         await updateNotice(notice.id, payload);
@@ -274,7 +274,7 @@ export default function AdminNoticesPage() {
         search={search}
         onSearch={setSearch}
         searchPlaceholder="Search notices…"
-        sortOptions={STATUS_FILTERS.map((s) => ({ value: s, label: s === "all" ? "Active & pending" : s[0].toUpperCase() + s.slice(1) }))}
+        sortOptions={STATUS_FILTERS.map((s) => ({ value: s, label: s === "all" ? "Active & pending" : s.charAt(0).toUpperCase() + s.slice(1) }))}
         sort={status}
         onSort={(v) => {
           const next = v as typeof status;

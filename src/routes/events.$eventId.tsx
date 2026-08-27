@@ -69,7 +69,7 @@ export default function EventDetail() {
     date: event.date,
     details: event.description,
     location: event.venue,
-    time: event.time,
+    ...(event.time ? { time: event.time } : {}),
     ...(event.endDate ? { endDate: event.endDate } : {}),
     ...(event.startTime ? { startTime: event.startTime } : {}),
     ...(event.endTime ? { endTime: event.endTime } : {}),

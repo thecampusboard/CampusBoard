@@ -313,18 +313,18 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       updateNotice: async (id, patch) => {
         if (user?.role !== "admin") throw new Error("Only Admin can edit a notice.");
         const row: Record<string, unknown> = {};
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.category !== undefined) row.category = patch.category;
-        if (patch.department !== undefined) row.department = patch.department;
-        if (patch.years !== undefined) row.years = patch.years;
-        if (patch.semesters !== undefined) row.semesters = patch.semesters;
-        if (patch.date !== undefined) row.date = patch.date;
-        if (patch.fileType !== undefined) row.file_type = patch.fileType;
-        if (patch.fileLabel !== undefined) row.file_label = patch.fileLabel || null;
-        if (patch.externalUrl !== undefined) row.external_url = patch.externalUrl || null;
-        if (patch.filePath !== undefined) row.file_path = patch.filePath || null;
-        if (patch.clubId !== undefined) row.club_id = patch.clubId || null;
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.category !== undefined) row["category"] = patch.category;
+        if (patch.department !== undefined) row["department"] = patch.department;
+        if (patch.years !== undefined) row["years"] = patch.years;
+        if (patch.semesters !== undefined) row["semesters"] = patch.semesters;
+        if (patch.date !== undefined) row["date"] = patch.date;
+        if (patch.fileType !== undefined) row["file_type"] = patch.fileType;
+        if (patch.fileLabel !== undefined) row["file_label"] = patch.fileLabel || null;
+        if (patch.externalUrl !== undefined) row["external_url"] = patch.externalUrl || null;
+        if (patch.filePath !== undefined) row["file_path"] = patch.filePath || null;
+        if (patch.clubId !== undefined) row["club_id"] = patch.clubId || null;
         throwIfError(await supabase.from("notices").update(row).eq("id", id));
         await refresh();
       },
@@ -358,17 +358,17 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (!user) throw new Error("Login to resubmit a notice.");
         if (patch.externalUrl && !isValidHttpUrl(patch.externalUrl.trim())) throw new Error("External URL must start with http:// or https://.");
         const row: Record<string, unknown> = { status: "pending" };
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.category !== undefined) row.category = patch.category;
-        if (patch.department !== undefined) row.department = patch.department;
-        if (patch.years !== undefined) row.years = patch.years;
-        if (patch.semesters !== undefined) row.semesters = patch.semesters;
-        if (patch.date !== undefined) row.date = patch.date;
-        if (patch.fileType !== undefined) row.file_type = patch.fileType;
-        if (patch.fileLabel !== undefined) row.file_label = patch.fileLabel || null;
-        if (patch.externalUrl !== undefined) row.external_url = patch.externalUrl || null;
-        if (patch.filePath !== undefined) row.file_path = patch.filePath || null;
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.category !== undefined) row["category"] = patch.category;
+        if (patch.department !== undefined) row["department"] = patch.department;
+        if (patch.years !== undefined) row["years"] = patch.years;
+        if (patch.semesters !== undefined) row["semesters"] = patch.semesters;
+        if (patch.date !== undefined) row["date"] = patch.date;
+        if (patch.fileType !== undefined) row["file_type"] = patch.fileType;
+        if (patch.fileLabel !== undefined) row["file_label"] = patch.fileLabel || null;
+        if (patch.externalUrl !== undefined) row["external_url"] = patch.externalUrl || null;
+        if (patch.filePath !== undefined) row["file_path"] = patch.filePath || null;
         throwIfError(await supabase.from("notices").update(row).eq("id", id).eq("created_by", user.id));
         await refresh();
       },
@@ -430,28 +430,28 @@ export function ContentProvider({ children }: { children: ReactNode }) {
           throw new Error("Registration URL must start with http:// or https://.");
         }
         const row: Record<string, unknown> = {};
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.organizer !== undefined) row.organizer = patch.organizer;
-        if (patch.clubId !== undefined) row.club_id = patch.clubId || null;
-        if (patch.date !== undefined) row.date = patch.date;
-        if (patch.endDate !== undefined) row.end_date = patch.endDate || null;
-        if (patch.time !== undefined) row.time = patch.time || null;
-        if (patch.startTime !== undefined) row.start_time = patch.startTime || null;
-        if (patch.endTime !== undefined) row.end_time = patch.endTime || null;
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.organizer !== undefined) row["organizer"] = patch.organizer;
+        if (patch.clubId !== undefined) row["club_id"] = patch.clubId || null;
+        if (patch.date !== undefined) row["date"] = patch.date;
+        if (patch.endDate !== undefined) row["end_date"] = patch.endDate || null;
+        if (patch.time !== undefined) row["time"] = patch.time || null;
+        if (patch.startTime !== undefined) row["start_time"] = patch.startTime || null;
+        if (patch.endTime !== undefined) row["end_time"] = patch.endTime || null;
         if (patch.startTime !== undefined) {
-          row.time = patch.startTime
+          row["time"] = patch.startTime
             ? `${patch.startTime}${patch.endTime ? ` – ${patch.endTime}` : ""}`
             : null;
         }
-        if (patch.venue !== undefined) row.venue = patch.venue;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.eligibility !== undefined) row.eligibility = patch.eligibility;
+        if (patch.venue !== undefined) row["venue"] = patch.venue;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.eligibility !== undefined) row["eligibility"] = patch.eligibility;
         if (patch.registrationDeadline !== undefined)
-          row.registration_deadline = patch.registrationDeadline || null;
-        if (patch.registrationUrl !== undefined) row.registration_url = patch.registrationUrl?.trim() || "#";
-        if (patch.contact !== undefined) row.contact = patch.contact || null;
-        if (patch.accent !== undefined) row.accent = patch.accent;
-        if (patch.featured !== undefined) row.featured = patch.featured;
+          row["registration_deadline"] = patch.registrationDeadline || null;
+        if (patch.registrationUrl !== undefined) row["registration_url"] = patch.registrationUrl?.trim() || "#";
+        if (patch.contact !== undefined) row["contact"] = patch.contact || null;
+        if (patch.accent !== undefined) row["accent"] = patch.accent;
+        if (patch.featured !== undefined) row["featured"] = patch.featured;
         throwIfError(await supabase.from("events").update(row).eq("id", id));
         await refresh();
       },
@@ -481,18 +481,18 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       updateClub: async (id, patch) => {
         if (user?.role !== "admin") throw new Error("Only Admin can edit a club.");
         const row: Record<string, unknown> = {};
-        if (patch.name !== undefined) row.name = patch.name;
-        if (patch.tagline !== undefined) row.tagline = patch.tagline;
-        if (patch.about !== undefined) row.about = patch.about;
-        if (patch.accent !== undefined) row.accent = patch.accent;
-        if (patch.members !== undefined) row.members = patch.members;
-        if (patch.founded !== undefined) row.founded = patch.founded || null;
-        if (patch.recruitment !== undefined) row.recruitment = patch.recruitment || null;
-        if (patch.announcements !== undefined) row.announcements = patch.announcements;
-        if (patch.gallery !== undefined) row.gallery = patch.gallery;
-        if (patch.socials !== undefined) row.socials = patch.socials;
-        if (patch.pastEvents !== undefined) row.past_events = patch.pastEvents;
-        if (patch.imagePath !== undefined) row.image_path = patch.imagePath || null;
+        if (patch.name !== undefined) row["name"] = patch.name;
+        if (patch.tagline !== undefined) row["tagline"] = patch.tagline;
+        if (patch.about !== undefined) row["about"] = patch.about;
+        if (patch.accent !== undefined) row["accent"] = patch.accent;
+        if (patch.members !== undefined) row["members"] = patch.members;
+        if (patch.founded !== undefined) row["founded"] = patch.founded || null;
+        if (patch.recruitment !== undefined) row["recruitment"] = patch.recruitment || null;
+        if (patch.announcements !== undefined) row["announcements"] = patch.announcements;
+        if (patch.gallery !== undefined) row["gallery"] = patch.gallery;
+        if (patch.socials !== undefined) row["socials"] = patch.socials;
+        if (patch.pastEvents !== undefined) row["past_events"] = patch.pastEvents;
+        if (patch.imagePath !== undefined) row["image_path"] = patch.imagePath || null;
         throwIfError(await supabase.from("clubs").update(row).eq("id", id));
         await refresh();
       },
@@ -527,20 +527,20 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (user?.role !== "admin") throw new Error("Only Admin can edit an opportunity.");
         if (patch.applyUrl && patch.applyUrl !== "#" && !isValidHttpUrl(patch.applyUrl.trim())) throw new Error("Application URL must start with http:// or https://.");
         const row: Record<string, unknown> = {};
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.organization !== undefined) row.organization = patch.organization;
-        if (patch.position !== undefined) row.position = patch.position;
-        if (patch.type !== undefined) row.type = patch.type;
-        if (patch.location !== undefined) row.location = patch.location;
-        if (patch.eligibility !== undefined) row.eligibility = patch.eligibility;
-        if (patch.yearsBranches !== undefined) row.years_branches = patch.yearsBranches;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.skills !== undefined) row.skills = patch.skills;
-        if (patch.stipend !== undefined) row.stipend = patch.stipend || null;
-        if (patch.deadline !== undefined) row.deadline = patch.deadline;
-        if (patch.applyUrl !== undefined) row.apply_url = patch.applyUrl?.trim() || "#";
-        if (patch.accent !== undefined) row.accent = patch.accent;
-        if (patch.featured !== undefined) row.featured = patch.featured;
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.organization !== undefined) row["organization"] = patch.organization;
+        if (patch.position !== undefined) row["position"] = patch.position;
+        if (patch.type !== undefined) row["type"] = patch.type;
+        if (patch.location !== undefined) row["location"] = patch.location;
+        if (patch.eligibility !== undefined) row["eligibility"] = patch.eligibility;
+        if (patch.yearsBranches !== undefined) row["years_branches"] = patch.yearsBranches;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.skills !== undefined) row["skills"] = patch.skills;
+        if (patch.stipend !== undefined) row["stipend"] = patch.stipend || null;
+        if (patch.deadline !== undefined) row["deadline"] = patch.deadline;
+        if (patch.applyUrl !== undefined) row["apply_url"] = patch.applyUrl?.trim() || "#";
+        if (patch.accent !== undefined) row["accent"] = patch.accent;
+        if (patch.featured !== undefined) row["featured"] = patch.featured;
         throwIfError(await supabase.from("opportunities").update(row).eq("id", id));
         await refresh();
       },
@@ -569,14 +569,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       updateListing: async (id, patch) => {
         if (user?.role !== "admin") throw new Error("Only Admin can edit a listing.");
         const row: Record<string, unknown> = {};
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.price !== undefined) row.price = patch.price;
-        if (patch.condition !== undefined) row.condition = patch.condition;
-        if (patch.category !== undefined) row.category = patch.category;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.sellerName !== undefined) row.seller_name = patch.sellerName;
-        if (patch.sellerPhone !== undefined) row.seller_phone = patch.sellerPhone;
-        if (patch.images !== undefined) row.images = patch.images;
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.price !== undefined) row["price"] = patch.price;
+        if (patch.condition !== undefined) row["condition"] = patch.condition;
+        if (patch.category !== undefined) row["category"] = patch.category;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.sellerName !== undefined) row["seller_name"] = patch.sellerName;
+        if (patch.sellerPhone !== undefined) row["seller_phone"] = patch.sellerPhone;
+        if (patch.images !== undefined) row["images"] = patch.images;
         throwIfError(await supabase.from("buy_sell_listings").update(row).eq("id", id));
         await refresh();
       },

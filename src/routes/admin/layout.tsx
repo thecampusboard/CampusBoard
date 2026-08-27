@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   Megaphone,
@@ -16,7 +17,15 @@ import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-const ADMIN_NAV = [
+interface AdminNavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  end?: boolean;
+  badge?: boolean;
+}
+
+const ADMIN_NAV: AdminNavItem[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/admin/notices", label: "Notices", icon: Megaphone },
   { to: "/admin/events", label: "Events", icon: CalendarDays },
@@ -26,7 +35,7 @@ const ADMIN_NAV = [
   { to: "/admin/approvals", label: "Approvals", icon: ShieldCheck, badge: true },
   { to: "/admin/appearance", label: "Appearance", icon: Palette },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-] as const;
+];
 
 /**
  * Every /admin/* page renders inside this layout. The admin-only guard
@@ -75,7 +84,7 @@ export default function AdminLayout() {
         <nav aria-label="Admin sections">
           <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:block lg:space-y-1">
             {ADMIN_NAV.map((item) => (
-              <NavLink key={item.to} to={item.to} end={"end" in item ? item.end : false} className={linkClass}>
+              <NavLink key={item.to} to={item.to} end={item.end ?? false} className={linkClass}>
                 <item.icon className="size-4 shrink-0" aria-hidden="true" />
                 <span className="min-w-0 truncate">{item.label}</span>
                 {item.badge && pendingCount > 0 ? (

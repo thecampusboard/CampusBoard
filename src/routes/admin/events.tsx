@@ -314,7 +314,6 @@ export default function AdminEventsPage() {
         onSort={setSort}
         count={filtered.length}
         noun="event"
-        onCreate={undefined}
         extra={<EventFormDialog trigger={<CreateButton />} />}
       />
 

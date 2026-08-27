@@ -117,9 +117,9 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
         description: description.trim(),
         category,
         department: department.trim(),
-        externalUrl: externalUrl.trim() || undefined,
-        clubId: clubId || undefined,
-        ...(file ? { fileType: noticeFileTypeFor(file), filePath } : {}),
+        ...(externalUrl.trim() ? { externalUrl: externalUrl.trim() } : {}),
+        ...(clubId ? { clubId } : {}),
+        ...(file ? { fileType: noticeFileTypeFor(file), filePath: filePath! } : {}),
       });
       setOpen(false);
     } catch (err) {
@@ -228,7 +228,7 @@ export default function Dashboard() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<Notice["category"]>(NOTICE_CATEGORIES[0]);
+  const [category, setCategory] = useState<Notice["category"]>(NOTICE_CATEGORIES[0] ?? "General");
   const [department, setDepartment] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
   const [clubId, setClubId] = useState("");
@@ -288,11 +288,11 @@ export default function Dashboard() {
         description: description.trim(),
         category,
         department: department.trim(),
-        externalUrl: externalUrl.trim() || undefined,
         years: [],
         semesters: [],
         date: new Date().toISOString().slice(0, 10),
         fileType: file ? noticeFileTypeFor(file) : "Text",
+        ...(externalUrl.trim() ? { externalUrl: externalUrl.trim() } : {}),
         ...(clubId ? { clubId } : {}),
         ...(filePath ? { filePath } : {}),
       });

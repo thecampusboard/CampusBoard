@@ -84,7 +84,7 @@ export default function CalendarPage() {
               date: e.date,
               details: e.description,
               location: e.venue,
-              time: e.time,
+              ...(e.time ? { time: e.time } : {}),
               ...(e.endDate ? { endDate: e.endDate } : {}),
               ...(e.startTime ? { startTime: e.startTime } : {}),
               ...(e.endTime ? { endTime: e.endTime } : {}),
