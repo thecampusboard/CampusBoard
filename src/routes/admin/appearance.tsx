@@ -7,7 +7,7 @@ import { uploadImages } from "@/components/admin/admin-storage";
 import { usePageMeta } from "@/lib/seo";
 
 function validateImageFile(file: File): string | null {
-  if (!(new Set(["image/jpeg", "image/png", "image/webp", "image/gif"])).has(file.type)) {
+  if (!new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]).has(file.type)) {
     return "Must be a JPEG, PNG, WebP or GIF image.";
   }
   if (file.size > 5 * 1024 * 1024) return "Must be 5 MB or smaller.";
@@ -15,7 +15,10 @@ function validateImageFile(file: File): string | null {
 }
 
 export default function AdminAppearancePage() {
-  usePageMeta("Appearance — Admin — CampusBoard", "Manage the homepage hero image and campus gallery.");
+  usePageMeta(
+    "Appearance — Admin — CampusBoard",
+    "Manage the homepage hero image and campus gallery.",
+  );
   const { appearance, updateAppearance } = useContent();
   const [error, setError] = useState<string | null>(null);
   const [heroUploading, setHeroUploading] = useState(false);
@@ -39,10 +42,17 @@ export default function AdminAppearancePage() {
       await updateAppearance({ heroImagePath: path });
       setHeroImageBroken(false);
       if (previousPath && previousPath !== path) {
-        await supabase.storage.from("content-images").remove([previousPath]).catch(() => {});
+        await supabase.storage
+          .from("content-images")
+          .remove([previousPath])
+          .catch(() => {});
       }
     } catch (err) {
-      if (uploadedPath) await supabase.storage.from("content-images").remove([uploadedPath]).catch(() => {});
+      if (uploadedPath)
+        await supabase.storage
+          .from("content-images")
+          .remove([uploadedPath])
+          .catch(() => {});
       setError(err instanceof Error ? err.message : "Could not upload the hero image.");
     } finally {
       setHeroUploading(false);
@@ -55,7 +65,11 @@ export default function AdminAppearancePage() {
     try {
       await updateAppearance({ heroImagePath: null });
       setHeroImageBroken(false);
-      if (previousPath) await supabase.storage.from("content-images").remove([previousPath]).catch(() => {});
+      if (previousPath)
+        await supabase.storage
+          .from("content-images")
+          .remove([previousPath])
+          .catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not remove the hero image.");
     }
@@ -87,7 +101,10 @@ export default function AdminAppearancePage() {
       await updateAppearance({
         campusGalleryPaths: appearance.campusGalleryPaths.filter((p) => p !== path),
       });
-      await supabase.storage.from("content-images").remove([path]).catch(() => {});
+      await supabase.storage
+        .from("content-images")
+        .remove([path])
+        .catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not remove the photo.");
     }
@@ -102,13 +119,17 @@ export default function AdminAppearancePage() {
       <div className="bento p-5 sm:p-6">
         <h1 className="text-2xl font-extrabold">Appearance</h1>
         <p className="max-w-2xl pt-1 text-sm leading-6 text-muted-foreground">
-          Control the homepage hero background and campus gallery. Changes are published immediately after save.
+          Control the homepage hero background and campus gallery. Changes are published immediately
+          after save.
         </p>
       </div>
 
       <section className="bento p-4 sm:p-6 lg:p-8">
         {error ? (
-          <p role="alert" className="mb-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm font-semibold text-destructive">
+          <p
+            role="alert"
+            className="mb-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm font-semibold text-destructive"
+          >
             {error}
           </p>
         ) : null}
@@ -150,9 +171,13 @@ export default function AdminAppearancePage() {
                   <ImageIcon className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
                   <p className="mt-2 text-sm font-semibold">Using the default hero illustration</p>
                   {heroUrl ? (
-                    <p className="mt-1 text-xs text-destructive">The uploaded image could not be loaded.</p>
+                    <p className="mt-1 text-xs text-destructive">
+                      The uploaded image could not be loaded.
+                    </p>
                   ) : (
-                    <p className="mt-1 text-xs text-muted-foreground">Upload an image to replace it.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Upload an image to replace it.
+                    </p>
                   )}
                 </div>
               </div>
@@ -190,7 +215,10 @@ export default function AdminAppearancePage() {
           <div className="min-w-0">
             <div>
               <p className="text-sm font-bold">
-                Campus gallery <span className="font-normal text-muted-foreground">({appearance.campusGalleryPaths.length})</span>
+                Campus gallery{" "}
+                <span className="font-normal text-muted-foreground">
+                  ({appearance.campusGalleryPaths.length})
+                </span>
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
                 Images appear in the homepage campus section. Add several to create a richer slider.
@@ -200,7 +228,10 @@ export default function AdminAppearancePage() {
             {appearance.campusGalleryPaths.length > 0 ? (
               <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {appearance.campusGalleryPaths.map((path) => (
-                  <li key={path} className="group relative overflow-hidden rounded-xl border border-border bg-muted">
+                  <li
+                    key={path}
+                    className="group relative overflow-hidden rounded-xl border border-border bg-muted"
+                  >
                     <img
                       src={publicStorageUrl("content-images", path)}
                       alt=""
@@ -222,7 +253,9 @@ export default function AdminAppearancePage() {
                 <div>
                   <ImageIcon className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
                   <p className="mt-2 text-sm font-semibold">No campus photos yet</p>
-                  <p className="mt-1 text-xs text-muted-foreground">The homepage will use the default illustration.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    The homepage will use the default illustration.
+                  </p>
                 </div>
               </div>
             )}

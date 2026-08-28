@@ -49,7 +49,11 @@ export interface SiteAppearance {
   holidays: CollegeHoliday[];
 }
 
-const DEFAULT_APPEARANCE: SiteAppearance = { heroImagePath: null, campusGalleryPaths: [], holidays: [] };
+const DEFAULT_APPEARANCE: SiteAppearance = {
+  heroImagePath: null,
+  campusGalleryPaths: [],
+  holidays: [],
+};
 
 /** Every table `remove`/typed-update can target. Kept as a union (not a free string) so a caller can't typo a table name past the compiler. */
 export type ManagedEntity = "notices" | "events" | "clubs" | "opportunities" | "buy_sell_listings";
@@ -92,10 +96,7 @@ interface ContentValue {
   updateAppearance: (patch: Partial<SiteAppearance>) => Promise<void>;
   /** Admin creates a notice — publishes immediately (status defaults to 'approved'). */
   addNotice: (
-    n: Omit<
-      Notice,
-      "views" | "status" | "createdBy" | "reviewedAt" | "rejectionReason"
-    >,
+    n: Omit<Notice, "views" | "status" | "createdBy" | "reviewedAt" | "rejectionReason">,
   ) => Promise<void>;
   /** Admin edits any notice's content. Does not touch status/review fields — use reviewNotice for that. */
   updateNotice: (id: string, patch: NoticeContentPatch) => Promise<void>;
@@ -103,12 +104,7 @@ interface ContentValue {
   submitNotice: (
     n: Omit<
       Notice,
-      | "views"
-      | "status"
-      | "createdBy"
-      | "reviewedAt"
-      | "rejectionReason"
-      | "featured"
+      "views" | "status" | "createdBy" | "reviewedAt" | "rejectionReason" | "featured"
     >,
   ) => Promise<void>;
   /** Student edits the content of their OWN pending/rejected notice and resubmits it — always lands back at 'pending' for a fresh review. */
@@ -116,7 +112,10 @@ interface ContentValue {
   /** Admin approves or rejects a pending notice. A reason is required to reject. */
   reviewNotice: (id: string, decision: "approved" | "rejected", reason?: string) => Promise<void>;
   addEvent: (e: Omit<CampusEvent, "views" | "registerClicks">) => Promise<void>;
-  updateEvent: (id: string, patch: Partial<Omit<CampusEvent, "id" | "views" | "registerClicks">>) => Promise<void>;
+  updateEvent: (
+    id: string,
+    patch: Partial<Omit<CampusEvent, "id" | "views" | "registerClicks">>,
+  ) => Promise<void>;
   addClub: (c: Club) => Promise<void>;
   updateClub: (id: string, patch: Partial<Omit<Club, "id">>) => Promise<void>;
   addOpportunity: (o: Omit<Opportunity, "views" | "applyClicks">) => Promise<void>;
@@ -145,7 +144,14 @@ interface ContentValue {
     patch: Partial<
       Pick<
         Listing,
-        "title" | "price" | "condition" | "category" | "description" | "sellerName" | "sellerPhone" | "images"
+        | "title"
+        | "price"
+        | "condition"
+        | "category"
+        | "description"
+        | "sellerName"
+        | "sellerPhone"
+        | "images"
       >
     >,
   ) => Promise<void>;
@@ -189,6 +195,28 @@ const LISTING_COLUMNS =
 function throwIfError<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
   return result.data as T;
+}
+
+/**
+ * Same as throwIfError, but for UPDATE/DELETE calls that pass `.select()`.
+ * Postgres/PostgREST does NOT raise an error when an UPDATE or DELETE's RLS
+ * policy filters out every row (e.g. the row no longer matches — status
+ * changed elsewhere, ownership mismatch, already deleted): it just reports
+ * success with zero rows affected. Without checking for that, the UI would
+ * silently believe a write happened when nothing actually changed server
+ * side. Call sites that mutate a row a non-admin session might no longer be
+ * allowed to touch (stale UI, a race with an Admin action) use this instead
+ * of throwIfError so that case surfaces as a clear error rather than a
+ * silent no-op.
+ */
+function throwIfNoRows<T>(result: { data: T[] | null; error: { message: string } | null }): T[] {
+  const rows = throwIfError(result);
+  if (!rows || rows.length === 0) {
+    throw new Error(
+      "That couldn't be updated — it may have changed or no longer exists. Refresh and try again.",
+    );
+  }
+  return rows;
 }
 
 export function ContentProvider({ children }: { children: ReactNode }) {
@@ -240,7 +268,11 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         holidays: Array.isArray(v?.holidays)
           ? v.holidays.filter(
               (h): h is CollegeHoliday =>
-                !!h && typeof h === "object" && typeof (h as CollegeHoliday).id === "string" && typeof (h as CollegeHoliday).date === "string" && typeof (h as CollegeHoliday).name === "string",
+                !!h &&
+                typeof h === "object" &&
+                typeof (h as CollegeHoliday).id === "string" &&
+                typeof (h as CollegeHoliday).date === "string" &&
+                typeof (h as CollegeHoliday).name === "string",
             )
           : [],
       });
@@ -277,10 +309,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         throwIfError(
           await supabase
             .from("site_settings")
-            .upsert(
-              { key: "appearance", value: next, updated_by: user.id },
-              { onConflict: "key" },
-            ),
+            .upsert({ key: "appearance", value: next, updated_by: user.id }, { onConflict: "key" }),
         );
         setAppearance(next);
       },
@@ -325,13 +354,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.externalUrl !== undefined) row["external_url"] = patch.externalUrl || null;
         if (patch.filePath !== undefined) row["file_path"] = patch.filePath || null;
         if (patch.clubId !== undefined) row["club_id"] = patch.clubId || null;
-        throwIfError(await supabase.from("notices").update(row).eq("id", id));
+        throwIfNoRows(await supabase.from("notices").update(row).eq("id", id).select("id"));
         await refresh();
       },
 
       submitNotice: async (n) => {
         if (!user) throw new Error("Login to submit a notice.");
-        if (n.externalUrl && !isValidHttpUrl(n.externalUrl.trim())) throw new Error("External URL must start with http:// or https://.");
+        if (n.externalUrl && !isValidHttpUrl(n.externalUrl.trim()))
+          throw new Error("External URL must start with http:// or https://.");
         throwIfError(
           await supabase.from("notices").insert({
             id: n.id,
@@ -356,7 +386,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
       resubmitNotice: async (id, patch) => {
         if (!user) throw new Error("Login to resubmit a notice.");
-        if (patch.externalUrl && !isValidHttpUrl(patch.externalUrl.trim())) throw new Error("External URL must start with http:// or https://.");
+        if (patch.externalUrl && !isValidHttpUrl(patch.externalUrl.trim()))
+          throw new Error("External URL must start with http:// or https://.");
         const row: Record<string, unknown> = { status: "pending" };
         if (patch.title !== undefined) row["title"] = patch.title;
         if (patch.description !== undefined) row["description"] = patch.description;
@@ -369,7 +400,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.fileLabel !== undefined) row["file_label"] = patch.fileLabel || null;
         if (patch.externalUrl !== undefined) row["external_url"] = patch.externalUrl || null;
         if (patch.filePath !== undefined) row["file_path"] = patch.filePath || null;
-        throwIfError(await supabase.from("notices").update(row).eq("id", id).eq("created_by", user.id));
+        throwIfNoRows(
+          await supabase
+            .from("notices")
+            .update(row)
+            .eq("id", id)
+            .eq("created_by", user.id)
+            .select("id"),
+        );
         await refresh();
       },
 
@@ -378,21 +416,26 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (decision === "rejected" && !reason?.trim()) {
           throw new Error("A rejection reason is required.");
         }
-        throwIfError(
+        throwIfNoRows(
           await supabase
             .from("notices")
             .update({
               status: decision,
               rejection_reason: decision === "rejected" ? reason!.trim() : null,
             })
-            .eq("id", id),
+            .eq("id", id)
+            .select("id"),
         );
         await refresh();
       },
 
       addEvent: async (e) => {
         if (user?.role !== "admin") throw new Error("Only Admin can create an event.");
-        if (e.registrationUrl && e.registrationUrl !== "#" && !isValidHttpUrl(e.registrationUrl.trim())) {
+        if (
+          e.registrationUrl &&
+          e.registrationUrl !== "#" &&
+          !isValidHttpUrl(e.registrationUrl.trim())
+        ) {
           throw new Error("Registration URL must start with http:// or https://.");
         }
         throwIfError(
@@ -405,9 +448,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
             end_date: e.endDate ?? null,
             time:
               e.time ??
-              (e.startTime
-                ? `${e.startTime}${e.endTime ? ` – ${e.endTime}` : ""}`
-                : null),
+              (e.startTime ? `${e.startTime}${e.endTime ? ` – ${e.endTime}` : ""}` : null),
             start_time: e.startTime ?? null,
             end_time: e.endTime ?? null,
             venue: e.venue,
@@ -426,7 +467,11 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
       updateEvent: async (id, patch) => {
         if (user?.role !== "admin") throw new Error("Only Admin can edit an event.");
-        if (patch.registrationUrl && patch.registrationUrl !== "#" && !isValidHttpUrl(patch.registrationUrl.trim())) {
+        if (
+          patch.registrationUrl &&
+          patch.registrationUrl !== "#" &&
+          !isValidHttpUrl(patch.registrationUrl.trim())
+        ) {
           throw new Error("Registration URL must start with http:// or https://.");
         }
         const row: Record<string, unknown> = {};
@@ -448,11 +493,12 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.eligibility !== undefined) row["eligibility"] = patch.eligibility;
         if (patch.registrationDeadline !== undefined)
           row["registration_deadline"] = patch.registrationDeadline || null;
-        if (patch.registrationUrl !== undefined) row["registration_url"] = patch.registrationUrl?.trim() || "#";
+        if (patch.registrationUrl !== undefined)
+          row["registration_url"] = patch.registrationUrl?.trim() || "#";
         if (patch.contact !== undefined) row["contact"] = patch.contact || null;
         if (patch.accent !== undefined) row["accent"] = patch.accent;
         if (patch.featured !== undefined) row["featured"] = patch.featured;
-        throwIfError(await supabase.from("events").update(row).eq("id", id));
+        throwIfNoRows(await supabase.from("events").update(row).eq("id", id).select("id"));
         await refresh();
       },
 
@@ -493,13 +539,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.socials !== undefined) row["socials"] = patch.socials;
         if (patch.pastEvents !== undefined) row["past_events"] = patch.pastEvents;
         if (patch.imagePath !== undefined) row["image_path"] = patch.imagePath || null;
-        throwIfError(await supabase.from("clubs").update(row).eq("id", id));
+        throwIfNoRows(await supabase.from("clubs").update(row).eq("id", id).select("id"));
         await refresh();
       },
 
       addOpportunity: async (o) => {
         if (user?.role !== "admin") throw new Error("Only Admin can create an opportunity.");
-        if (o.applyUrl && o.applyUrl !== "#" && !isValidHttpUrl(o.applyUrl.trim())) throw new Error("Application URL must start with http:// or https://.");
+        if (o.applyUrl && o.applyUrl !== "#" && !isValidHttpUrl(o.applyUrl.trim()))
+          throw new Error("Application URL must start with http:// or https://.");
         throwIfError(
           await supabase.from("opportunities").insert({
             id: o.id,
@@ -525,7 +572,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
       updateOpportunity: async (id, patch) => {
         if (user?.role !== "admin") throw new Error("Only Admin can edit an opportunity.");
-        if (patch.applyUrl && patch.applyUrl !== "#" && !isValidHttpUrl(patch.applyUrl.trim())) throw new Error("Application URL must start with http:// or https://.");
+        if (patch.applyUrl && patch.applyUrl !== "#" && !isValidHttpUrl(patch.applyUrl.trim()))
+          throw new Error("Application URL must start with http:// or https://.");
         const row: Record<string, unknown> = {};
         if (patch.title !== undefined) row["title"] = patch.title;
         if (patch.organization !== undefined) row["organization"] = patch.organization;
@@ -541,7 +589,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.applyUrl !== undefined) row["apply_url"] = patch.applyUrl?.trim() || "#";
         if (patch.accent !== undefined) row["accent"] = patch.accent;
         if (patch.featured !== undefined) row["featured"] = patch.featured;
-        throwIfError(await supabase.from("opportunities").update(row).eq("id", id));
+        throwIfNoRows(await supabase.from("opportunities").update(row).eq("id", id).select("id"));
         await refresh();
       },
 
@@ -577,37 +625,42 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.sellerName !== undefined) row["seller_name"] = patch.sellerName;
         if (patch.sellerPhone !== undefined) row["seller_phone"] = patch.sellerPhone;
         if (patch.images !== undefined) row["images"] = patch.images;
-        throwIfError(await supabase.from("buy_sell_listings").update(row).eq("id", id));
+        throwIfNoRows(
+          await supabase.from("buy_sell_listings").update(row).eq("id", id).select("id"),
+        );
         await refresh();
       },
 
       markPaymentCompleted: async (id) => {
-        throwIfError(
+        throwIfNoRows(
           await supabase
             .from("buy_sell_listings")
             .update({ status: "payment_submitted" })
-            .eq("id", id),
+            .eq("id", id)
+            .select("id"),
         );
         await refresh();
       },
 
       submitPaymentScreenshot: async (id, screenshotPath) => {
-        throwIfError(
+        throwIfNoRows(
           await supabase
             .from("buy_sell_listings")
             .update({ status: "pending_approval", payment_screenshot_path: screenshotPath })
-            .eq("id", id),
+            .eq("id", id)
+            .select("id"),
         );
         await refresh();
       },
 
       approveListing: async (id) => {
         if (user?.role !== "admin") throw new Error("Only Admin can approve a listing.");
-        throwIfError(
+        throwIfNoRows(
           await supabase
             .from("buy_sell_listings")
             .update({ status: "approved", rejection_reason: null })
-            .eq("id", id),
+            .eq("id", id)
+            .select("id"),
         );
         await refresh();
       },
@@ -615,17 +668,18 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       rejectListing: async (id, reason) => {
         if (user?.role !== "admin") throw new Error("Only Admin can reject a listing.");
         if (!reason?.trim()) throw new Error("A rejection reason is required.");
-        throwIfError(
+        throwIfNoRows(
           await supabase
             .from("buy_sell_listings")
             .update({ status: "rejected", rejection_reason: reason.trim() })
-            .eq("id", id),
+            .eq("id", id)
+            .select("id"),
         );
         await refresh();
       },
 
       remove: async (entity, id) => {
-        throwIfError(await supabase.from(entity).delete().eq("id", id));
+        throwIfNoRows(await supabase.from(entity).delete().eq("id", id).select("id"));
         await refresh();
       },
     }),

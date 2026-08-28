@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { ShoppingBag, Megaphone, Paperclip, Pencil, ExternalLink, CreditCard, Plus } from "lucide-react";
+import {
+  ShoppingBag,
+  Megaphone,
+  Paperclip,
+  Pencil,
+  ExternalLink,
+  CreditCard,
+  Plus,
+} from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { useContent, slugify } from "@/lib/content";
@@ -30,7 +38,6 @@ import {
 const fieldClass =
   "min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-blue";
 
-
 /** Thumbnail preview for a just-picked file, before it's ever uploaded — an object URL, revoked on unmount/change. */
 function FilePreview({ file }: { file: File }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -46,7 +53,13 @@ function FilePreview({ file }: { file: File }) {
   }, [file]);
 
   if (url) {
-    return <img src={url} alt="" className="mt-2 h-24 w-auto rounded-lg border border-border object-cover" />;
+    return (
+      <img
+        src={url}
+        alt=""
+        className="mt-2 h-24 w-auto rounded-lg border border-border object-cover"
+      />
+    );
   }
   return (
     <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
@@ -69,7 +82,13 @@ const LISTING_STATUS_INFO: Record<ListingStatus, { label: string; tone: string }
 };
 
 /** Lets the owner of a pending/rejected notice edit its content and resubmit it — the only case where a non-admin can update a notice row (see notices_student_resubmit in 009_notice_resubmit_and_listing_rejection_reason.sql). Always lands back at 'pending' for a fresh review. */
-function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: string; name: string }[] }) {
+function ResubmitNoticeDialog({
+  notice,
+  clubs,
+}: {
+  notice: Notice;
+  clubs: { id: string; name: string }[];
+}) {
   const { user } = useAuth();
   const { resubmitNotice } = useContent();
   const [open, setOpen] = useState(false);
@@ -95,7 +114,9 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
       return;
     }
     if (file) {
-      const okType = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]).has(file.type);
+      const okType = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]).has(
+        file.type,
+      );
       if (!okType) {
         setError("Attachments must be a PDF or an image.");
         return;
@@ -123,7 +144,11 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
       });
       setOpen(false);
     } catch (err) {
-      if (filePath) supabase.storage.from("notice-files").remove([filePath]).catch(() => {});
+      if (filePath)
+        supabase.storage
+          .from("notice-files")
+          .remove([filePath])
+          .catch(() => {});
       setError(err instanceof Error ? err.message : "Couldn't resubmit the notice.");
     } finally {
       setSubmitting(false);
@@ -146,7 +171,13 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
           <DialogTitle>Edit & resubmit notice</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-3">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className={fieldClass} required />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            className={fieldClass}
+            required
+          />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -155,14 +186,24 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
             className={fieldClass}
             required
           />
-          <select value={category} onChange={(e) => setCategory(e.target.value as Notice["category"])} className={fieldClass}>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Notice["category"])}
+            className={fieldClass}
+          >
             {NOTICE_CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
           </select>
-          <input value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Department" className={fieldClass} required />
+          <input
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            placeholder="Department"
+            className={fieldClass}
+            required
+          />
           <select value={clubId} onChange={(e) => setClubId(e.target.value)} className={fieldClass}>
             <option value="">Not related to a club</option>
             {clubs.map((c) => (
@@ -172,7 +213,9 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
             ))}
           </select>
           <div>
-            <label className="text-xs font-bold text-foreground/80">External link <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <label className="text-xs font-bold text-foreground/80">
+              External link <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
             <div className="mt-1 flex min-w-0 items-center gap-2 rounded-xl border border-input bg-card px-4 focus-within:ring-2 focus-within:ring-blue">
               <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <input
@@ -187,7 +230,10 @@ function ResubmitNoticeDialog({ notice, clubs }: { notice: Notice; clubs: { id: 
           <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-input bg-card px-4 text-sm font-semibold text-muted-foreground hover:bg-accent">
             <Paperclip className="size-4 shrink-0" aria-hidden="true" />
             <span className="min-w-0 truncate">
-              {file?.name ?? (notice.filePath ? "Replace attached file (optional)" : "Attach a file (optional, PDF or image, up to 10 MB)")}
+              {file?.name ??
+                (notice.filePath
+                  ? "Replace attached file (optional)"
+                  : "Attach a file (optional, PDF or image, up to 10 MB)")}
             </span>
             <input
               type="file"
@@ -221,6 +267,7 @@ export default function Dashboard() {
   usePageMeta(
     "My Dashboard — CampusBoard",
     "Your Buy & Sell listings, notice submissions, and a form to submit a new notice for review.",
+    { noindex: true },
   );
 
   const { user, ready } = useAuth();
@@ -263,7 +310,9 @@ export default function Dashboard() {
       return;
     }
     if (file) {
-      const okType = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]).has(file.type);
+      const okType = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]).has(
+        file.type,
+      );
       if (!okType) {
         setError("Attachments must be a PDF or an image.");
         return;
@@ -364,17 +413,20 @@ export default function Dashboard() {
                 const expiry = listingExpiryDate(l);
                 return (
                   <li key={l.id} className="rounded-xl border border-border p-4">
-                    <Link to={`/buy-sell/${l.id}`} className="flex flex-wrap items-start justify-between gap-2">
-                      <span className="min-w-0 break-words text-sm font-bold underline">{l.title}</span>
+                    <Link
+                      to={`/buy-sell/${l.id}`}
+                      className="flex flex-wrap items-start justify-between gap-2"
+                    >
+                      <span className="min-w-0 break-words text-sm font-bold underline">
+                        {l.title}
+                      </span>
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${info.tone}`}
                       >
                         {info.label}
                       </span>
                     </Link>
-                    <p className="pt-1 text-sm font-extrabold text-navy">
-                      {formatPrice(l.price)}
-                    </p>
+                    <p className="pt-1 text-sm font-extrabold text-navy">{formatPrice(l.price)}</p>
                     {expiry ? (
                       <p className="pt-1 text-xs text-muted-foreground">
                         {active ? "Visible until" : "Was visible until"} {formatDate(expiry)}
@@ -454,7 +506,10 @@ export default function Dashboard() {
         <p className="pt-1 text-sm text-muted-foreground">
           Your notice goes to Admin for review first — it only becomes public once approved.
         </p>
-        <form className="mt-4 grid w-full min-w-0 gap-3 sm:grid-cols-2" onSubmit={handleSubmitNotice}>
+        <form
+          className="mt-4 grid w-full min-w-0 gap-3 sm:grid-cols-2"
+          onSubmit={handleSubmitNotice}
+        >
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -486,7 +541,9 @@ export default function Dashboard() {
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <div className="sm:col-span-2">
-            <label className="text-xs font-bold text-foreground/80">External link <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <label className="text-xs font-bold text-foreground/80">
+              External link <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
             <div className="mt-1 flex min-w-0 items-center gap-2 rounded-xl border border-input bg-card px-4 focus-within:ring-2 focus-within:ring-blue">
               <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <input

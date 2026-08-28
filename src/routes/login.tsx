@@ -1,7 +1,7 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { AuthActionError, useAuth } from "@/lib/auth";
 import { isValidHttpUrl, readPendingExternalAction, safeRedirectPath } from "@/lib/utils";
@@ -55,6 +55,7 @@ export default function LoginPage() {
   usePageMeta(
     "Login — CampusBoard",
     "Sign in to register for events, apply to opportunities and view seller contacts.",
+    { noindex: true },
   );
 
   const handleSubmit = async (e: FormEvent) => {
@@ -204,10 +205,6 @@ export default function LoginPage() {
             Create an account
           </Link>
         </p>
-        {/* <p className="mt-4 inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2 text-xs text-muted-foreground">
-          <Lock className="size-3.5" aria-hidden="true" />
-          Every new account starts as a student. Admin access is granted by an existing Admin.
-        </p> */}
       </div>
     </div>
   );

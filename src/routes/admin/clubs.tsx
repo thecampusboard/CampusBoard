@@ -44,7 +44,9 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
   const { addClub, updateClub } = useContent();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<ClubDraft>(club ?? emptyDraft());
-  const [announcementsText, setAnnouncementsText] = useState((club?.announcements ?? []).join("\n"));
+  const [announcementsText, setAnnouncementsText] = useState(
+    (club?.announcements ?? []).join("\n"),
+  );
   const [socials, setSocials] = useState<{ label: string; url: string }[]>(club?.socials ?? []);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
@@ -69,7 +71,10 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
 
   const removeExistingGalleryPhoto = (path: string) => {
     if (submitting) return;
-    setDraft((current) => ({ ...current, gallery: current.gallery.filter((photo) => photo !== path) }));
+    setDraft((current) => ({
+      ...current,
+      gallery: current.gallery.filter((photo) => photo !== path),
+    }));
   };
 
   const submit = async (e: FormEvent) => {
@@ -90,7 +95,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
       .filter((social) => social.label.trim() || social.url.trim())
       .map((social) => ({ label: social.label.trim(), url: social.url.trim() }));
     for (const f of [...(imageFile ? [imageFile] : []), ...galleryFiles]) {
-      if (!(new Set(["image/jpeg", "image/png", "image/webp", "image/gif"])).has(f.type)) {
+      if (!new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]).has(f.type)) {
         setError("Photos must be JPEG, PNG, WebP or GIF images.");
         return;
       }
@@ -101,7 +106,10 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
     }
     setSubmitting(true);
     setError(null);
-    const announcements = announcementsText.split("\n").map((s) => s.trim()).filter(Boolean);
+    const announcements = announcementsText
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const uploaded: string[] = [];
     try {
       let imagePath = draft.imagePath;
@@ -111,7 +119,11 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
       }
       let gallery = draft.gallery;
       if (galleryFiles.length > 0) {
-        const newPaths = await uploadImages("content-images", `clubs/${draft.id}/gallery`, galleryFiles);
+        const newPaths = await uploadImages(
+          "content-images",
+          `clubs/${draft.id}/gallery`,
+          galleryFiles,
+        );
         uploaded.push(...newPaths);
         gallery = [...gallery, ...newPaths];
       }
@@ -127,17 +139,30 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
         await updateClub(club.id, payload);
         const removedFromStorage = (club.gallery ?? []).filter((path) => !gallery.includes(path));
         if (removedFromStorage.length > 0) {
-          await supabase.storage.from("content-images").remove(removedFromStorage).catch(() => {});
+          await supabase.storage
+            .from("content-images")
+            .remove(removedFromStorage)
+            .catch(() => {});
         }
-        if ((removeExistingImage || (imageFile && club.imagePath && club.imagePath !== imagePath)) && club.imagePath) {
-          await supabase.storage.from("content-images").remove([club.imagePath]).catch(() => {});
+        if (
+          (removeExistingImage || (imageFile && club.imagePath && club.imagePath !== imagePath)) &&
+          club.imagePath
+        ) {
+          await supabase.storage
+            .from("content-images")
+            .remove([club.imagePath])
+            .catch(() => {});
         }
       } else {
         await addClub(payload);
       }
       setOpen(false);
     } catch (err) {
-      if (uploaded.length > 0) supabase.storage.from("content-images").remove(uploaded).catch(() => {});
+      if (uploaded.length > 0)
+        supabase.storage
+          .from("content-images")
+          .remove(uploaded)
+          .catch(() => {});
       setError(err instanceof Error ? err.message : "Couldn't save the club.");
     } finally {
       setSubmitting(false);
@@ -159,13 +184,29 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Name" required>
-            <input value={draft.name} onChange={(e) => set("name", e.target.value)} className={fieldClass} required />
+            <input
+              value={draft.name}
+              onChange={(e) => set("name", e.target.value)}
+              className={fieldClass}
+              required
+            />
           </Field>
           <Field label="Tagline" required>
-            <input value={draft.tagline} onChange={(e) => set("tagline", e.target.value)} className={fieldClass} required />
+            <input
+              value={draft.tagline}
+              onChange={(e) => set("tagline", e.target.value)}
+              className={fieldClass}
+              required
+            />
           </Field>
           <Field label="About" required>
-            <textarea value={draft.about} onChange={(e) => set("about", e.target.value)} rows={3} className={fieldClass} required />
+            <textarea
+              value={draft.about}
+              onChange={(e) => set("about", e.target.value)}
+              rows={3}
+              className={fieldClass}
+              required
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Members">
@@ -178,10 +219,19 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
               />
             </Field>
             <Field label="Founded" hint="Optional.">
-              <input value={draft.founded} onChange={(e) => set("founded", e.target.value)} className={fieldClass} placeholder="2019" />
+              <input
+                value={draft.founded}
+                onChange={(e) => set("founded", e.target.value)}
+                className={fieldClass}
+                placeholder="2019"
+              />
             </Field>
             <Field label="Accent color">
-              <select value={draft.accent} onChange={(e) => set("accent", e.target.value as Club["accent"])} className={fieldClass}>
+              <select
+                value={draft.accent}
+                onChange={(e) => set("accent", e.target.value as Club["accent"])}
+                className={fieldClass}
+              >
                 {ACCENTS.map((a) => (
                   <option key={a} value={a}>
                     {a}
@@ -191,10 +241,19 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
             </Field>
           </div>
           <Field label="Recruitment" hint="Optional — how/when students can join.">
-            <input value={draft.recruitment} onChange={(e) => set("recruitment", e.target.value)} className={fieldClass} />
+            <input
+              value={draft.recruitment}
+              onChange={(e) => set("recruitment", e.target.value)}
+              className={fieldClass}
+            />
           </Field>
           <Field label="Announcements" hint="One per line, most recent first.">
-            <textarea value={announcementsText} onChange={(e) => setAnnouncementsText(e.target.value)} rows={3} className={fieldClass} />
+            <textarea
+              value={announcementsText}
+              onChange={(e) => setAnnouncementsText(e.target.value)}
+              rows={3}
+              className={fieldClass}
+            />
           </Field>
 
           <div>
@@ -204,13 +263,21 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                 <div key={i} className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
                   <input
                     value={s.label}
-                    onChange={(e) => setSocials((arr) => arr.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
+                    onChange={(e) =>
+                      setSocials((arr) =>
+                        arr.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)),
+                      )
+                    }
                     placeholder="Instagram"
                     className={fieldClass + " mt-0 w-full sm:w-32 sm:shrink-0"}
                   />
                   <UrlField
                     value={s.url}
-                    onChange={(e) => setSocials((arr) => arr.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))}
+                    onChange={(e) =>
+                      setSocials((arr) =>
+                        arr.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)),
+                      )
+                    }
                     placeholder="https://instagram.com/…"
                     className="mt-0 min-w-0 flex-1"
                   />
@@ -240,14 +307,21 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold text-foreground/80">Existing gallery</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Remove photos you no longer want displayed. Changes are saved with this form.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Remove photos you no longer want displayed. Changes are saved with this form.
+                  </p>
                 </div>
-                <span className="shrink-0 text-xs font-semibold text-muted-foreground">{draft.gallery.length} photo{draft.gallery.length === 1 ? "" : "s"}</span>
+                <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+                  {draft.gallery.length} photo{draft.gallery.length === 1 ? "" : "s"}
+                </span>
               </div>
               {draft.gallery.length > 0 ? (
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {draft.gallery.map((path) => (
-                    <div key={path} className="group relative overflow-hidden rounded-xl border border-border bg-secondary">
+                    <div
+                      key={path}
+                      className="group relative overflow-hidden rounded-xl border border-border bg-secondary"
+                    >
                       <img
                         src={publicStorageUrl("content-images", path)}
                         alt=""
@@ -277,25 +351,61 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
             <Field label="Club image" hint="Optional, up to 5 MB.">
               {isEdit && draft.imagePath && !removeExistingImage && !imageFile ? (
                 <div className="mt-1 flex items-center gap-3 rounded-xl border border-border bg-secondary/60 p-2.5">
-                  <img src={publicStorageUrl("content-images", draft.imagePath)} alt="" className="size-12 rounded-lg object-cover" />
-                  <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold">Current image</p><p className="text-[11px] text-muted-foreground">Replace or remove it.</p></div>
-                  <button type="button" onClick={() => setRemoveExistingImage(true)} className="rounded-lg border border-destructive/25 px-2.5 py-2 text-xs font-bold text-destructive hover:bg-destructive/5">Remove</button>
+                  <img
+                    src={publicStorageUrl("content-images", draft.imagePath)}
+                    alt=""
+                    className="size-12 rounded-lg object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-bold">Current image</p>
+                    <p className="text-[11px] text-muted-foreground">Replace or remove it.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRemoveExistingImage(true)}
+                    className="rounded-lg border border-destructive/25 px-2.5 py-2 text-xs font-bold text-destructive hover:bg-destructive/5"
+                  >
+                    Remove
+                  </button>
                 </div>
               ) : null}
               {!removeExistingImage ? (
                 <label className="mt-2 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent">
                   <ImagePlus className="size-4 shrink-0" aria-hidden="true" />
-                  <span className="truncate">{imageFile?.name ?? (draft.imagePath ? "Replace image" : "Choose image")}</span>
-                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => { setImageFile(e.target.files?.[0] ?? null); setRemoveExistingImage(false); }} />
+                  <span className="truncate">
+                    {imageFile?.name ?? (draft.imagePath ? "Replace image" : "Choose image")}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      setImageFile(e.target.files?.[0] ?? null);
+                      setRemoveExistingImage(false);
+                    }}
+                  />
                 </label>
               ) : (
-                <div className="mt-2 flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"><span className="text-xs font-semibold text-destructive">Club image will be removed.</span><button type="button" onClick={() => setRemoveExistingImage(false)} className="text-xs font-bold underline">Undo</button></div>
+                <div className="mt-2 flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
+                  <span className="text-xs font-semibold text-destructive">
+                    Club image will be removed.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRemoveExistingImage(false)}
+                    className="text-xs font-bold underline"
+                  >
+                    Undo
+                  </button>
+                </div>
               )}
             </Field>
             <Field label="Gallery photos" hint="Optional, adds to the existing gallery.">
               <label className="mt-1 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent">
                 <ImagePlus className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{galleryFiles.length > 0 ? `${galleryFiles.length} selected` : "Choose photos"}</span>
+                <span className="truncate">
+                  {galleryFiles.length > 0 ? `${galleryFiles.length} selected` : "Choose photos"}
+                </span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
@@ -314,7 +424,11 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
           ) : null}
 
           <DialogFooter>
-            <button type="submit" disabled={submitting} className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+            >
               {submitting ? "Saving…" : isEdit ? "Save changes" : "Create club"}
             </button>
           </DialogFooter>
@@ -339,7 +453,9 @@ export default function AdminClubsPage() {
     <div className="space-y-5">
       <div className="bento p-6">
         <h1 className="text-2xl font-extrabold">Clubs</h1>
-        <p className="pt-1 text-sm text-muted-foreground">Manage club profiles, galleries and socials.</p>
+        <p className="pt-1 text-sm text-muted-foreground">
+          Manage club profiles, galleries and socials.
+        </p>
       </div>
 
       <AdminToolbar
@@ -380,9 +496,16 @@ export default function AdminClubsPage() {
           {filtered.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center gap-3 p-3">
               {c.imagePath ? (
-                <img src={publicStorageUrl("content-images", c.imagePath)} alt="" className="size-10 shrink-0 rounded-lg object-cover" />
+                <img
+                  src={publicStorageUrl("content-images", c.imagePath)}
+                  alt=""
+                  className="size-10 shrink-0 rounded-lg object-cover"
+                />
               ) : (
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy" aria-hidden="true">
+                <span
+                  className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy"
+                  aria-hidden="true"
+                >
                   <Users className="size-4" strokeWidth={1.75} />
                 </span>
               )}
@@ -396,14 +519,22 @@ export default function AdminClubsPage() {
                 <ClubFormDialog
                   club={c}
                   trigger={
-                    <button type="button" aria-label={`Edit ${c.name}`} className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent">
+                    <button
+                      type="button"
+                      aria-label={`Edit ${c.name}`}
+                      className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent"
+                    >
                       <Pencil className="size-4" aria-hidden="true" />
                     </button>
                   }
                 />
                 <ConfirmDeleteDialog
                   trigger={
-                    <button type="button" aria-label={`Delete ${c.name}`} className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10">
+                    <button
+                      type="button"
+                      aria-label={`Delete ${c.name}`}
+                      className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10"
+                    >
                       <Trash2 className="size-4" aria-hidden="true" />
                     </button>
                   }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -46,7 +47,9 @@ const ADMIN_NAV: AdminNavItem[] = [
  * guard does or doesn't render.
  */
 export default function AdminLayout() {
-  usePageMeta("Admin Dashboard — CampusBoard", "Manage campus content, approvals and appearance.");
+  usePageMeta("Admin Dashboard — CampusBoard", "Manage campus content, approvals and appearance.", {
+    noindex: true,
+  });
   const { user, ready } = useAuth();
   const { pendingNotices, pendingListings } = useContent();
   const pendingCount = pendingNotices.length + pendingListings.length;
@@ -72,7 +75,9 @@ export default function AdminLayout() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
       "flex min-w-0 items-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors sm:px-3 sm:text-sm",
-      isActive ? "bg-navy text-navy-foreground" : "text-foreground/75 hover:bg-accent hover:text-foreground",
+      isActive
+        ? "bg-navy text-navy-foreground"
+        : "text-foreground/75 hover:bg-accent hover:text-foreground",
     );
 
   return (
@@ -98,7 +103,16 @@ export default function AdminLayout() {
         </nav>
       </aside>
       <div className="min-w-0 max-w-full">
-        <Outlet />
+        {/* Every /admin/* page is a separate lazy-loaded chunk (see App.tsx)
+            — this inner boundary lets navigating between admin sections
+            (e.g. Notices → Events) show a small loading state in just the
+            content area, instead of re-suspending the whole layout/sidebar
+            the way a single Suspense around <AdminLayout/> alone would. */}
+        <Suspense
+          fallback={<div className="bento p-5 text-sm text-muted-foreground sm:p-8">Loading…</div>}
+        >
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   );

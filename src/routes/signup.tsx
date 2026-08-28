@@ -12,6 +12,7 @@ export default function SignupPage() {
   usePageMeta(
     "Sign up — CampusBoard",
     "Create a CampusBoard student account to register for events and apply to opportunities.",
+    { noindex: true },
   );
 
   const { signUp, loginWithGoogle } = useAuth();

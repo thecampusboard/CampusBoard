@@ -199,7 +199,16 @@ export const NOTICE_CATEGORIES: NoticeCategory[] = [
 ];
 
 /** Every accent used for a card/section background — the full domain of the Accent type, for Admin form <select>s. */
-export const ACCENTS: Accent[] = ["blue", "sky", "green", "orange", "yellow", "purple", "pink", "navy"];
+export const ACCENTS: Accent[] = [
+  "blue",
+  "sky",
+  "green",
+  "orange",
+  "yellow",
+  "purple",
+  "pink",
+  "navy",
+];
 
 export const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 export const SEMESTERS = [
@@ -245,7 +254,11 @@ export const OPPORTUNITY_TYPES: OpportunityType[] = [
  * campusStats()) — this only carries the presentational shape (order,
  * label, color) since that part isn't derived from data.
  */
-export const CAMPUS_STAT_TILES: { key: "eventsToday" | "notices" | "opportunities" | "clubs"; label: string; accent: Accent }[] = [
+export const CAMPUS_STAT_TILES: {
+  key: "eventsToday" | "notices" | "opportunities" | "clubs";
+  label: string;
+  accent: Accent;
+}[] = [
   { key: "eventsToday", label: "Events Today", accent: "blue" },
   { key: "notices", label: "Notices", accent: "orange" },
   { key: "opportunities", label: "Open Opportunities", accent: "purple" },
@@ -260,10 +273,9 @@ export const CAMPUS_STAT_TILES: { key: "eventsToday" | "notices" | "opportunitie
  * "Active Clubs" is every club in the directory (there's no separate
  * active/inactive flag on the clubs table).
  */
-export function campusStats(source: SearchSource): Record<
-  "eventsToday" | "notices" | "opportunities" | "clubs",
-  number
-> {
+export function campusStats(
+  source: SearchSource,
+): Record<"eventsToday" | "notices" | "opportunities" | "clubs", number> {
   const today = new Date().toISOString().slice(0, 10);
   return {
     eventsToday: source.events.filter((e) => e.date <= today && (e.endDate ?? e.date) >= today)
@@ -321,7 +333,9 @@ export function formatTime12h(time: string): string {
  * the current Admin form) over the legacy free-text `time` column, which
  * only pre-migration rows still rely on.
  */
-export function formatEventTimeRange(event: Pick<CampusEvent, "startTime" | "endTime" | "time">): string {
+export function formatEventTimeRange(
+  event: Pick<CampusEvent, "startTime" | "endTime" | "time">,
+): string {
   if (event.startTime) {
     return event.endTime
       ? `${formatTime12h(event.startTime)} – ${formatTime12h(event.endTime)}`

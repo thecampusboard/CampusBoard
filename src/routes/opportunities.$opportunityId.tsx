@@ -83,16 +83,32 @@ export default function OpportunityDetail() {
         <p className="pt-1 text-sm font-semibold text-muted-foreground">{opportunity.position}</p>
 
         <div className="mt-6 grid gap-5 rounded-2xl bg-muted/40 p-5 sm:grid-cols-2">
-          <InfoRow icon={<MapPin className="size-4" aria-hidden="true" />} label="Location" value={opportunity.location} />
-          <InfoRow icon={<Briefcase className="size-4" aria-hidden="true" />} label="Type" value={opportunity.type} />
+          <InfoRow
+            icon={<MapPin className="size-4" aria-hidden="true" />}
+            label="Location"
+            value={opportunity.location}
+          />
+          <InfoRow
+            icon={<Briefcase className="size-4" aria-hidden="true" />}
+            label="Type"
+            value={opportunity.type}
+          />
           <InfoRow
             icon={<GraduationCap className="size-4" aria-hidden="true" />}
             label="Eligibility"
             value={opportunity.eligibility}
           />
-          <InfoRow icon={<Users className="size-4" aria-hidden="true" />} label="Years / Branches" value={opportunity.yearsBranches} />
+          <InfoRow
+            icon={<Users className="size-4" aria-hidden="true" />}
+            label="Years / Branches"
+            value={opportunity.yearsBranches}
+          />
           {opportunity.stipend && (
-            <InfoRow icon={<IndianRupee className="size-4" aria-hidden="true" />} label="Stipend" value={opportunity.stipend} />
+            <InfoRow
+              icon={<IndianRupee className="size-4" aria-hidden="true" />}
+              label="Stipend"
+              value={opportunity.stipend}
+            />
           )}
           <InfoRow
             icon={<Calendar className="size-4" aria-hidden="true" />}
@@ -108,7 +124,9 @@ export default function OpportunityDetail() {
 
         {opportunity.skills.length > 0 && (
           <div className="pt-6">
-            <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">Skills</h2>
+            <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">
+              Skills
+            </h2>
             <div className="flex flex-wrap gap-2 pt-2">
               {opportunity.skills.map((skill) => (
                 <Badge key={skill} variant="outline">
@@ -120,8 +138,12 @@ export default function OpportunityDetail() {
         )}
 
         <div className="pt-6">
-          <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">About this role</h2>
-          <p className="pt-2 text-base leading-relaxed whitespace-pre-line">{opportunity.description}</p>
+          <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">
+            About this role
+          </h2>
+          <p className="pt-2 text-base leading-relaxed whitespace-pre-line">
+            {opportunity.description}
+          </p>
         </div>
 
         <div className="pt-6">

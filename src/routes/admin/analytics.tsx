@@ -127,9 +127,16 @@ export default function AdminAnalyticsPage() {
                 {topOverall.map((r, i) => {
                   const title = titleFor(r.entity_type, r.entity_id);
                   return (
-                    <li key={`${r.entity_type}-${r.entity_id}`} className="flex items-center gap-3 text-sm">
-                      <span className="w-5 shrink-0 text-right text-xs font-bold text-muted-foreground">{i + 1}</span>
-                      <span className="min-w-0 flex-1 truncate font-semibold">{title ?? r.entity_id}</span>
+                    <li
+                      key={`${r.entity_type}-${r.entity_id}`}
+                      className="flex items-center gap-3 text-sm"
+                    >
+                      <span className="w-5 shrink-0 text-right text-xs font-bold text-muted-foreground">
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate font-semibold">
+                        {title ?? r.entity_id}
+                      </span>
                       <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-bold text-muted-foreground">
                         {ENTITY_LABEL[r.entity_type]}
                       </span>

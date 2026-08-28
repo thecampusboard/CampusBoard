@@ -16,6 +16,7 @@ import {
   UserPlus,
   LogIn,
   ChevronDown,
+  Info,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -39,6 +40,7 @@ const NAV = [
   { to: "/opportunities", label: "Opportunities", exact: false, icon: Briefcase },
   { to: "/calendar", label: "Calendar", exact: false, icon: CalendarRange },
   { to: "/buy-sell", label: "Buy & Sell", exact: false, icon: ShoppingBag },
+  { to: "/about", label: "About", exact: false, icon: Info },
 ] as const;
 
 /** "Jordan Lee" -> "JL", "Admin" -> "AD". Used for the compact profile control so it never collides visually with the "Admin" panel button. */
@@ -81,7 +83,7 @@ export function SiteNav() {
             className="size-7 shrink-0 object-contain sm:size-8"
           />
           <span className="truncate">
-            Campus<span>Board</span>
+            Campus<span class="text-blue-500">Board</span>
           </span>
         </Link>
 
@@ -184,7 +186,13 @@ export function SiteNav() {
 
           <Link
             to={user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/login"}
-            aria-label={user ? (user.role === "admin" ? "Open admin dashboard" : "Open dashboard") : "Log in to access your dashboard"}
+            aria-label={
+              user
+                ? user.role === "admin"
+                  ? "Open admin dashboard"
+                  : "Open dashboard"
+                : "Log in to access your dashboard"
+            }
             title={user ? (user.role === "admin" ? "Admin dashboard" : "Dashboard") : "Dashboard"}
             className="grid size-9 shrink-0 place-items-center rounded-full border border-foreground/20 bg-card text-foreground/75 transition-colors hover:bg-accent hover:text-foreground sm:size-10 lg:hidden"
           >
@@ -266,7 +274,10 @@ export function SiteNav() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className={cn(linkClass, "flex w-full items-center gap-2.5 text-left text-destructive")}
+                    className={cn(
+                      linkClass,
+                      "flex w-full items-center gap-2.5 text-left text-destructive",
+                    )}
                   >
                     <LogOut className="size-4" aria-hidden="true" />
                     Log out
@@ -309,11 +320,20 @@ export function SiteFooter() {
     <footer className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="bento flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-bold">
-          © {new Date().getFullYear()} Campus<span className="text-blue">Board</span> — All Campus Updates, One Place.
+          © {new Date().getFullYear()} Campus<span className="text-blue">Board</span> — All Campus
+          Updates, One Place.
         </p>
-        <p className="text-sm text-muted-foreground">
-          Content published by the campus administration.
-        </p>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/about"
+            className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            About Us
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            Content published by the campus administration.
+          </p>
+        </div>
       </div>
     </footer>
   );

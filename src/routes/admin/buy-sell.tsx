@@ -4,7 +4,13 @@ import type { FormEvent } from "react";
 import { ShoppingBag, Pencil, Trash2, ImagePlus, X } from "lucide-react";
 
 import { useContent } from "@/lib/content";
-import { LISTING_CATEGORIES, LISTING_CONDITIONS, formatDate, formatPrice, listingExpiryDate } from "@/lib/data";
+import {
+  LISTING_CATEGORIES,
+  LISTING_CONDITIONS,
+  formatDate,
+  formatPrice,
+  listingExpiryDate,
+} from "@/lib/data";
 import type { Listing } from "@/lib/data";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
 import { Field, fieldClass } from "@/components/admin/form-field";
@@ -56,12 +62,17 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    if (!draft.title.trim() || !draft.description.trim() || !draft.sellerName.trim() || !draft.sellerPhone.trim()) {
+    if (
+      !draft.title.trim() ||
+      !draft.description.trim() ||
+      !draft.sellerName.trim() ||
+      !draft.sellerPhone.trim()
+    ) {
       setError("Title, description, seller name and phone are required.");
       return;
     }
     for (const file of newImages) {
-      if (!(new Set(["image/jpeg", "image/png", "image/webp", "image/gif"])).has(file.type)) {
+      if (!new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]).has(file.type)) {
         setError("Photos must be JPEG, PNG, WebP or GIF images.");
         return;
       }
@@ -75,9 +86,16 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
     let uploaded: string[] = [];
     try {
       if (newImages.length > 0) {
-        uploaded = await uploadImages("listing-images", `${listing.ownerId}/${listing.id}`, newImages);
+        uploaded = await uploadImages(
+          "listing-images",
+          `${listing.ownerId}/${listing.id}`,
+          newImages,
+        );
       }
-      const nextImages = [...(listing.images ?? []).filter((path) => !removedImages.includes(path)), ...uploaded];
+      const nextImages = [
+        ...(listing.images ?? []).filter((path) => !removedImages.includes(path)),
+        ...uploaded,
+      ];
       await updateListing(listing.id, {
         title: draft.title,
         price: draft.price,
@@ -89,10 +107,18 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
         images: nextImages,
       });
       const pathsToRemove = removedImages.filter((path) => !(uploaded as string[]).includes(path));
-      if (pathsToRemove.length > 0) await supabase.storage.from("listing-images").remove(pathsToRemove).catch(() => {});
+      if (pathsToRemove.length > 0)
+        await supabase.storage
+          .from("listing-images")
+          .remove(pathsToRemove)
+          .catch(() => {});
       setOpen(false);
     } catch (err) {
-      if (uploaded.length > 0) await supabase.storage.from("listing-images").remove(uploaded).catch(() => {});
+      if (uploaded.length > 0)
+        await supabase.storage
+          .from("listing-images")
+          .remove(uploaded)
+          .catch(() => {});
       setError(err instanceof Error ? err.message : "Couldn't save the listing.");
     } finally {
       setSubmitting(false);
@@ -119,14 +145,30 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Title" required>
-            <input value={draft.title} onChange={(e) => set("title", e.target.value)} className={fieldClass} required />
+            <input
+              value={draft.title}
+              onChange={(e) => set("title", e.target.value)}
+              className={fieldClass}
+              required
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Price (₹)" required>
-              <input type="number" min={0} value={draft.price} onChange={(e) => set("price", Number(e.target.value) || 0)} className={fieldClass} required />
+              <input
+                type="number"
+                min={0}
+                value={draft.price}
+                onChange={(e) => set("price", Number(e.target.value) || 0)}
+                className={fieldClass}
+                required
+              />
             </Field>
             <Field label="Category">
-              <select value={draft.category} onChange={(e) => set("category", e.target.value as Listing["category"])} className={fieldClass}>
+              <select
+                value={draft.category}
+                onChange={(e) => set("category", e.target.value as Listing["category"])}
+                className={fieldClass}
+              >
                 {LISTING_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -136,7 +178,11 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
             </Field>
           </div>
           <Field label="Condition">
-            <select value={draft.condition} onChange={(e) => set("condition", e.target.value as Listing["condition"])} className={fieldClass}>
+            <select
+              value={draft.condition}
+              onChange={(e) => set("condition", e.target.value as Listing["condition"])}
+              className={fieldClass}
+            >
               {LISTING_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -145,34 +191,89 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
             </select>
           </Field>
           <Field label="Description" required>
-            <textarea value={draft.description} onChange={(e) => set("description", e.target.value)} rows={3} className={fieldClass} required />
+            <textarea
+              value={draft.description}
+              onChange={(e) => set("description", e.target.value)}
+              rows={3}
+              className={fieldClass}
+              required
+            />
           </Field>
-          <Field label="Listing photos" hint="You can remove existing photos or add replacements. Up to 5 MB each.">
+          <Field
+            label="Listing photos"
+            hint="You can remove existing photos or add replacements. Up to 5 MB each."
+          >
             {(draft.images ?? []).length > 0 ? (
               <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {(draft.images ?? []).map((path) => (
-                  <div key={path} className={`group relative overflow-hidden rounded-lg border border-border ${removedImages.includes(path) ? "opacity-40" : ""}`}>
-                    <img src={publicStorageUrl("listing-images", path)} alt="" className="aspect-square w-full object-cover" />
-                    <button type="button" disabled={submitting} onClick={() => setRemovedImages((current) => current.includes(path) ? current.filter((p) => p !== path) : [...current, path])} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-navy/90 text-white shadow-sm hover:bg-destructive" aria-label={removedImages.includes(path) ? "Keep photo" : "Remove photo"}>
-                      {removedImages.includes(path) ? <span className="text-xs font-bold">↶</span> : <X className="size-3.5" aria-hidden="true" />}
+                  <div
+                    key={path}
+                    className={`group relative overflow-hidden rounded-lg border border-border ${removedImages.includes(path) ? "opacity-40" : ""}`}
+                  >
+                    <img
+                      src={publicStorageUrl("listing-images", path)}
+                      alt=""
+                      className="aspect-square w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={() =>
+                        setRemovedImages((current) =>
+                          current.includes(path)
+                            ? current.filter((p) => p !== path)
+                            : [...current, path],
+                        )
+                      }
+                      className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-navy/90 text-white shadow-sm hover:bg-destructive"
+                      aria-label={removedImages.includes(path) ? "Keep photo" : "Remove photo"}
+                    >
+                      {removedImages.includes(path) ? (
+                        <span className="text-xs font-bold">↶</span>
+                      ) : (
+                        <X className="size-3.5" aria-hidden="true" />
+                      )}
                     </button>
                   </div>
                 ))}
               </div>
             ) : null}
-            {newImages.length > 0 ? <p className="mt-2 text-xs font-semibold text-green">{newImages.length} new photo{newImages.length === 1 ? "" : "s"} selected</p> : null}
+            {newImages.length > 0 ? (
+              <p className="mt-2 text-xs font-semibold text-green">
+                {newImages.length} new photo{newImages.length === 1 ? "" : "s"} selected
+              </p>
+            ) : null}
             <label className="mt-2 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent">
               <ImagePlus className="size-4 shrink-0" aria-hidden="true" />
               Add/replace photos
-              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="sr-only" onChange={(e) => { setNewImages(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                className="sr-only"
+                onChange={(e) => {
+                  setNewImages(Array.from(e.target.files ?? []));
+                  e.target.value = "";
+                }}
+              />
             </label>
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Seller name" required>
-              <input value={draft.sellerName} onChange={(e) => set("sellerName", e.target.value)} className={fieldClass} required />
+              <input
+                value={draft.sellerName}
+                onChange={(e) => set("sellerName", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
             <Field label="Seller phone" required>
-              <input value={draft.sellerPhone} onChange={(e) => set("sellerPhone", e.target.value)} className={fieldClass} required />
+              <input
+                value={draft.sellerPhone}
+                onChange={(e) => set("sellerPhone", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
           </div>
 
@@ -183,7 +284,11 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
           ) : null}
 
           <DialogFooter>
-            <button type="submit" disabled={submitting} className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+            >
               {submitting ? "Saving…" : "Save changes"}
             </button>
           </DialogFooter>
@@ -193,15 +298,26 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
   );
 }
 
-const STATUS_FILTERS = ["all", "pending_approval", "approved", "rejected", "expired", "payment_pending", "payment_submitted"] as const;
+const STATUS_FILTERS = [
+  "all",
+  "pending_approval",
+  "approved",
+  "rejected",
+  "expired",
+  "payment_pending",
+  "payment_submitted",
+] as const;
 
 export default function AdminBuySellPage() {
   usePageMeta("Buy & Sell — Admin — CampusBoard", "Manage every Buy & Sell listing.");
   const { listings, loading, error, refresh, remove } = useContent();
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialStatus = (searchParams.get("status") as (typeof STATUS_FILTERS)[number] | null) ?? "all";
-  const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]>(STATUS_FILTERS.includes(initialStatus) ? initialStatus : "all");
+  const initialStatus =
+    (searchParams.get("status") as (typeof STATUS_FILTERS)[number] | null) ?? "all";
+  const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]>(
+    STATUS_FILTERS.includes(initialStatus) ? initialStatus : "all",
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -224,7 +340,10 @@ export default function AdminBuySellPage() {
         search={search}
         onSearch={setSearch}
         searchPlaceholder="Search listings or sellers…"
-        sortOptions={STATUS_FILTERS.map((s) => ({ value: s, label: s === "all" ? "Active & pending" : STATUS_LABEL[s as Listing["status"]] }))}
+        sortOptions={STATUS_FILTERS.map((s) => ({
+          value: s,
+          label: s === "all" ? "Active & pending" : STATUS_LABEL[s as Listing["status"]],
+        }))}
         sort={status}
         onSort={(v) => {
           const next = v as typeof status;
@@ -258,7 +377,10 @@ export default function AdminBuySellPage() {
                 {cover ? (
                   <img src={cover} alt="" className="size-10 shrink-0 rounded-lg object-cover" />
                 ) : (
-                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-yellow/25 text-navy" aria-hidden="true">
+                  <span
+                    className="grid size-10 shrink-0 place-items-center rounded-lg bg-yellow/25 text-navy"
+                    aria-hidden="true"
+                  >
                     <ShoppingBag className="size-4" strokeWidth={1.75} />
                   </span>
                 )}
@@ -274,14 +396,22 @@ export default function AdminBuySellPage() {
                   <ListingEditDialog
                     listing={l}
                     trigger={
-                      <button type="button" aria-label={`Edit ${l.title}`} className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent">
+                      <button
+                        type="button"
+                        aria-label={`Edit ${l.title}`}
+                        className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent"
+                      >
                         <Pencil className="size-4" aria-hidden="true" />
                       </button>
                     }
                   />
                   <ConfirmDeleteDialog
                     trigger={
-                      <button type="button" aria-label={`Delete ${l.title}`} className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10">
+                      <button
+                        type="button"
+                        aria-label={`Delete ${l.title}`}
+                        className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10"
+                      >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
                     }

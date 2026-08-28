@@ -55,7 +55,9 @@ function PendingNoticeRow({
       </p>
       <p className="text-base font-bold">{notice.title}</p>
       <p className="text-sm text-muted-foreground">{notice.description}</p>
-      {notice.filePath ? <p className="pt-1 text-xs font-semibold text-blue">Has an attachment</p> : null}
+      {notice.filePath ? (
+        <p className="pt-1 text-xs font-semibold text-blue">Has an attachment</p>
+      ) : null}
 
       {error ? (
         <p role="alert" className="pt-2 text-xs font-semibold text-destructive">
@@ -175,7 +177,9 @@ function PendingListingRow({
             {listing.sellerName} · {listing.sellerPhone}
           </p>
           {listing.submittedOn ? (
-            <p className="text-xs text-muted-foreground">Submitted {formatDate(listing.submittedOn)}</p>
+            <p className="text-xs text-muted-foreground">
+              Submitted {formatDate(listing.submittedOn)}
+            </p>
           ) : null}
         </div>
         {listing.paymentScreenshotPath ? (
@@ -245,8 +249,12 @@ function PendingListingRow({
 }
 
 export default function AdminApprovalsPage() {
-  usePageMeta("Approvals — Admin — CampusBoard", "Review pending notice and Buy & Sell submissions.");
-  const { pendingNotices, pendingListings, reviewNotice, approveListing, rejectListing } = useContent();
+  usePageMeta(
+    "Approvals — Admin — CampusBoard",
+    "Review pending notice and Buy & Sell submissions.",
+  );
+  const { pendingNotices, pendingListings, reviewNotice, approveListing, rejectListing } =
+    useContent();
 
   return (
     <div className="space-y-5">
@@ -256,21 +264,29 @@ export default function AdminApprovalsPage() {
           Approvals
         </h1>
         <p className="pt-1 text-sm text-muted-foreground">
-          Nothing a student submits — a notice or a Buy & Sell listing — becomes public until you approve it here.
+          Nothing a student submits — a notice or a Buy & Sell listing — becomes public until you
+          approve it here.
         </p>
       </div>
 
       <section className="bento p-6 sm:p-8">
         <h2 className="text-xl font-extrabold">
           Pending listings{" "}
-          <span className="text-sm font-bold text-muted-foreground">({pendingListings.length})</span>
+          <span className="text-sm font-bold text-muted-foreground">
+            ({pendingListings.length})
+          </span>
         </h2>
         {pendingListings.length === 0 ? (
           <p className="pt-4 text-sm text-muted-foreground">No listings waiting for approval.</p>
         ) : (
           <ul className="mt-4 space-y-4">
             {pendingListings.map((l) => (
-              <PendingListingRow key={l.id} listing={l} onApprove={approveListing} onReject={rejectListing} />
+              <PendingListingRow
+                key={l.id}
+                listing={l}
+                onApprove={approveListing}
+                onReject={rejectListing}
+              />
             ))}
           </ul>
         )}

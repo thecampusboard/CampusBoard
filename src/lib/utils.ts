@@ -29,20 +29,18 @@ export function hasRealUrl(value: string | undefined | null): value is string {
   return !!value && value !== "#" && isValidHttpUrl(value);
 }
 
-
 /** Allow only an internal application path for post-auth redirects. */
 export function safeRedirectPath(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
   try {
     const url = new URL(value, window.location.origin);
     if (url.origin !== window.location.origin) return undefined;
-    if (!url.pathname.startsWith('/') || url.pathname.startsWith('//')) return undefined;
+    if (!url.pathname.startsWith("/") || url.pathname.startsWith("//")) return undefined;
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return undefined;
   }
 }
-
 
 /** Recover a validated external action after an auth round trip without creating an open redirect. */
 export function readPendingExternalAction(): { href: string; label?: string } | undefined {

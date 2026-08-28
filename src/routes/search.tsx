@@ -26,6 +26,11 @@ export default function SearchPage() {
   usePageMeta(
     "Search — CampusBoard",
     "Search notices, events, clubs, opportunities and marketplace listings.",
+    // Query-driven results page — same content-shape concern as admin/
+    // dashboard: no single canonical version worth ranking, and every ?q=
+    // variation would otherwise compete with the real content pages it
+    // links to.
+    { noindex: true },
   );
 
   const allResults = useMemo(

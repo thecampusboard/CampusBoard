@@ -185,9 +185,7 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-4 sm:gap-5">
             {CAMPUS_STAT_TILES.map((tile) => (
               <Bento key={tile.key} accent={tile.accent} className="p-4 sm:p-5">
-                <p className="text-3xl font-extrabold text-navy sm:text-4xl">
-                  {stats[tile.key]}
-                </p>
+                <p className="text-3xl font-extrabold text-navy sm:text-4xl">{stats[tile.key]}</p>
                 <p className="pt-1 text-xs font-bold text-navy/70 uppercase">{tile.label}</p>
               </Bento>
             ))}
@@ -220,7 +218,9 @@ export default function Home() {
                     to={`/events/${e.id}`}
                     className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg transition-opacity hover:opacity-80"
                   >
-                    <span className="shrink-0 pt-0.5 text-xs font-bold text-sky">{formatEventTimeRange(e)}</span>
+                    <span className="shrink-0 pt-0.5 text-xs font-bold text-sky">
+                      {formatEventTimeRange(e)}
+                    </span>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-bold text-navy-foreground">
                         {e.title}
@@ -266,7 +266,10 @@ export default function Home() {
                           {n.fileType}
                         </span>
                         {n.externalUrl ? (
-                          <ExternalLink className="size-3.5 text-navy/60" aria-label="External link" />
+                          <ExternalLink
+                            className="size-3.5 text-navy/60"
+                            aria-label="External link"
+                          />
                         ) : null}
                       </span>
                       <span className="block text-sm font-bold">{n.title}</span>

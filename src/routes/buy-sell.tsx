@@ -85,7 +85,9 @@ export default function BuySellPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           title={hasFilters ? "No listings match your filters" : "Nothing on sale here yet"}
-          hint={hasFilters ? "Try a different search or category." : "Be the first to post an item."}
+          hint={
+            hasFilters ? "Try a different search or category." : "Be the first to post an item."
+          }
           action={
             hasFilters ? (
               <button
@@ -113,7 +115,9 @@ export default function BuySellPage() {
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((l) => {
             const Icon = listingIcon(l.id, l.category);
-            const coverImage = l.images?.[0] ? publicStorageUrl("listing-images", l.images[0]) : null;
+            const coverImage = l.images?.[0]
+              ? publicStorageUrl("listing-images", l.images[0])
+              : null;
             return (
               <li key={l.id}>
                 <Link
@@ -122,9 +126,17 @@ export default function BuySellPage() {
                 >
                   <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-yellow/20">
                     {coverImage ? (
-                      <img src={coverImage} alt="" className="size-full object-cover" loading="lazy" />
+                      <img
+                        src={coverImage}
+                        alt=""
+                        className="size-full object-cover"
+                        loading="lazy"
+                      />
                     ) : (
-                      <div className="grid size-full place-items-center text-navy/40" aria-hidden="true">
+                      <div
+                        className="grid size-full place-items-center text-navy/40"
+                        aria-hidden="true"
+                      >
                         <Icon className="size-10" strokeWidth={1.5} />
                       </div>
                     )}
@@ -134,7 +146,9 @@ export default function BuySellPage() {
                   </div>
                   <div className="flex flex-1 flex-col p-4">
                     <span className="block text-lg leading-tight font-bold">{l.title}</span>
-                    <span className="block pt-2 text-xl font-extrabold">{formatPrice(l.price)}</span>
+                    <span className="block pt-2 text-xl font-extrabold">
+                      {formatPrice(l.price)}
+                    </span>
                     <span className="mt-auto flex items-center justify-between gap-2 pt-3 text-xs font-semibold text-muted-foreground">
                       <span>{l.condition}</span>
                       <span className="truncate">{l.sellerName}</span>

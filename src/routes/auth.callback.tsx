@@ -17,7 +17,7 @@ import { usePageMeta } from "@/lib/seo";
  * to wherever they were headed (?redirect=...) or home.
  */
 export default function AuthCallbackPage() {
-  usePageMeta("Signing you in — CampusBoard", "Completing Google sign-in.");
+  usePageMeta("Signing you in — CampusBoard", "Completing Google sign-in.", { noindex: true });
 
   const { user, ready } = useAuth();
   const navigate = useNavigate();

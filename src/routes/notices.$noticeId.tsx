@@ -30,10 +30,18 @@ export default function NoticeDetail() {
     setFileLoading(true);
     setFileError(null);
     getNoticeFileUrl(notice.filePath)
-      .then((url) => { if (active) setFileUrl(url); })
-      .catch(() => { if (active) setFileError("This attachment is temporarily unavailable."); })
-      .finally(() => { if (active) setFileLoading(false); });
-    return () => { active = false; };
+      .then((url) => {
+        if (active) setFileUrl(url);
+      })
+      .catch(() => {
+        if (active) setFileError("This attachment is temporarily unavailable.");
+      })
+      .finally(() => {
+        if (active) setFileLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [notice?.filePath]);
 
   usePageMeta(
@@ -111,7 +119,9 @@ export default function NoticeDetail() {
             </a>
           )
         ) : fileError ? (
-          <p role="alert" className="mt-4 text-sm font-semibold text-destructive">{fileError}</p>
+          <p role="alert" className="mt-4 text-sm font-semibold text-destructive">
+            {fileError}
+          </p>
         ) : null
       ) : null}
       {club ? (
@@ -124,7 +134,12 @@ export default function NoticeDetail() {
       ) : null}
       <div className="mt-6 flex flex-col items-start gap-3">
         {hasRealUrl(notice.externalUrl) ? (
-          <a href={notice.externalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-input px-4 text-sm font-bold hover:bg-accent">
+          <a
+            href={notice.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-input px-4 text-sm font-bold hover:bg-accent"
+          >
             <ExternalLink className="size-4" aria-hidden="true" />
             Open external link
           </a>

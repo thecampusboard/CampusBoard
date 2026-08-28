@@ -36,13 +36,7 @@ function emptyDraft(): EventDraft {
   };
 }
 
-function EventFormDialog({
-  event,
-  trigger,
-}: {
-  event?: CampusEvent;
-  trigger: React.ReactNode;
-}) {
+function EventFormDialog({ event, trigger }: { event?: CampusEvent; trigger: React.ReactNode }) {
   const { clubs, addEvent, updateEvent } = useContent();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<EventDraft>(event ?? emptyDraft());
@@ -56,7 +50,12 @@ function EventFormDialog({
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    if (!draft.title.trim() || !draft.organizer.trim() || !draft.venue.trim() || !draft.description.trim()) {
+    if (
+      !draft.title.trim() ||
+      !draft.organizer.trim() ||
+      !draft.venue.trim() ||
+      !draft.description.trim()
+    ) {
       setError("Title, organizer, venue and description are required.");
       return;
     }
@@ -64,7 +63,12 @@ function EventFormDialog({
       setError("End date can't be before the start date.");
       return;
     }
-    if (draft.date === (draft.endDate || draft.date) && draft.startTime && draft.endTime && draft.endTime <= draft.startTime) {
+    if (
+      draft.date === (draft.endDate || draft.date) &&
+      draft.startTime &&
+      draft.endTime &&
+      draft.endTime <= draft.startTime
+    ) {
       setError("End time must be later than the start time.");
       return;
     }
@@ -227,7 +231,11 @@ function EventFormDialog({
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Accent color">
-              <select value={draft.accent} onChange={(e) => set("accent", e.target.value as CampusEvent["accent"])} className={fieldClass}>
+              <select
+                value={draft.accent}
+                onChange={(e) => set("accent", e.target.value as CampusEvent["accent"])}
+                className={fieldClass}
+              >
                 {ACCENTS.map((a) => (
                   <option key={a} value={a}>
                     {a}
@@ -301,7 +309,8 @@ export default function AdminEventsPage() {
       <div className="bento p-6">
         <h1 className="text-2xl font-extrabold">Events</h1>
         <p className="pt-1 text-sm text-muted-foreground">
-          Create, edit and remove campus events. Set a real start time so Google Calendar links come out right.
+          Create, edit and remove campus events. Set a real start time so Google Calendar links come
+          out right.
         </p>
       </div>
 
@@ -327,13 +336,18 @@ export default function AdminEventsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           title={events.length === 0 ? "No events yet" : "No events match your search"}
-          hint={events.length === 0 ? "Create the first campus event." : "Try a different search term."}
+          hint={
+            events.length === 0 ? "Create the first campus event." : "Try a different search term."
+          }
         />
       ) : (
         <ul className="bento divide-y divide-border p-2">
           {filtered.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center gap-3 p-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-green/25 text-navy" aria-hidden="true">
+              <span
+                className="grid size-10 shrink-0 place-items-center rounded-lg bg-green/25 text-navy"
+                aria-hidden="true"
+              >
                 <CalendarDays className="size-4" strokeWidth={1.75} />
               </span>
               <div className="min-w-0 flex-1">

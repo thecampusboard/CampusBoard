@@ -1,12 +1,14 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, lazy, Suspense, type ErrorInfo, type ReactNode } from "react";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 
 import { AuthProvider } from "@/lib/auth";
 import { ContentProvider } from "@/lib/content";
+import { usePageMeta, useSiteStructuredData } from "@/lib/seo";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { Toaster } from "@/components/ui/sonner";
 
 import Home from "@/routes/index";
+import AboutPage from "@/routes/about";
 import Notices from "@/routes/notices";
 import NoticeDetail from "@/routes/notices.$noticeId";
 import Events from "@/routes/events";
@@ -17,25 +19,43 @@ import Opportunities from "@/routes/opportunities";
 import OpportunityDetail from "@/routes/opportunities.$opportunityId";
 import CalendarPage from "@/routes/calendar";
 import BuySell from "@/routes/buy-sell";
-import BuySellNew from "@/routes/buy-sell.new";
 import ListingDetail from "@/routes/buy-sell.$listingId";
 import SearchPage from "@/routes/search";
 import LoginPage from "@/routes/login";
 import SignupPage from "@/routes/signup";
 import AuthCallbackPage from "@/routes/auth.callback";
-import AdminLayout from "@/routes/admin/layout";
-import AdminOverviewPage from "@/routes/admin/overview";
-import AdminNoticesPage from "@/routes/admin/notices";
-import AdminEventsPage from "@/routes/admin/events";
-import AdminClubsPage from "@/routes/admin/clubs";
-import AdminOpportunitiesPage from "@/routes/admin/opportunities";
-import AdminBuySellPage from "@/routes/admin/buy-sell";
-import AdminApprovalsPage from "@/routes/admin/approvals";
-import AdminAppearancePage from "@/routes/admin/appearance";
-import AdminAnalyticsPage from "@/routes/admin/analytics";
-import DashboardPage from "@/routes/dashboard";
+
+// Code-split: the entire /admin/* subtree and the Buy & Sell posting wizard
+// are only ever needed by Admin or by a student actively listing an item —
+// a small slice of visits. Splitting them into their own chunk keeps the
+// bundle every ordinary visitor downloads smaller (see the "chunks larger
+// than 500 kB" build warning this addresses) without touching any of their
+// behavior.
+const BuySellNew = lazy(() => import("@/routes/buy-sell.new"));
+const DashboardPage = lazy(() => import("@/routes/dashboard"));
+const AdminLayout = lazy(() => import("@/routes/admin/layout"));
+const AdminOverviewPage = lazy(() => import("@/routes/admin/overview"));
+const AdminNoticesPage = lazy(() => import("@/routes/admin/notices"));
+const AdminEventsPage = lazy(() => import("@/routes/admin/events"));
+const AdminClubsPage = lazy(() => import("@/routes/admin/clubs"));
+const AdminOpportunitiesPage = lazy(() => import("@/routes/admin/opportunities"));
+const AdminBuySellPage = lazy(() => import("@/routes/admin/buy-sell"));
+const AdminApprovalsPage = lazy(() => import("@/routes/admin/approvals"));
+const AdminAppearancePage = lazy(() => import("@/routes/admin/appearance"));
+const AdminAnalyticsPage = lazy(() => import("@/routes/admin/analytics"));
+
+function RouteFallback() {
+  return (
+    <div className="bento p-5 text-sm text-muted-foreground sm:p-8" role="status">
+      Loading…
+    </div>
+  );
+}
 
 function NotFoundPage() {
+  usePageMeta("Page not found — CampusBoard", "This page doesn't exist or has been archived.", {
+    noindex: true,
+  });
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
@@ -110,6 +130,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 }
 
 export default function App() {
+  useSiteStructuredData();
   return (
     <AuthProvider>
       <ContentProvider>
@@ -119,6 +140,7 @@ export default function App() {
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="/notices" element={<Notices />} />
                 <Route path="/notices/:noticeId" element={<NoticeDetail />} />
                 <Route path="/events" element={<Events />} />
@@ -129,13 +151,27 @@ export default function App() {
                 <Route path="/opportunities/:opportunityId" element={<OpportunityDetail />} />
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/buy-sell" element={<BuySell />} />
-                <Route path="/buy-sell/new" element={<BuySellNew />} />
+                <Route
+                  path="/buy-sell/new"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <BuySellNew />
+                    </Suspense>
+                  }
+                />
                 <Route path="/buy-sell/:listingId" element={<ListingDetail />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route path="/admin" element={<AdminLayout />}>
+                <Route
+                  path="/admin"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <AdminLayout />
+                    </Suspense>
+                  }
+                >
                   <Route index element={<AdminOverviewPage />} />
                   <Route path="notices" element={<AdminNoticesPage />} />
                   <Route path="events" element={<AdminEventsPage />} />
@@ -146,7 +182,14 @@ export default function App() {
                   <Route path="appearance" element={<AdminAppearancePage />} />
                   <Route path="analytics" element={<AdminAnalyticsPage />} />
                 </Route>
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <DashboardPage />
+                    </Suspense>
+                  }
+                />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </ErrorBoundary>

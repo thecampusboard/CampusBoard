@@ -3,14 +3,22 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 /** Uploads a batch of images under a shared prefix, returning their storage paths. Stops and throws on the first failure — callers decide whether to roll back what already succeeded. */
-export async function uploadImages(bucket: string, prefix: string, files: File[]): Promise<string[]> {
+export async function uploadImages(
+  bucket: string,
+  prefix: string,
+  files: File[],
+): Promise<string[]> {
   const paths: string[] = [];
   for (const file of files) {
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 120) || "image";
     const path = `${prefix}/${Date.now()}-${safeName}`;
     const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
     if (error) {
-      if (paths.length > 0) await supabase.storage.from(bucket).remove(paths).catch(() => {});
+      if (paths.length > 0)
+        await supabase.storage
+          .from(bucket)
+          .remove(paths)
+          .catch(() => {});
       throw error;
     }
     paths.push(path);

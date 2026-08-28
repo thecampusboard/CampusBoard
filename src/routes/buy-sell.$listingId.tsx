@@ -88,7 +88,8 @@ export default function ListingDetail() {
       ) : null}
       {listing.status === "approved" && (isOwner || isAdmin) && listingExpiryDate(listing) ? (
         <p className="pt-1 text-xs font-bold text-muted-foreground">
-          {isListingActive(listing) ? "Active until" : "Expired on"} {formatDate(listingExpiryDate(listing)!)}
+          {isListingActive(listing) ? "Active until" : "Expired on"}{" "}
+          {formatDate(listingExpiryDate(listing)!)}
         </p>
       ) : null}
       <p className="pt-2 text-2xl font-extrabold">{formatPrice(listing.price)}</p>

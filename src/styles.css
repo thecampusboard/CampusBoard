@@ -176,3 +176,18 @@
     box-shadow 220ms ease,
     transform 220ms ease;
 }
+
+/* Gentle continuous float for decorative elements (e.g. About page avatar/blobs). */
+@utility animate-float {
+  animation: bento-float 6s ease-in-out infinite;
+}
+
+@keyframes bento-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}

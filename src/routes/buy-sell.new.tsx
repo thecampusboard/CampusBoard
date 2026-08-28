@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Check, Clock, CreditCard, ExternalLink, Upload } from "lucide-react";
+import { Check, Clock, ExternalLink, Upload } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { useContent, slugify } from "@/lib/content";
@@ -47,7 +47,13 @@ export default function BuySellNew() {
   );
 
   const { user } = useAuth();
-  const { addListing, markPaymentCompleted, submitPaymentScreenshot, listings, loading: contentLoading } = useContent();
+  const {
+    addListing,
+    markPaymentCompleted,
+    submitPaymentScreenshot,
+    listings,
+    loading: contentLoading,
+  } = useContent();
   const [searchParams] = useSearchParams();
   const resumeListingId = searchParams.get("listingId");
 
@@ -157,7 +163,11 @@ export default function BuySellNew() {
       setListingId(id);
       setStep("payment");
     } catch (err) {
-      if (uploadedImages.length > 0) supabase.storage.from("listing-images").remove(uploadedImages).catch(() => {});
+      if (uploadedImages.length > 0)
+        supabase.storage
+          .from("listing-images")
+          .remove(uploadedImages)
+          .catch(() => {});
       setError(err instanceof Error ? err.message : "Could not create the listing.");
     } finally {
       setSubmitting(false);
@@ -193,11 +203,20 @@ export default function BuySellNew() {
     setSubmitting(true);
     let uploadedPath: string | null = null;
     try {
-      uploadedPath = await uploadToBucket("payment-screenshots", user.id, listingId, screenshotFile);
+      uploadedPath = await uploadToBucket(
+        "payment-screenshots",
+        user.id,
+        listingId,
+        screenshotFile,
+      );
       await submitPaymentScreenshot(listingId, uploadedPath);
       setStep("done");
     } catch (err) {
-      if (uploadedPath) supabase.storage.from("payment-screenshots").remove([uploadedPath]).catch(() => {});
+      if (uploadedPath)
+        supabase.storage
+          .from("payment-screenshots")
+          .remove([uploadedPath])
+          .catch(() => {});
       setError(err instanceof Error ? err.message : "Could not submit the screenshot.");
     } finally {
       setSubmitting(false);
@@ -380,7 +399,9 @@ export default function BuySellNew() {
 
       {step === "payment" ? (
         <div className="bento min-w-0 space-y-4 p-5 text-center sm:p-8">
-          <h2 className="break-words text-2xl font-extrabold">Pay {formatPrice(LISTING_FEE)} for 30 days</h2>
+          <h2 className="break-words text-2xl font-extrabold">
+            Pay {formatPrice(LISTING_FEE)} for 30 days
+          </h2>
           <p className="text-sm text-muted-foreground">
             Scan the QR code below with any UPI app and pay {formatPrice(LISTING_FEE)}. Your listing
             goes live for {LISTING_DURATION_DAYS} days once Admin verifies the payment.
@@ -413,7 +434,9 @@ export default function BuySellNew() {
               I’ve paid
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">After paying, continue to upload your payment screenshot for Admin verification.</p>
+          <p className="text-xs text-muted-foreground">
+            After paying, continue to upload your payment screenshot for Admin verification.
+          </p>
         </div>
       ) : null}
 

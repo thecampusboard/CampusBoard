@@ -50,7 +50,9 @@ export function ProtectedAction({
             );
             navigate(`/login?action=${encodeURIComponent(label)}`);
           } else {
-            navigate(`/login?redirect=${encodeURIComponent(href)}&action=${encodeURIComponent(label)}`);
+            navigate(
+              `/login?redirect=${encodeURIComponent(href)}&action=${encodeURIComponent(label)}`,
+            );
           }
         }}
       >

@@ -82,7 +82,11 @@ export function ImageGallery({
 
   return (
     <div
-      className={cn("group/gallery relative overflow-hidden rounded-2xl bg-muted", aspect, className)}
+      className={cn(
+        "group/gallery relative overflow-hidden rounded-2xl bg-muted",
+        aspect,
+        className,
+      )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onTouchStart={(e) => {

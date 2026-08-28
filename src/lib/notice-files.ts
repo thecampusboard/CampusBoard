@@ -18,9 +18,10 @@ export function noticeFileTypeFor(file: File): Notice["fileType"] {
   return "Text";
 }
 
-
 export async function getNoticeFileUrl(path: string, expiresIn = 3600) {
-  const { data, error } = await supabase.storage.from("notice-files").createSignedUrl(path, expiresIn);
+  const { data, error } = await supabase.storage
+    .from("notice-files")
+    .createSignedUrl(path, expiresIn);
   if (error) throw error;
   return data.signedUrl;
 }

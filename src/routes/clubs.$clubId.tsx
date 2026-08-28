@@ -99,18 +99,20 @@ export default function ClubDetail() {
 
       {club.socials.length > 0 ? (
         <div className="flex flex-wrap gap-2 pt-4">
-          {club.socials.filter((s) => isValidHttpUrl(s.url)).map((s) => (
-            <a
-              key={s.url}
-              href={s.url}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold transition-colors hover:bg-accent"
-            >
-              <Link2 className="size-3.5" aria-hidden="true" />
-              {s.label}
-            </a>
-          ))}
+          {club.socials
+            .filter((s) => isValidHttpUrl(s.url))
+            .map((s) => (
+              <a
+                key={s.url}
+                href={s.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold transition-colors hover:bg-accent"
+              >
+                <Link2 className="size-3.5" aria-hidden="true" />
+                {s.label}
+              </a>
+            ))}
         </div>
       ) : null}
 
@@ -147,7 +149,7 @@ export default function ClubDetail() {
         </section>
       ) : null}
 
-      {(club.pastEvents.length > 0 || recordedPastEvents.length > 0) ? (
+      {club.pastEvents.length > 0 || recordedPastEvents.length > 0 ? (
         <section className="pt-6">
           <h2 className="flex items-center gap-2 text-lg font-bold">
             <History className="size-4 shrink-0" aria-hidden="true" />

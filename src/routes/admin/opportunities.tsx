@@ -39,7 +39,13 @@ function emptyDraft(): OppDraft {
   };
 }
 
-function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportunity; trigger: React.ReactNode }) {
+function OpportunityFormDialog({
+  opportunity,
+  trigger,
+}: {
+  opportunity?: Opportunity;
+  trigger: React.ReactNode;
+}) {
   const { addOpportunity, updateOpportunity } = useContent();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<OppDraft>(opportunity ?? emptyDraft());
@@ -54,7 +60,12 @@ function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportu
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    if (!draft.title.trim() || !draft.organization.trim() || !draft.position.trim() || !draft.description.trim()) {
+    if (
+      !draft.title.trim() ||
+      !draft.organization.trim() ||
+      !draft.position.trim() ||
+      !draft.description.trim()
+    ) {
       setError("Title, organization, position and description are required.");
       return;
     }
@@ -100,19 +111,38 @@ function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportu
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Title" required>
-            <input value={draft.title} onChange={(e) => set("title", e.target.value)} className={fieldClass} required />
+            <input
+              value={draft.title}
+              onChange={(e) => set("title", e.target.value)}
+              className={fieldClass}
+              required
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Organization" required>
-              <input value={draft.organization} onChange={(e) => set("organization", e.target.value)} className={fieldClass} required />
+              <input
+                value={draft.organization}
+                onChange={(e) => set("organization", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
             <Field label="Position" required>
-              <input value={draft.position} onChange={(e) => set("position", e.target.value)} className={fieldClass} required />
+              <input
+                value={draft.position}
+                onChange={(e) => set("position", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Type">
-              <select value={draft.type} onChange={(e) => set("type", e.target.value as Opportunity["type"])} className={fieldClass}>
+              <select
+                value={draft.type}
+                onChange={(e) => set("type", e.target.value as Opportunity["type"])}
+                className={fieldClass}
+              >
                 {OPPORTUNITY_TYPES.map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -121,29 +151,66 @@ function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportu
               </select>
             </Field>
             <Field label="Location" required>
-              <input value={draft.location} onChange={(e) => set("location", e.target.value)} className={fieldClass} required placeholder="Remote / On-campus / City" />
+              <input
+                value={draft.location}
+                onChange={(e) => set("location", e.target.value)}
+                className={fieldClass}
+                required
+                placeholder="Remote / On-campus / City"
+              />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Eligibility" required>
-              <input value={draft.eligibility} onChange={(e) => set("eligibility", e.target.value)} className={fieldClass} required />
+              <input
+                value={draft.eligibility}
+                onChange={(e) => set("eligibility", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
             <Field label="Years / Branches" required>
-              <input value={draft.yearsBranches} onChange={(e) => set("yearsBranches", e.target.value)} className={fieldClass} required />
+              <input
+                value={draft.yearsBranches}
+                onChange={(e) => set("yearsBranches", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
           </div>
           <Field label="Description" required>
-            <textarea value={draft.description} onChange={(e) => set("description", e.target.value)} rows={3} className={fieldClass} required />
+            <textarea
+              value={draft.description}
+              onChange={(e) => set("description", e.target.value)}
+              rows={3}
+              className={fieldClass}
+              required
+            />
           </Field>
           <Field label="Skills" hint="Comma-separated, e.g. React, SQL, Figma">
-            <input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} className={fieldClass} />
+            <input
+              value={skillsText}
+              onChange={(e) => setSkillsText(e.target.value)}
+              className={fieldClass}
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Stipend" hint="Optional.">
-              <input value={draft.stipend ?? ""} onChange={(e) => set("stipend", e.target.value || undefined)} className={fieldClass} placeholder="₹15,000/month" />
+              <input
+                value={draft.stipend ?? ""}
+                onChange={(e) => set("stipend", e.target.value || undefined)}
+                className={fieldClass}
+                placeholder="₹15,000/month"
+              />
             </Field>
             <Field label="Application deadline" required>
-              <input type="date" value={draft.deadline} onChange={(e) => set("deadline", e.target.value)} className={fieldClass} required />
+              <input
+                type="date"
+                value={draft.deadline}
+                onChange={(e) => set("deadline", e.target.value)}
+                className={fieldClass}
+                required
+              />
             </Field>
           </div>
           <Field label="Application URL">
@@ -151,7 +218,11 @@ function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportu
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Accent color">
-              <select value={draft.accent} onChange={(e) => set("accent", e.target.value as Opportunity["accent"])} className={fieldClass}>
+              <select
+                value={draft.accent}
+                onChange={(e) => set("accent", e.target.value as Opportunity["accent"])}
+                className={fieldClass}
+              >
                 {ACCENTS.map((a) => (
                   <option key={a} value={a}>
                     {a}
@@ -160,7 +231,12 @@ function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportu
               </select>
             </Field>
             <label className="mt-6 flex items-center gap-2 text-sm font-bold">
-              <input type="checkbox" checked={draft.featured ?? false} onChange={(e) => set("featured", e.target.checked)} className="size-4 rounded border-input" />
+              <input
+                type="checkbox"
+                checked={draft.featured ?? false}
+                onChange={(e) => set("featured", e.target.checked)}
+                className="size-4 rounded border-input"
+              />
               Featured
             </label>
           </div>
@@ -172,7 +248,11 @@ function OpportunityFormDialog({ opportunity, trigger }: { opportunity?: Opportu
           ) : null}
 
           <DialogFooter>
-            <button type="submit" disabled={submitting} className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+            >
               {submitting ? "Saving…" : isEdit ? "Save changes" : "Create opportunity"}
             </button>
           </DialogFooter>
@@ -215,7 +295,9 @@ export default function AdminOpportunitiesPage() {
     <div className="space-y-5">
       <div className="bento p-6">
         <h1 className="text-2xl font-extrabold">Opportunities</h1>
-        <p className="pt-1 text-sm text-muted-foreground">Internships, jobs, hackathons and more.</p>
+        <p className="pt-1 text-sm text-muted-foreground">
+          Internships, jobs, hackathons and more.
+        </p>
       </div>
 
       <AdminToolbar
@@ -251,14 +333,25 @@ export default function AdminOpportunitiesPage() {
         <ErrorState hint={error} onRetry={refresh} />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title={opportunities.length === 0 ? "No opportunities yet" : "No opportunities match your search"}
-          hint={opportunities.length === 0 ? "Create the first listing." : "Try a different search term."}
+          title={
+            opportunities.length === 0
+              ? "No opportunities yet"
+              : "No opportunities match your search"
+          }
+          hint={
+            opportunities.length === 0
+              ? "Create the first listing."
+              : "Try a different search term."
+          }
         />
       ) : (
         <ul className="bento divide-y divide-border p-2">
           {filtered.map((o) => (
             <li key={o.id} className="flex flex-wrap items-center gap-3 p-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy" aria-hidden="true">
+              <span
+                className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy"
+                aria-hidden="true"
+              >
                 <Briefcase className="size-4" strokeWidth={1.75} />
               </span>
               <div className="min-w-0 flex-1">
@@ -273,14 +366,22 @@ export default function AdminOpportunitiesPage() {
                 <OpportunityFormDialog
                   opportunity={o}
                   trigger={
-                    <button type="button" aria-label={`Edit ${o.title}`} className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent">
+                    <button
+                      type="button"
+                      aria-label={`Edit ${o.title}`}
+                      className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent"
+                    >
                       <Pencil className="size-4" aria-hidden="true" />
                     </button>
                   }
                 />
                 <ConfirmDeleteDialog
                   trigger={
-                    <button type="button" aria-label={`Delete ${o.title}`} className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10">
+                    <button
+                      type="button"
+                      aria-label={`Delete ${o.title}`}
+                      className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10"
+                    >
                       <Trash2 className="size-4" aria-hidden="true" />
                     </button>
                   }

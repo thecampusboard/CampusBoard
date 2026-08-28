@@ -21,29 +21,43 @@ export default function CalendarPage() {
   const today = new Date().toISOString().slice(0, 10);
   const sorted = events
     .filter((event) => (event.endDate ?? event.date) >= today)
-    .sort((a, b) => a.date.localeCompare(b.date) || (a.startTime ?? a.time ?? "").localeCompare(b.startTime ?? b.time ?? ""));
+    .sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) ||
+        (a.startTime ?? a.time ?? "").localeCompare(b.startTime ?? b.time ?? ""),
+    );
 
   return (
     <div className="space-y-5">
       <header className="bento p-5 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">Calendar</p>
-            <h1 className="pt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Campus dates, all in one place</h1>
+            <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
+              Calendar
+            </p>
+            <h1 className="pt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Campus dates, all in one place
+            </h1>
             <p className="max-w-2xl pt-2 text-sm leading-6 text-muted-foreground">
               Browse upcoming campus events and the official college holiday calendar.
             </p>
           </div>
         </div>
 
-        <div className="mt-5 inline-flex w-full max-w-full overflow-x-auto rounded-xl border border-border bg-secondary p-1 sm:w-auto" role="tablist" aria-label="Calendar views">
+        <div
+          className="mt-5 inline-flex w-full max-w-full overflow-x-auto rounded-xl border border-border bg-secondary p-1 sm:w-auto"
+          role="tablist"
+          aria-label="Calendar views"
+        >
           <button
             type="button"
             role="tab"
             aria-selected={tab === "events"}
             onClick={() => setTab("events")}
             className={`inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-bold whitespace-nowrap transition sm:flex-none sm:px-4 ${
-              tab === "events" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              tab === "events"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <CalendarDays className="size-4" aria-hidden="true" />
@@ -55,7 +69,9 @@ export default function CalendarPage() {
             aria-selected={tab === "holidays"}
             onClick={() => setTab("holidays")}
             className={`inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-bold whitespace-nowrap transition sm:flex-none sm:px-4 ${
-              tab === "holidays" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              tab === "holidays"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <CalendarHeart className="size-4" aria-hidden="true" />
@@ -75,7 +91,10 @@ export default function CalendarPage() {
       ) : error && sorted.length === 0 ? (
         <ErrorState hint={error} onRetry={refresh} />
       ) : sorted.length === 0 ? (
-        <EmptyState title="No events on the calendar yet" hint="Check back soon for upcoming campus dates." />
+        <EmptyState
+          title="No events on the calendar yet"
+          hint="Check back soon for upcoming campus dates."
+        />
       ) : (
         <ol className="bento divide-y divide-border p-2">
           {sorted.map((e) => {
@@ -94,7 +113,10 @@ export default function CalendarPage() {
                 ? `${formatShortDate(e.date)} – ${formatDate(e.endDate)}`
                 : formatDate(e.date);
             return (
-              <li key={e.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-3">
+              <li
+                key={e.id}
+                className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-3"
+              >
                 <Link
                   to={`/events/${e.id}`}
                   className="grid min-w-0 flex-1 gap-x-4 gap-y-1 rounded-xl p-2 transition-colors hover:bg-accent md:grid-cols-[11.5rem_11rem_minmax(0,1fr)_10rem] md:items-center"

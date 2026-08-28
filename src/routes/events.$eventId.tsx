@@ -1,6 +1,15 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import { CalendarPlus, Calendar, Clock, MapPin, GraduationCap, Phone, Users, Star } from "lucide-react";
+import {
+  CalendarPlus,
+  Calendar,
+  Clock,
+  MapPin,
+  GraduationCap,
+  Phone,
+  Users,
+  Star,
+} from "lucide-react";
 
 import { ProtectedAction } from "@/components/protected-action";
 import { useContent } from "@/lib/content";
@@ -75,9 +84,10 @@ export default function EventDetail() {
     ...(event.endTime ? { endTime: event.endTime } : {}),
   });
 
-  const dateLabel = event.endDate && event.endDate !== event.date
-    ? `${formatDate(event.date)} – ${formatDate(event.endDate)}`
-    : formatDate(event.date);
+  const dateLabel =
+    event.endDate && event.endDate !== event.date
+      ? `${formatDate(event.date)} – ${formatDate(event.endDate)}`
+      : formatDate(event.date);
   const deadlinePassed = event.registrationDeadline
     ? new Date(event.registrationDeadline + "T23:59:59") < new Date()
     : false;
@@ -109,13 +119,21 @@ export default function EventDetail() {
         )}
 
         <div className="mt-6 grid gap-5 rounded-2xl bg-muted/40 p-5 sm:grid-cols-2">
-          <InfoRow icon={<Calendar className="size-4" aria-hidden="true" />} label="Date" value={dateLabel} />
+          <InfoRow
+            icon={<Calendar className="size-4" aria-hidden="true" />}
+            label="Date"
+            value={dateLabel}
+          />
           <InfoRow
             icon={<Clock className="size-4" aria-hidden="true" />}
             label="Time"
             value={formatEventTimeRange(event) || "To be announced"}
           />
-          <InfoRow icon={<MapPin className="size-4" aria-hidden="true" />} label="Venue" value={event.venue} />
+          <InfoRow
+            icon={<MapPin className="size-4" aria-hidden="true" />}
+            label="Venue"
+            value={event.venue}
+          />
           <InfoRow
             icon={<GraduationCap className="size-4" aria-hidden="true" />}
             label="Eligibility"
@@ -134,12 +152,18 @@ export default function EventDetail() {
             />
           )}
           {event.contact && (
-            <InfoRow icon={<Phone className="size-4" aria-hidden="true" />} label="Contact" value={event.contact} />
+            <InfoRow
+              icon={<Phone className="size-4" aria-hidden="true" />}
+              label="Contact"
+              value={event.contact}
+            />
           )}
         </div>
 
         <div className="pt-6">
-          <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">About this event</h2>
+          <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">
+            About this event
+          </h2>
           <p className="pt-2 text-base leading-relaxed whitespace-pre-line">{event.description}</p>
         </div>
 
@@ -152,7 +176,9 @@ export default function EventDetail() {
               onProceed={() => logEvent("event", event.id, "register_click")}
             />
           ) : deadlinePassed ? (
-            <p className="text-sm font-semibold text-muted-foreground">Registration for this event has closed.</p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Registration for this event has closed.
+            </p>
           ) : (
             <p className="text-sm font-semibold text-muted-foreground">
               No registration link has been added for this event yet.
