@@ -83,7 +83,7 @@ export function SiteNav() {
             className="size-7 shrink-0 object-contain sm:size-8"
           />
           <span className="truncate">
-            Campus<span class="text-blue-500">Board</span>
+            Campus<span className="text-blue">Board</span>
           </span>
         </Link>
 
