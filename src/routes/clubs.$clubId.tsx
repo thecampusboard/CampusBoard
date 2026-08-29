@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Users, Megaphone, History, Link2 } from "lucide-react";
 
 import { useContent } from "@/lib/content";
-import { formatDate, formatEventTimeRange, publicNotices } from "@/lib/data";
+import { formatDate, formatEventTimeRange, publicNotices, publicEvents } from "@/lib/data";
 import { isValidHttpUrl } from "@/lib/utils";
 import { usePageMeta } from "@/lib/seo";
 import { logEvent } from "@/lib/analytics";
@@ -42,7 +42,7 @@ export default function ClubDetail() {
 
   const Icon = clubIcon(club.id);
   const today = new Date().toISOString().slice(0, 10);
-  const allClubEvents = events.filter((e) => e.clubId === club.id);
+  const allClubEvents = publicEvents(events).filter((e) => e.clubId === club.id);
   const upcomingEvents = allClubEvents
     .filter((e) => (e.endDate ?? e.date) >= today)
     .sort((a, b) => a.date.localeCompare(b.date));

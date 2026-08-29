@@ -6,6 +6,7 @@ import {
   Megaphone,
   CalendarDays,
   Users,
+  UserCog,
   Briefcase,
   ShoppingBag,
   ShieldCheck,
@@ -34,6 +35,7 @@ const ADMIN_NAV: AdminNavItem[] = [
   { to: "/admin/opportunities", label: "Opportunities", icon: Briefcase },
   { to: "/admin/buy-sell", label: "Buy & Sell", icon: ShoppingBag },
   { to: "/admin/approvals", label: "Approvals", icon: ShieldCheck, badge: true },
+  { to: "/admin/users", label: "Users", icon: UserCog },
   { to: "/admin/appearance", label: "Appearance", icon: Palette },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];

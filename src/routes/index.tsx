@@ -10,6 +10,9 @@ import {
   campusStats,
   publicListings,
   publicNotices,
+  publicEvents,
+  publicOpportunities,
+  publicClubs,
   formatDate,
   formatEventTimeRange,
   formatPrice,
@@ -39,14 +42,14 @@ export default function Home() {
   } = useContent();
 
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = [...allEvents]
+  const upcoming = publicEvents(allEvents)
     .filter((e) => e.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 4);
   const notices = [...publicNotices(allNotices)]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 4);
-  const opportunities = [...allOpportunities]
+  const opportunities = publicOpportunities(allOpportunities)
     .sort((a, b) => a.deadline.localeCompare(b.deadline))
     .slice(0, 3);
   const listings = publicListings(allListings).slice(0, 4);
@@ -56,7 +59,7 @@ export default function Home() {
   // "HH:MM" sorts correctly as a string); falls back to date-insertion
   // order for any legacy row that only has the old free-text time, rather
   // than dropping it.
-  const todaySchedule = allEvents
+  const todaySchedule = publicEvents(allEvents)
     .filter((e) => e.date <= today && (e.endDate ?? e.date) >= today)
     .sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? ""));
 
@@ -369,7 +372,7 @@ export default function Home() {
             action={{ label: "Explore Clubs", to: "/clubs" }}
           />
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {allClubs.map((c) => {
+            {publicClubs(allClubs).map((c) => {
               const Icon = clubIcon(c.id);
               return (
                 <li key={c.id}>

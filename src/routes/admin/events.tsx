@@ -7,6 +7,8 @@ import { cn, hasRealUrl } from "@/lib/utils";
 import { ACCENTS, formatDate, formatEventTimeRange } from "@/lib/data";
 import type { CampusEvent } from "@/lib/data";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
+import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
+import { DraftBadge } from "@/components/admin/draft-badge";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
@@ -283,7 +285,7 @@ const SORTS = [
 ];
 
 export default function AdminEventsPage() {
-  const { events, loading, error, refresh, remove } = useContent();
+  const { events, clubs, loading, error, refresh, remove } = useContent();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("date_asc");
 
@@ -323,7 +325,12 @@ export default function AdminEventsPage() {
         onSort={setSort}
         count={filtered.length}
         noun="event"
-        extra={<EventFormDialog trigger={<CreateButton />} />}
+        extra={
+          <div className="flex shrink-0 flex-wrap gap-2 sm:ml-auto">
+            <BulkImportDialog kind="events" clubs={clubs} onImported={refresh} />
+            <EventFormDialog trigger={<CreateButton />} />
+          </div>
+        }
       />
 
       {loading && events.length === 0 ? (
@@ -356,6 +363,7 @@ export default function AdminEventsPage() {
                   {formatDate(e.date)} · {formatEventTimeRange(e) || "No time set"} · {e.venue}
                 </p>
               </div>
+              {e.isDraft ? <DraftBadge /> : null}
               {e.featured ? (
                 <Badge variant="secondary" className="gap-1">
                   <Star className="size-3 fill-current" aria-hidden="true" />
@@ -414,7 +422,7 @@ const CreateButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButt
       ref={ref}
       type="button"
       className={cn(
-        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98] sm:ml-auto",
+        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]",
         className,
       )}
       {...props}

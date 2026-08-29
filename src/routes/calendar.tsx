@@ -6,7 +6,7 @@ import { ProtectedAction } from "@/components/protected-action";
 import { HolidayCalendar } from "@/components/holiday-calendar";
 import { googleCalendarUrl } from "@/lib/auth";
 import { useContent } from "@/lib/content";
-import { formatDate, formatEventTimeRange, formatShortDate } from "@/lib/data";
+import { formatDate, formatEventTimeRange, formatShortDate, publicEvents } from "@/lib/data";
 import { usePageMeta } from "@/lib/seo";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
 
@@ -19,7 +19,7 @@ export default function CalendarPage() {
   const [tab, setTab] = useState<"events" | "holidays">("events");
   const { events, loading, error, refresh } = useContent();
   const today = new Date().toISOString().slice(0, 10);
-  const sorted = events
+  const sorted = publicEvents(events)
     .filter((event) => (event.endDate ?? event.date) >= today)
     .sort(
       (a, b) =>

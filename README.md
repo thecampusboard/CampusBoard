@@ -17,9 +17,18 @@ npm run dev
 ```
 
 Run every file in `supabase/migrations/` against your Supabase project, in
-order (001 → 010), then optionally `supabase/seed.sql` for demo content.
+order (001 → 013), then optionally `supabase/seed.sql` for demo content.
 
 To remove only the demo content later, run `supabase/seed-remove.sql`.
+
+### Admin bulk Excel import
+
+Admin → Notices/Events/Opportunities/Clubs each have a "Bulk import"
+button next to "New …": download that content type's `.xlsx` template,
+fill in one row per item, and upload it. Rows are imported as
+pending/draft records (see `013_bulk_import.sql`) — nothing becomes
+public until an Admin opens the imported row in the same Create/Edit
+dialog used everywhere else, adds any image, and saves.
 
 ### Creating the first Admin account
 
@@ -58,3 +67,4 @@ update public.profiles set role = 'admin' where email = 'someone-else@example.ed
 - TypeScript
 - Tailwind CSS
 - Supabase (Postgres, Auth, Storage, RLS)
+- ExcelJS (Admin bulk Excel import)

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { ChipFilter, ResultCount, SearchField } from "@/components/filters";
 import { useContent } from "@/lib/content";
-import { OPPORTUNITY_TYPES, formatDate } from "@/lib/data";
+import { OPPORTUNITY_TYPES, formatDate, publicOpportunities } from "@/lib/data";
 import { usePageMeta } from "@/lib/seo";
 import { opportunityIcon } from "@/lib/icons";
 import { EmptyState, ErrorState, SkeletonGrid } from "@/components/bento";
@@ -21,7 +21,7 @@ export default function OpportunitiesPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return opportunities
+    return publicOpportunities(opportunities)
       .filter((o) => (type ? o.type === type : true))
       .filter((o) =>
         q

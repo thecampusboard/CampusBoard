@@ -6,6 +6,8 @@ import { useContent, slugify } from "@/lib/content";
 import { ACCENTS, OPPORTUNITY_TYPES, formatDate } from "@/lib/data";
 import type { Opportunity } from "@/lib/data";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
+import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
+import { DraftBadge } from "@/components/admin/draft-badge";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
@@ -310,17 +312,20 @@ export default function AdminOpportunitiesPage() {
         count={filtered.length}
         noun="opportunity"
         extra={
-          <OpportunityFormDialog
-            trigger={
-              <button
-                type="button"
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98] sm:ml-auto"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                New opportunity
-              </button>
-            }
-          />
+          <div className="flex shrink-0 flex-wrap gap-2 sm:ml-auto">
+            <BulkImportDialog kind="opportunities" onImported={refresh} />
+            <OpportunityFormDialog
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  New opportunity
+                </button>
+              }
+            />
+          </div>
         }
       />
 
@@ -360,6 +365,7 @@ export default function AdminOpportunitiesPage() {
                   {o.organization} · {o.type} · Deadline {formatDate(o.deadline)}
                 </p>
               </div>
+              {o.isDraft ? <DraftBadge /> : null}
               {o.featured ? <Badge variant="secondary">Featured</Badge> : null}
               <span className="text-xs font-semibold text-muted-foreground">{o.views} views</span>
               <div className="flex shrink-0 gap-1.5">

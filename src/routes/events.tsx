@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { ChipFilter, ResultCount, SearchField } from "@/components/filters";
 import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
-import { formatDate, formatEventTimeRange } from "@/lib/data";
+import { formatDate, formatEventTimeRange, publicEvents } from "@/lib/data";
 import { eventIcon } from "@/lib/icons";
 import { EmptyState, ErrorState, SkeletonGrid } from "@/components/bento";
 
@@ -32,7 +32,7 @@ export default function EventsPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const today = new Date().toISOString().slice(0, 10);
-    return events
+    return publicEvents(events)
       .filter((e) => {
         if (when === "This week") return withinDays(e.date, 7);
         if (when === "This month") return withinDays(e.date, 31);

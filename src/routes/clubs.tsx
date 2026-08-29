@@ -6,6 +6,7 @@ import { ResultCount, SearchField } from "@/components/filters";
 import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { clubIcon } from "@/lib/icons";
+import { publicClubs } from "@/lib/data";
 import { publicStorageUrl } from "@/lib/supabase";
 import { EmptyState, ErrorState, SkeletonGrid } from "@/components/bento";
 
@@ -20,7 +21,7 @@ export default function ClubsPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return clubs.filter((c) =>
+    return publicClubs(clubs).filter((c) =>
       q ? `${c.name} ${c.tagline} ${c.about}`.toLowerCase().includes(q) : true,
     );
   }, [clubs, query]);

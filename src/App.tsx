@@ -41,6 +41,7 @@ const AdminClubsPage = lazy(() => import("@/routes/admin/clubs"));
 const AdminOpportunitiesPage = lazy(() => import("@/routes/admin/opportunities"));
 const AdminBuySellPage = lazy(() => import("@/routes/admin/buy-sell"));
 const AdminApprovalsPage = lazy(() => import("@/routes/admin/approvals"));
+const AdminUsersPage = lazy(() => import("@/routes/admin/users"));
 const AdminAppearancePage = lazy(() => import("@/routes/admin/appearance"));
 const AdminAnalyticsPage = lazy(() => import("@/routes/admin/analytics"));
 
@@ -179,6 +180,7 @@ export default function App() {
                   <Route path="opportunities" element={<AdminOpportunitiesPage />} />
                   <Route path="buy-sell" element={<AdminBuySellPage />} />
                   <Route path="approvals" element={<AdminApprovalsPage />} />
+                  <Route path="users" element={<AdminUsersPage />} />
                   <Route path="appearance" element={<AdminAppearancePage />} />
                   <Route path="analytics" element={<AdminAnalyticsPage />} />
                 </Route>

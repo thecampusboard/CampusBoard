@@ -184,11 +184,11 @@ export function slugify(value: string) {
 const NOTICE_COLUMNS =
   "id, title, description, category, department, years, semesters, date, file_type, file_label, external_url, file_path, featured, views, status, created_by, club_id, rejection_reason, reviewed_at";
 const EVENT_COLUMNS =
-  "id, title, organizer, club_id, date, end_date, time, start_time, end_time, venue, description, eligibility, registration_deadline, registration_url, contact, accent, featured, views, register_clicks";
+  "id, title, organizer, club_id, date, end_date, time, start_time, end_time, venue, description, eligibility, registration_deadline, registration_url, contact, accent, featured, views, register_clicks, is_draft";
 const CLUB_COLUMNS =
-  "id, name, tagline, about, accent, members, founded, recruitment, announcements, gallery, socials, past_events, image_path";
+  "id, name, tagline, about, accent, members, founded, recruitment, announcements, gallery, socials, past_events, image_path, is_draft";
 const OPPORTUNITY_COLUMNS =
-  "id, title, organization, position, type, location, eligibility, years_branches, description, skills, stipend, deadline, apply_url, accent, featured, views, apply_clicks";
+  "id, title, organization, position, type, location, eligibility, years_branches, description, skills, stipend, deadline, apply_url, accent, featured, views, apply_clicks, is_draft";
 const LISTING_COLUMNS =
   "id, owner_id, listing_type, title, price, condition, category, description, seller_name, seller_phone, images, payment_screenshot_path, status, rejection_reason, submitted_at, approved_at, views, contact_reveals, created_at";
 
@@ -498,6 +498,9 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.contact !== undefined) row["contact"] = patch.contact || null;
         if (patch.accent !== undefined) row["accent"] = patch.accent;
         if (patch.featured !== undefined) row["featured"] = patch.featured;
+        // Saving through the edit dialog is what publishes a bulk-import
+        // draft (see publicEvents()) — a no-op for an already-published event.
+        row["is_draft"] = false;
         throwIfNoRows(await supabase.from("events").update(row).eq("id", id).select("id"));
         await refresh();
       },
@@ -539,6 +542,9 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.socials !== undefined) row["socials"] = patch.socials;
         if (patch.pastEvents !== undefined) row["past_events"] = patch.pastEvents;
         if (patch.imagePath !== undefined) row["image_path"] = patch.imagePath || null;
+        // Saving through the edit dialog is what publishes a bulk-import
+        // draft (see publicClubs()) — a no-op for an already-published club.
+        row["is_draft"] = false;
         throwIfNoRows(await supabase.from("clubs").update(row).eq("id", id).select("id"));
         await refresh();
       },
@@ -589,6 +595,9 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         if (patch.applyUrl !== undefined) row["apply_url"] = patch.applyUrl?.trim() || "#";
         if (patch.accent !== undefined) row["accent"] = patch.accent;
         if (patch.featured !== undefined) row["featured"] = patch.featured;
+        // Saving through the edit dialog is what publishes a bulk-import
+        // draft (see publicOpportunities()) — a no-op for an already-published opportunity.
+        row["is_draft"] = false;
         throwIfNoRows(await supabase.from("opportunities").update(row).eq("id", id).select("id"));
         await refresh();
       },

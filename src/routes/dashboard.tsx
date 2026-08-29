@@ -21,6 +21,7 @@ import {
   formatPrice,
   isListingActive,
   listingExpiryDate,
+  publicClubs,
 } from "@/lib/data";
 import { isValidHttpUrl } from "@/lib/utils";
 import type { Notice, ListingStatus } from "@/lib/data";
@@ -271,7 +272,10 @@ export default function Dashboard() {
   );
 
   const { user, ready } = useAuth();
-  const { listings, notices, clubs, submitNotice } = useContent();
+  const { listings, notices, clubs: allClubs, submitNotice } = useContent();
+  // Students shouldn't be able to tag their own submission with a club
+  // that's still an unreviewed bulk-import draft — see publicClubs().
+  const clubs = publicClubs(allClubs);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

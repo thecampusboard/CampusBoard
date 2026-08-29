@@ -11,6 +11,7 @@ import { uploadNoticeFile, noticeFileTypeFor } from "@/lib/notice-files";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
+import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
@@ -339,7 +340,7 @@ function NoticeFormDialog({ notice, trigger }: { notice?: Notice; trigger: React
 const STATUS_FILTERS = ["all", "approved", "pending", "rejected"] as const;
 
 export default function AdminNoticesPage() {
-  const { notices, loading, error, refresh, remove } = useContent();
+  const { notices, clubs, loading, error, refresh, remove } = useContent();
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const initialStatus =
@@ -384,17 +385,20 @@ export default function AdminNoticesPage() {
         count={filtered.length}
         noun="notice"
         extra={
-          <NoticeFormDialog
-            trigger={
-              <button
-                type="button"
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98] sm:ml-auto"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                New notice
-              </button>
-            }
-          />
+          <div className="flex shrink-0 flex-wrap gap-2 sm:ml-auto">
+            <BulkImportDialog kind="notices" clubs={clubs} onImported={refresh} />
+            <NoticeFormDialog
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  New notice
+                </button>
+              }
+            />
+          </div>
         }
       />
 

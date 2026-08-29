@@ -62,6 +62,8 @@ export interface CampusEvent {
   featured?: boolean;
   views: number;
   registerClicks: number;
+  /** True for a row created via bulk Excel import that Admin hasn't reviewed/saved yet. Excluded from every public listing until Admin opens it in the edit dialog and saves — see publicEvents(). */
+  isDraft?: boolean;
 }
 
 export interface Club {
@@ -79,6 +81,8 @@ export interface Club {
   pastEvents: { title: string; date: string }[];
   /** Storage object path (in the public `content-images` bucket) for a custom club image. */
   imagePath?: string;
+  /** True for a row created via bulk Excel import that Admin hasn't reviewed/saved yet. Excluded from every public listing until Admin opens it in the edit dialog and saves — see publicClubs(). */
+  isDraft?: boolean;
 }
 
 export type OpportunityType =
@@ -109,6 +113,8 @@ export interface Opportunity {
   featured?: boolean;
   views: number;
   applyClicks: number;
+  /** True for a row created via bulk Excel import that Admin hasn't reviewed/saved yet. Excluded from every public listing until Admin opens it in the edit dialog and saves — see publicOpportunities(). */
+  isDraft?: boolean;
 }
 
 export type ListingType = "Buy" | "Sell";
@@ -187,6 +193,28 @@ export function publicListings(listings: Listing[]): Listing[] {
  */
 export function publicNotices(notices: Notice[]): Notice[] {
   return notices.filter((n) => n.status === "approved");
+}
+
+/**
+ * Events visible to everyone: excludes rows created via bulk Excel import
+ * that Admin hasn't opened and saved yet (see CampusEvent.isDraft). The
+ * raw `events` array from useContent() includes drafts for an Admin
+ * session (RLS grants Admin full visibility so they can find and review
+ * them) — every general/public listing surface must filter through this
+ * before rendering, or an unreviewed import would appear to be published.
+ */
+export function publicEvents(events: CampusEvent[]): CampusEvent[] {
+  return events.filter((e) => !e.isDraft);
+}
+
+/** Opportunities visible to everyone: excludes unreviewed bulk-import drafts — see publicEvents(). */
+export function publicOpportunities(opportunities: Opportunity[]): Opportunity[] {
+  return opportunities.filter((o) => !o.isDraft);
+}
+
+/** Clubs visible to everyone: excludes unreviewed bulk-import drafts — see publicEvents(). */
+export function publicClubs(clubs: Club[]): Club[] {
+  return clubs.filter((c) => !c.isDraft);
 }
 
 export const NOTICE_CATEGORIES: NoticeCategory[] = [
@@ -277,12 +305,13 @@ export function campusStats(
   source: SearchSource,
 ): Record<"eventsToday" | "notices" | "opportunities" | "clubs", number> {
   const today = new Date().toISOString().slice(0, 10);
+  const events = publicEvents(source.events);
+  const opportunities = publicOpportunities(source.opportunities);
   return {
-    eventsToday: source.events.filter((e) => e.date <= today && (e.endDate ?? e.date) >= today)
-      .length,
+    eventsToday: events.filter((e) => e.date <= today && (e.endDate ?? e.date) >= today).length,
     notices: publicNotices(source.notices).length,
-    opportunities: source.opportunities.filter((o) => o.deadline >= today).length,
-    clubs: source.clubs.length,
+    opportunities: opportunities.filter((o) => o.deadline >= today).length,
+    clubs: publicClubs(source.clubs).length,
   };
 }
 
@@ -376,7 +405,7 @@ export function globalSearch(query: string, source: SearchSource): SearchResult[
 
   const results: SearchResult[] = [];
 
-  source.events
+  publicEvents(source.events)
     .filter((e) => hit(e.title, e.description, e.organizer, e.venue))
     .forEach((e) =>
       results.push({
@@ -388,7 +417,7 @@ export function globalSearch(query: string, source: SearchSource): SearchResult[
       }),
     );
 
-  source.opportunities
+  publicOpportunities(source.opportunities)
     .filter((o) => hit(o.title, o.description, o.organization, o.type, o.position))
     .forEach((o) =>
       results.push({
@@ -400,7 +429,7 @@ export function globalSearch(query: string, source: SearchSource): SearchResult[
       }),
     );
 
-  source.clubs
+  publicClubs(source.clubs)
     .filter((c) => hit(c.name, c.tagline, c.about))
     .forEach((c) =>
       results.push({

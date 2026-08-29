@@ -8,6 +8,8 @@ import { isValidHttpUrl } from "@/lib/utils";
 import type { Club } from "@/lib/data";
 import { publicStorageUrl, supabase } from "@/lib/supabase";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
+import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
+import { DraftBadge } from "@/components/admin/draft-badge";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
 import { uploadClubImage, uploadImages } from "@/components/admin/admin-storage";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
@@ -465,17 +467,20 @@ export default function AdminClubsPage() {
         count={filtered.length}
         noun="club"
         extra={
-          <ClubFormDialog
-            trigger={
-              <button
-                type="button"
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98] sm:ml-auto"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                New club
-              </button>
-            }
-          />
+          <div className="flex shrink-0 flex-wrap gap-2 sm:ml-auto">
+            <BulkImportDialog kind="clubs" onImported={refresh} />
+            <ClubFormDialog
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  New club
+                </button>
+              }
+            />
+          </div>
         }
       />
 
@@ -515,6 +520,7 @@ export default function AdminClubsPage() {
                   {c.tagline} · {c.members} members
                 </p>
               </div>
+              {c.isDraft ? <DraftBadge /> : null}
               <div className="flex shrink-0 gap-1.5">
                 <ClubFormDialog
                   club={c}

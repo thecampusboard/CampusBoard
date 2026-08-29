@@ -49,6 +49,7 @@ export interface EventRow {
   featured: boolean | null;
   views: number;
   register_clicks: number;
+  is_draft: boolean | null;
 }
 
 export interface ClubRow {
@@ -65,6 +66,7 @@ export interface ClubRow {
   socials: { label: string; url: string }[];
   past_events: { title: string; date: string }[];
   image_path: string | null;
+  is_draft: boolean | null;
 }
 
 export interface OpportunityRow {
@@ -85,6 +87,7 @@ export interface OpportunityRow {
   featured: boolean | null;
   views: number;
   apply_clicks: number;
+  is_draft: boolean | null;
 }
 
 export interface ListingRow {
@@ -152,6 +155,7 @@ export const fromEventRow = (r: EventRow): CampusEvent => ({
   featured: r.featured ?? false,
   views: r.views,
   registerClicks: r.register_clicks,
+  isDraft: r.is_draft ?? false,
 });
 
 export const fromClubRow = (r: ClubRow): Club => ({
@@ -168,6 +172,7 @@ export const fromClubRow = (r: ClubRow): Club => ({
   socials: r.socials ?? [],
   pastEvents: r.past_events ?? [],
   ...(r.image_path ? { imagePath: r.image_path } : {}),
+  isDraft: r.is_draft ?? false,
 });
 
 export const fromOpportunityRow = (r: OpportunityRow): Opportunity => ({
@@ -188,6 +193,7 @@ export const fromOpportunityRow = (r: OpportunityRow): Opportunity => ({
   featured: r.featured ?? false,
   views: r.views,
   applyClicks: r.apply_clicks,
+  isDraft: r.is_draft ?? false,
 });
 
 export const fromListingRow = (r: ListingRow): Listing => ({
