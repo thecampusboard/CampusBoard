@@ -1,6 +1,6 @@
 import { Component, lazy, Suspense, type ErrorInfo, type ReactNode } from "react";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
-
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/lib/auth";
 import { ContentProvider } from "@/lib/content";
 import { usePageMeta, useSiteStructuredData } from "@/lib/seo";
@@ -199,6 +199,7 @@ export default function App() {
           <SiteFooter />
         </div>
         <Toaster />
+        <Analytics />
       </ContentProvider>
     </AuthProvider>
   );
