@@ -321,19 +321,13 @@ export function SiteFooter() {
       <div className="bento flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-bold">
           © {new Date().getFullYear()} Campus<span className="text-blue">Board</span> — All Campus
-          Updates, One Place.
+          Updates, At One Place.
         </p>
-        <div className="flex items-center gap-4">
-          <Link
-            to="/about"
-            className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            About Us
-          </Link>
+        {/* <div className="flex items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            Content published by the campus administration.
+            Content published by the campus administration and students.
           </p>
-        </div>
+        </div> */}
       </div>
     </footer>
   );

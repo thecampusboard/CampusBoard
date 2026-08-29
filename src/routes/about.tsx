@@ -19,7 +19,7 @@ const WHAT_WE_DO = [
   {
     icon: Megaphone,
     label: "Notices",
-    text: "Official campus announcements, all verified.",
+    text: "Official and Unofficial campus announcements.",
     accent: "blue" as const,
   },
   {
@@ -123,6 +123,44 @@ export default function AboutPage() {
         </Bento>
       </section>
 
+      {/* FOUNDER ----------------------------------------------------------- */}
+      <section>
+        <Bento
+          hover={false}
+          className="animate-in fade-in-0 slide-in-from-bottom-4 [animation-delay:480ms] [animation-fill-mode:backwards] overflow-hidden p-0 duration-700"
+        >
+          <div className="grid lg:grid-cols-[minmax(0,320px)_1fr]">
+            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl bg-navy p-8 text-center sm:p-10">
+              <span
+                className="animate-float grid size-24 place-items-center rounded-full bg-sky text-3xl font-extrabold text-navy ring-4 ring-navy-foreground/15"
+                aria-hidden="true"
+              >
+                YK
+              </span>
+              <div>
+                <p className="text-xl font-extrabold text-navy-foreground">Yash Kedia</p>
+                <div className="pt-2">
+                  <Tag accent="sky">Founder &amp; Developer</Tag>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-10">
+              <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
+                The person behind CampusBoard
+              </p>
+              <p className="max-w-2xl pt-3 text-sm leading-relaxed text-foreground/80 sm:text-base">
+                CampusBoard was created with a simple thought, students shouldn’t have to look in five different places to find what’s happening around campus. The idea is to bring notices, events, opportunities, clubs, and student listings together in one place, making campus information a little easier to discover and keep up with.
+              </p>
+              <p className="max-w-2xl pt-3 text-sm leading-relaxed text-foreground/80 sm:text-base">
+                CampusBoard is actively maintained, with new features shipped based on what the
+                campus community actually needs.
+              </p>
+            </div>
+          </div>
+        </Bento>
+      </section>
+
       {/* WHAT WE DO ---------------------------------------------------------- */}
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
         {WHAT_WE_DO.map((item, i) => {
@@ -174,48 +212,6 @@ export default function AboutPage() {
             </Bento>
           );
         })}
-      </section>
-
-      {/* FOUNDER ----------------------------------------------------------- */}
-      <section>
-        <Bento
-          hover={false}
-          className="animate-in fade-in-0 slide-in-from-bottom-4 [animation-delay:480ms] [animation-fill-mode:backwards] overflow-hidden p-0 duration-700"
-        >
-          <div className="grid lg:grid-cols-[minmax(0,320px)_1fr]">
-            <div className="flex flex-col items-center justify-center gap-4 bg-navy p-8 text-center sm:p-10">
-              <span
-                className="animate-float grid size-24 place-items-center rounded-full bg-sky text-3xl font-extrabold text-navy ring-4 ring-navy-foreground/15"
-                aria-hidden="true"
-              >
-                YK
-              </span>
-              <div>
-                <p className="text-xl font-extrabold text-navy-foreground">Yash Kedia</p>
-                <div className="pt-2">
-                  <Tag accent="sky">Founder &amp; Developer</Tag>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 sm:p-10">
-              <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-                The person behind CampusBoard
-              </p>
-              <p className="max-w-2xl pt-3 text-sm leading-relaxed text-foreground/80 sm:text-base">
-                Yash Kedia is the founder and developer of CampusBoard — designed and built end to
-                end, from the database schema to the last pixel of the interface. The goal was
-                simple: give every student one dependable place to find campus notices, events,
-                clubs, opportunities and the buy &amp; sell marketplace, instead of chasing updates
-                across scattered group chats and noticeboards.
-              </p>
-              <p className="max-w-2xl pt-3 text-sm leading-relaxed text-foreground/80 sm:text-base">
-                CampusBoard is actively maintained, with new features shipped based on what the
-                campus community actually needs.
-              </p>
-            </div>
-          </div>
-        </Bento>
       </section>
 
       {/* CTA ----------------------------------------------------------------- */}
