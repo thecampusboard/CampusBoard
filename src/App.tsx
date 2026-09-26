@@ -6,6 +6,7 @@ import { ContentProvider } from "@/lib/content";
 import { usePageMeta, useSiteStructuredData } from "@/lib/seo";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { Toaster } from "@/components/ui/sonner";
+import { AdvertisementPopup } from "@/components/advertisement-popup";
 
 import Home from "@/routes/index";
 import AboutPage from "@/routes/about";
@@ -43,6 +44,7 @@ const AdminEventsPage = lazy(() => import("@/routes/admin/events"));
 const AdminClubsPage = lazy(() => import("@/routes/admin/clubs"));
 const AdminChaptersPage = lazy(() => import("@/routes/admin/chapters"));
 const AdminInterestsPage = lazy(() => import("@/routes/admin/interests"));
+const AdminAdvertisementsPage = lazy(() => import("@/routes/admin/advertisements"));
 const AdminOpportunitiesPage = lazy(() => import("@/routes/admin/opportunities"));
 const AdminBuySellPage = lazy(() => import("@/routes/admin/buy-sell"));
 const AdminApprovalsPage = lazy(() => import("@/routes/admin/approvals"));
@@ -158,6 +160,7 @@ function PublicShell() {
         </ErrorBoundary>
       </main>
       <SiteFooter />
+      <AdvertisementPopup />
     </div>
   );
 }
@@ -230,6 +233,7 @@ export default function App() {
             <Route path="clubs" element={<AdminClubsPage />} />
             <Route path="chapters" element={<AdminChaptersPage />} />
             <Route path="interests" element={<AdminInterestsPage />} />
+            <Route path="advertisements" element={<AdminAdvertisementsPage />} />
             <Route path="opportunities" element={<AdminOpportunitiesPage />} />
             <Route path="buy-sell" element={<AdminBuySellPage />} />
             <Route path="approvals" element={<AdminApprovalsPage />} />
