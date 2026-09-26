@@ -1,17 +1,15 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Plus, Trash2, Users, Pencil, ImagePlus } from "lucide-react";
+import { Plus, Trash2, Layers, Pencil, ImagePlus } from "lucide-react";
 
 import { useContent, slugify } from "@/lib/content";
 import { ACCENTS } from "@/lib/data";
 import { isValidHttpUrl } from "@/lib/utils";
-import type { Club } from "@/lib/data";
+import type { Chapter } from "@/lib/data";
 import { publicStorageUrl, supabase } from "@/lib/supabase";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
-import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
-import { DraftBadge } from "@/components/admin/draft-badge";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
-import { uploadClubImage, uploadImages } from "@/components/admin/admin-storage";
+import { uploadImages } from "@/components/admin/admin-storage";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
 import {
@@ -24,11 +22,11 @@ import {
 } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 
-type ClubDraft = Club;
+const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-function emptyDraft(): ClubDraft {
+function emptyDraft(): Chapter {
   return {
-    id: slugify("club"),
+    id: slugify("chapter"),
     name: "",
     tagline: "",
     about: "",
@@ -36,39 +34,40 @@ function emptyDraft(): ClubDraft {
     members: 0,
     founded: "",
     recruitment: "",
+    facultyMentor: "",
+    chapterHeads: [],
     announcements: [],
     gallery: [],
     socials: [],
     pastEvents: [],
-    headName: "",
-    facultyLead: "",
     joinUrl: "",
   };
 }
 
-function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNode }) {
-  const { addClub, updateClub } = useContent();
+function ChapterFormDialog({ chapter, trigger }: { chapter?: Chapter; trigger: React.ReactNode }) {
+  const { addChapter, updateChapter } = useContent();
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<ClubDraft>(club ?? emptyDraft());
+  const [draft, setDraft] = useState<Chapter>(chapter ?? emptyDraft());
+  const [headsText, setHeadsText] = useState((chapter?.chapterHeads ?? []).join("\n"));
   const [announcementsText, setAnnouncementsText] = useState(
-    (club?.announcements ?? []).join("\n"),
+    (chapter?.announcements ?? []).join("\n"),
   );
-  const [socials, setSocials] = useState<{ label: string; url: string }[]>(club?.socials ?? []);
+  const [socials, setSocials] = useState<{ label: string; url: string }[]>(chapter?.socials ?? []);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isEdit = !!club;
+  const isEdit = !!chapter;
 
-  const set = <K extends keyof ClubDraft>(key: K, value: ClubDraft[K]) =>
-    setDraft((d) => ({ ...d, [key]: value }) as ClubDraft);
+  const set = <K extends keyof Chapter>(key: K, value: Chapter[K]) =>
+    setDraft((d) => ({ ...d, [key]: value }) as Chapter);
 
   const reset = () => {
-    const base = club ?? emptyDraft();
-    setDraft(base);
-    setAnnouncementsText((club?.announcements ?? []).join("\n"));
-    setSocials(club?.socials ?? []);
+    setDraft(chapter ?? emptyDraft());
+    setHeadsText((chapter?.chapterHeads ?? []).join("\n"));
+    setAnnouncementsText((chapter?.announcements ?? []).join("\n"));
+    setSocials(chapter?.socials ?? []);
     setImageFile(null);
     setRemoveExistingImage(false);
     setGalleryFiles([]);
@@ -105,7 +104,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
       .filter((social) => social.label.trim() || social.url.trim())
       .map((social) => ({ label: social.label.trim(), url: social.url.trim() }));
     for (const f of [...(imageFile ? [imageFile] : []), ...galleryFiles]) {
-      if (!new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]).has(f.type)) {
+      if (!IMAGE_TYPES.has(f.type)) {
         setError("Photos must be JPEG, PNG, WebP or GIF images.");
         return;
       }
@@ -116,38 +115,44 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
     }
     setSubmitting(true);
     setError(null);
-    const announcements = announcementsText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const lines = (text: string) =>
+      text
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
     const uploaded: string[] = [];
     try {
+      const id = isEdit ? chapter.id : `${slugify(draft.name)}-${Date.now().toString(36)}`;
       let imagePath = draft.imagePath;
       if (imageFile) {
-        imagePath = await uploadClubImage(draft.id, imageFile);
-        uploaded.push(imagePath);
+        const [path] = await uploadImages("content-images", `chapters/${id}`, [imageFile]);
+        if (path) {
+          imagePath = path;
+          uploaded.push(path);
+        }
       }
       let gallery = draft.gallery;
       if (galleryFiles.length > 0) {
         const newPaths = await uploadImages(
           "content-images",
-          `clubs/${draft.id}/gallery`,
+          `chapters/${id}/gallery`,
           galleryFiles,
         );
         uploaded.push(...newPaths);
         gallery = [...gallery, ...newPaths];
       }
-      const payload: ClubDraft = {
+      const payload: Chapter = {
         ...draft,
-        id: isEdit ? club.id : `${slugify(draft.name)}-${Date.now().toString(36)}`,
-        announcements,
+        id,
+        chapterHeads: lines(headsText),
+        announcements: lines(announcementsText),
         socials: cleanSocials,
         gallery,
         ...(removeExistingImage ? { imagePath: "" } : imagePath ? { imagePath } : {}),
       };
       if (isEdit) {
-        await updateClub(club.id, payload);
-        const removedFromStorage = (club.gallery ?? []).filter((path) => !gallery.includes(path));
+        await updateChapter(chapter.id, payload);
+        const removedFromStorage = chapter.gallery.filter((path) => !gallery.includes(path));
         if (removedFromStorage.length > 0) {
           await supabase.storage
             .from("content-images")
@@ -155,16 +160,17 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
             .catch(() => {});
         }
         if (
-          (removeExistingImage || (imageFile && club.imagePath && club.imagePath !== imagePath)) &&
-          club.imagePath
+          (removeExistingImage ||
+            (imageFile && chapter.imagePath && chapter.imagePath !== imagePath)) &&
+          chapter.imagePath
         ) {
           await supabase.storage
             .from("content-images")
-            .remove([club.imagePath])
+            .remove([chapter.imagePath])
             .catch(() => {});
         }
       } else {
-        await addClub(payload);
+        await addChapter(payload);
       }
       setOpen(false);
     } catch (err) {
@@ -173,7 +179,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
           .from("content-images")
           .remove(uploaded)
           .catch(() => {});
-      setError(err instanceof Error ? err.message : "Couldn't save the club.");
+      setError(err instanceof Error ? err.message : "Couldn't save the chapter.");
     } finally {
       setSubmitting(false);
     }
@@ -190,7 +196,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit club" : "Create club"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit chapter" : "Create chapter"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Name" required>
@@ -209,27 +215,28 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
               required
             />
           </Field>
-          <Field label="About" required>
+          <Field label="About" required hint="Blank lines separate paragraphs on the chapter page.">
             <textarea
               value={draft.about}
               onChange={(e) => set("about", e.target.value)}
-              rows={3}
+              rows={4}
               className={fieldClass}
               required
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Head name" hint="Optional — student head/president.">
+            <Field label="Faculty mentor" hint="The faculty member who regulates this chapter.">
               <input
-                value={draft.headName ?? ""}
-                onChange={(e) => set("headName", e.target.value)}
+                value={draft.facultyMentor}
+                onChange={(e) => set("facultyMentor", e.target.value)}
                 className={fieldClass}
               />
             </Field>
-            <Field label="Faculty lead" hint="Optional — faculty advisor.">
-              <input
-                value={draft.facultyLead ?? ""}
-                onChange={(e) => set("facultyLead", e.target.value)}
+            <Field label="Chapter heads" hint="One name per line.">
+              <textarea
+                value={headsText}
+                onChange={(e) => setHeadsText(e.target.value)}
+                rows={2}
                 className={fieldClass}
               />
             </Field>
@@ -240,7 +247,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                 type="number"
                 min={0}
                 value={draft.members}
-                onChange={(e) => set("members", Number(e.target.value) || 0)}
+                onChange={(e) => set("members", Math.max(0, Number(e.target.value) || 0))}
                 className={fieldClass}
               />
             </Field>
@@ -249,13 +256,13 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                 value={draft.founded}
                 onChange={(e) => set("founded", e.target.value)}
                 className={fieldClass}
-                placeholder="2019"
+                placeholder="2021"
               />
             </Field>
             <Field label="Accent color">
               <select
                 value={draft.accent}
-                onChange={(e) => set("accent", e.target.value as Club["accent"])}
+                onChange={(e) => set("accent", e.target.value as Chapter["accent"])}
                 className={fieldClass}
               >
                 {ACCENTS.map((a) => (
@@ -266,7 +273,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
               </select>
             </Field>
           </div>
-          <Field label="Recruitment" hint="Optional — how/when students can join.">
+          <Field label="Recruitment" hint="Optional — how/when students can get involved.">
             <input
               value={draft.recruitment}
               onChange={(e) => set("recruitment", e.target.value)}
@@ -275,7 +282,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
           </Field>
           <Field
             label="Join link"
-            hint="Optional — an external form/page. When set, a Join button appears on the club page."
+            hint="Optional — an external form/page. When set, a Join button appears on the chapter page."
           >
             <UrlField
               value={draft.joinUrl ?? ""}
@@ -305,6 +312,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                       )
                     }
                     placeholder="Instagram"
+                    aria-label="Social link label"
                     className={fieldClass + " mt-0 w-full sm:w-32 sm:shrink-0"}
                   />
                   <UrlField
@@ -315,6 +323,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                       )
                     }
                     placeholder="https://instagram.com/…"
+                    aria-label="Social link URL"
                     className="mt-0 min-w-0 flex-1"
                   />
                   <button
@@ -330,7 +339,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
               <button
                 type="button"
                 onClick={() => setSocials((arr) => [...arr, { label: "", url: "" }])}
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-dashed border-border px-3 text-xs font-bold hover:bg-accent"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-dashed border-border px-3 text-xs font-bold hover:bg-accent"
               >
                 <Plus className="size-3.5" aria-hidden="true" />
                 Add social link
@@ -341,7 +350,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
           {isEdit ? (
             <div>
               <div className="flex items-end justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-bold text-foreground/80">Existing gallery</p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Remove photos you no longer want displayed. Changes are saved with this form.
@@ -356,11 +365,11 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                   {draft.gallery.map((path) => (
                     <div
                       key={path}
-                      className="group relative overflow-hidden rounded-xl border border-border bg-secondary"
+                      className="relative overflow-hidden rounded-xl border border-border bg-secondary"
                     >
                       <img
                         src={publicStorageUrl("content-images", path)}
-                        alt=""
+                        alt="Chapter gallery photo"
                         className="aspect-square w-full object-cover"
                       />
                       <button
@@ -368,7 +377,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                         onClick={() => removeExistingGalleryPhoto(path)}
                         disabled={submitting}
                         aria-label="Remove gallery photo"
-                        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-border/40 bg-background/90 text-foreground shadow-md backdrop-blur-sm transition hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="absolute right-2 top-2 grid size-9 place-items-center rounded-full border border-border/40 bg-background/90 text-foreground shadow-md backdrop-blur-sm transition hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
@@ -384,12 +393,12 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
           ) : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Club image" hint="Optional, up to 5 MB.">
+            <Field label="Chapter image" hint="Optional, up to 5 MB.">
               {isEdit && draft.imagePath && !removeExistingImage && !imageFile ? (
                 <div className="mt-1 flex items-center gap-3 rounded-xl border border-border bg-secondary/60 p-2.5">
                   <img
                     src={publicStorageUrl("content-images", draft.imagePath)}
-                    alt=""
+                    alt="Current chapter image"
                     className="size-12 rounded-lg object-cover"
                   />
                   <div className="min-w-0 flex-1">
@@ -406,7 +415,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                 </div>
               ) : null}
               {!removeExistingImage ? (
-                <label className="mt-2 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent">
+                <span className="mt-2 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent focus-within:ring-2 focus-within:ring-primary">
                   <ImagePlus className="size-4 shrink-0" aria-hidden="true" />
                   <span className="truncate">
                     {imageFile?.name ?? (draft.imagePath ? "Replace image" : "Choose image")}
@@ -414,17 +423,17 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="hidden"
+                    className="sr-only"
                     onChange={(e) => {
                       setImageFile(e.target.files?.[0] ?? null);
                       setRemoveExistingImage(false);
                     }}
                   />
-                </label>
+                </span>
               ) : (
-                <div className="mt-2 flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
+                <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
                   <span className="text-xs font-semibold text-destructive">
-                    Club image will be removed.
+                    Chapter image will be removed.
                   </span>
                   <button
                     type="button"
@@ -437,7 +446,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
               )}
             </Field>
             <Field label="Gallery photos" hint="Optional, adds to the existing gallery.">
-              <label className="mt-1 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent">
+              <span className="mt-1 flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input bg-card px-3 text-xs font-semibold text-muted-foreground hover:bg-accent focus-within:ring-2 focus-within:ring-primary">
                 <ImagePlus className="size-4 shrink-0" aria-hidden="true" />
                 <span className="truncate">
                   {galleryFiles.length > 0 ? `${galleryFiles.length} selected` : "Choose photos"}
@@ -446,10 +455,10 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   multiple
-                  className="hidden"
+                  className="sr-only"
                   onChange={(e) => setGalleryFiles(Array.from(e.target.files ?? []))}
                 />
-              </label>
+              </span>
             </Field>
           </div>
 
@@ -463,9 +472,9 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60 sm:w-auto"
             >
-              {submitting ? "Saving…" : isEdit ? "Save changes" : "Create club"}
+              {submitting ? "Saving…" : isEdit ? "Save changes" : "Create chapter"}
             </button>
           </DialogFooter>
         </form>
@@ -474,45 +483,46 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
   );
 }
 
-export default function AdminClubsPage() {
-  const { clubs, loading, error, refresh, remove } = useContent();
+export default function AdminChaptersPage() {
+  const { chapters, loading, error, refresh, remove } = useContent();
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return clubs
-      .filter((c) => (q ? `${c.name} ${c.tagline}`.toLowerCase().includes(q) : true))
+    return chapters
+      .filter((c) =>
+        q ? `${c.name} ${c.tagline} ${c.facultyMentor}`.toLowerCase().includes(q) : true,
+      )
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [clubs, search]);
+  }, [chapters, search]);
 
   return (
     <div className="space-y-6">
-      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+      <Card className="p-5 sm:p-8 border-border/70 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">
-          Clubs
+          Chapters
         </h1>
         <p className="pt-2 text-sm text-muted-foreground">
-          Manage club profiles, galleries and socials.
+          Manage student-run chapters — separate from SEE-managed Clubs.
         </p>
       </Card>
 
       <AdminToolbar
         search={search}
         onSearch={setSearch}
-        searchPlaceholder="Search clubs…"
+        searchPlaceholder="Search chapters…"
         count={filtered.length}
-        noun="club"
+        noun="chapter"
         extra={
           <div className="flex shrink-0 flex-wrap gap-2 sm:ml-auto">
-            <BulkImportDialog kind="clubs" onImported={refresh} />
-            <ClubFormDialog
+            <ChapterFormDialog
               trigger={
                 <button
                   type="button"
                   className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
                 >
                   <Plus className="size-4" aria-hidden="true" />
-                  New club
+                  New chapter
                 </button>
               }
             />
@@ -520,17 +530,19 @@ export default function AdminClubsPage() {
         }
       />
 
-      {loading && clubs.length === 0 ? (
+      {loading && chapters.length === 0 ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <CardSkeleton />
           <CardSkeleton />
         </div>
-      ) : error && clubs.length === 0 ? (
+      ) : error && chapters.length === 0 ? (
         <ErrorState hint={error} onRetry={refresh} />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title={clubs.length === 0 ? "No clubs yet" : "No clubs match your search"}
-          hint={clubs.length === 0 ? "Create the first club." : "Try a different search term."}
+          title={chapters.length === 0 ? "No chapters yet" : "No chapters match your search"}
+          hint={
+            chapters.length === 0 ? "Create the first chapter." : "Try a different search term."
+          }
         />
       ) : (
         <Card role="list" className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
@@ -544,28 +556,28 @@ export default function AdminClubsPage() {
                 />
               ) : (
                 <span
-                  className="grid size-10 shrink-0 place-items-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                  className="grid size-10 shrink-0 place-items-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400"
                   aria-hidden="true"
                 >
-                  <Users className="size-4" strokeWidth={1.75} />
+                  <Layers className="size-4" strokeWidth={1.75} />
                 </span>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-40">
                 <p className="truncate text-sm font-bold">{c.name}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {c.tagline} · {c.members} members
-                  {c.headName ? ` · Head: ${c.headName}` : ""}
+                  {c.tagline}
+                  {c.facultyMentor ? ` · Mentor: ${c.facultyMentor}` : ""}
+                  {c.chapterHeads.length > 0 ? ` · Head: ${c.chapterHeads.join(", ")}` : ""}
                 </p>
               </div>
-              {c.isDraft ? <DraftBadge /> : null}
               <div className="flex shrink-0 gap-1.5">
-                <ClubFormDialog
-                  club={c}
+                <ChapterFormDialog
+                  chapter={c}
                   trigger={
                     <button
                       type="button"
                       aria-label={`Edit ${c.name}`}
-                      className="grid size-9 place-items-center rounded-lg border border-border hover:bg-accent"
+                      className="grid size-10 place-items-center rounded-lg border border-border hover:bg-accent"
                     >
                       <Pencil className="size-4" aria-hidden="true" />
                     </button>
@@ -576,14 +588,23 @@ export default function AdminClubsPage() {
                     <button
                       type="button"
                       aria-label={`Delete ${c.name}`}
-                      className="grid size-9 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10"
+                      className="grid size-10 place-items-center rounded-lg border border-border text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
                     </button>
                   }
                   title={`Delete "${c.name}"?`}
-                  description="Events and notices linked to this club will be kept, just unlinked. This can't be undone."
-                  onConfirm={() => remove("clubs", c.id)}
+                  description="This chapter and any interest submissions made for it will be permanently removed. This can't be undone."
+                  onConfirm={async () => {
+                    const imagePaths = [...c.gallery, ...(c.imagePath ? [c.imagePath] : [])];
+                    await remove("chapters", c.id);
+                    if (imagePaths.length > 0) {
+                      await supabase.storage
+                        .from("content-images")
+                        .remove(imagePaths)
+                        .catch(() => {});
+                    }
+                  }}
                 />
               </div>
             </li>

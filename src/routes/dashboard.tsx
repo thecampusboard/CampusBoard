@@ -1,30 +1,13 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, Navigate } from "react-router-dom";
-import {
-  Megaphone,
-  CalendarPlus,
-  Briefcase,
-  Paperclip,
-  Pencil,
-  ExternalLink,
-  CalendarCheck,
-  Bookmark,
-  Users,
-  X,
-  Clock,
-} from "lucide-react";
+import { Navigate } from "react-router-dom";
+import { Megaphone, CalendarPlus, Briefcase, Paperclip, Pencil, ExternalLink } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { useContent, slugify } from "@/lib/content";
 import { supabase } from "@/lib/supabase";
 import { usePageMeta } from "@/lib/seo";
-import {
-  NOTICE_CATEGORIES,
-  OPPORTUNITY_TYPES,
-  formatDate,
-  publicClubs,
-} from "@/lib/data";
+import { NOTICE_CATEGORIES, OPPORTUNITY_TYPES, formatDate, publicClubs } from "@/lib/data";
 import { isValidHttpUrl } from "@/lib/utils";
 import type { Notice, CampusEvent, Opportunity } from "@/lib/data";
 import { NoticeStatusBadge } from "@/components/notice-status-badge";
@@ -38,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-
 } from "@/components/ui/dialog";
 
 const fieldClass =
@@ -50,32 +32,6 @@ function initials(name: string): string {
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
   return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase();
-}
-
-/** Small "x this" removal action shared by the three engagement lists below. */
-function RemoveButton({ onRemove, label }: { onRemove: () => Promise<void>; label: string }) {
-  const [busy, setBusy] = useState(false);
-  return (
-    <button
-      type="button"
-      disabled={busy}
-      aria-label={label}
-      title={label}
-      onClick={async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setBusy(true);
-        try {
-          await onRemove();
-        } finally {
-          setBusy(false);
-        }
-      }}
-      className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-    >
-      <X className="size-3.5" aria-hidden="true" />
-    </button>
-  );
 }
 
 /** Thumbnail preview for a just-picked file, before it's ever uploaded — an object URL, revoked on unmount/change. */
@@ -203,6 +159,7 @@ function ResubmitNoticeDialog({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
+            aria-label="Title"
             className={fieldClass}
             required
           />
@@ -210,11 +167,13 @@ function ResubmitNoticeDialog({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description"
+            aria-label="Description"
             rows={3}
             className={fieldClass}
             required
           />
           <select
+            aria-label="Notice category"
             value={category}
             onChange={(e) => setCategory(e.target.value as Notice["category"])}
             className={fieldClass}
@@ -229,10 +188,16 @@ function ResubmitNoticeDialog({
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             placeholder="Department"
+            aria-label="Department"
             className={fieldClass}
             required
           />
-          <select value={clubId} onChange={(e) => setClubId(e.target.value)} className={fieldClass}>
+          <select
+            aria-label="Related club"
+            value={clubId}
+            onChange={(e) => setClubId(e.target.value)}
+            className={fieldClass}
+          >
             <option value="">Not related to a club</option>
             {clubs.map((c) => (
               <option key={c.id} value={c.id}>
@@ -251,6 +216,7 @@ function ResubmitNoticeDialog({
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
                 placeholder="https://…"
+                aria-label="External link"
                 className="min-h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
               />
             </div>
@@ -366,6 +332,7 @@ function ResubmitEventDialog({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Event title"
+            aria-label="Event title"
             className={fieldClass}
             required
           />
@@ -373,10 +340,16 @@ function ResubmitEventDialog({
             value={organizer}
             onChange={(e) => setOrganizer(e.target.value)}
             placeholder="Organizer"
+            aria-label="Organizer"
             className={fieldClass}
             required
           />
-          <select value={clubId} onChange={(e) => setClubId(e.target.value)} className={fieldClass}>
+          <select
+            aria-label="Related club"
+            value={clubId}
+            onChange={(e) => setClubId(e.target.value)}
+            className={fieldClass}
+          >
             <option value="">Not related to a club</option>
             {clubs.map((c) => (
               <option key={c.id} value={c.id}>
@@ -395,6 +368,7 @@ function ResubmitEventDialog({
             value={venue}
             onChange={(e) => setVenue(e.target.value)}
             placeholder="Venue"
+            aria-label="Venue"
             className={fieldClass}
             required
           />
@@ -402,6 +376,7 @@ function ResubmitEventDialog({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description"
+            aria-label="Description"
             rows={3}
             className={fieldClass}
             required
@@ -410,6 +385,7 @@ function ResubmitEventDialog({
             value={eligibility}
             onChange={(e) => setEligibility(e.target.value)}
             placeholder="Eligibility (e.g. Open to all students)"
+            aria-label="Eligibility"
             className={fieldClass}
           />
           <div className="flex min-w-0 items-center gap-2 rounded-xl border border-input bg-card px-4 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary">
@@ -419,6 +395,7 @@ function ResubmitEventDialog({
               value={registrationUrl}
               onChange={(e) => setRegistrationUrl(e.target.value)}
               placeholder="Registration link (optional)"
+              aria-label="Registration link"
               className="min-h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
             />
           </div>
@@ -518,6 +495,7 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Opportunity title"
+            aria-label="Opportunity title"
             className={fieldClass}
             required
           />
@@ -525,6 +503,7 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
             value={organization}
             onChange={(e) => setOrganization(e.target.value)}
             placeholder="Organization"
+            aria-label="Organization"
             className={fieldClass}
             required
           />
@@ -532,10 +511,12 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
             value={position}
             onChange={(e) => setPosition(e.target.value)}
             placeholder="Position / role"
+            aria-label="Position / role"
             className={fieldClass}
             required
           />
           <select
+            aria-label="Opportunity type"
             value={type}
             onChange={(e) => setType(e.target.value as Opportunity["type"])}
             className={fieldClass}
@@ -550,6 +531,7 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Location (e.g. On campus, Remote)"
+            aria-label="Location"
             className={fieldClass}
             required
           />
@@ -564,6 +546,7 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description"
+            aria-label="Description"
             rows={3}
             className={fieldClass}
             required
@@ -575,6 +558,7 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
               value={applyUrl}
               onChange={(e) => setApplyUrl(e.target.value)}
               placeholder="Application link (optional)"
+              aria-label="Application link"
               className="min-h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
             />
           </div>
@@ -601,7 +585,7 @@ function ResubmitOpportunityDialog({ opportunity }: { opportunity: Opportunity }
 export default function Dashboard() {
   usePageMeta(
     "My Dashboard — CampusBoard",
-    "Your registered events, saved opportunities, joined clubs, and forms to submit notices, events and opportunities for review.",
+    "Your submitted notices, events and opportunities, and forms to submit new ones for review.",
     { noindex: true },
   );
 
@@ -614,12 +598,6 @@ export default function Dashboard() {
     submitNotice,
     submitEvent,
     submitOpportunity,
-    registeredEventIds,
-    savedOpportunityIds,
-    joinedClubIds,
-    toggleEventRegistration,
-    toggleOpportunitySave,
-    toggleClubMembership,
   } = useContent();
   // Students shouldn't be able to tag their own submission with a club
   // that's still an unreviewed bulk-import draft — see publicClubs().
@@ -680,18 +658,17 @@ export default function Dashboard() {
   const myOpportunities = opportunities
     .filter((o) => o.createdBy === user.id)
     .sort((a, b) => b.deadline.localeCompare(a.deadline));
-  const registeredEvents = events
-    .filter((e) => registeredEventIds.has(e.id))
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const savedOpportunities = opportunities
-    .filter((o) => savedOpportunityIds.has(o.id))
-    .sort((a, b) => a.deadline.localeCompare(b.deadline));
-  const joinedClubs = clubs.filter((c) => joinedClubIds.has(c.id));
 
   const handleSubmitEvent = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formEl = e.currentTarget;
-    if (!evTitle.trim() || !evOrganizer.trim() || !evDate || !evVenue.trim() || !evDescription.trim()) {
+    if (
+      !evTitle.trim() ||
+      !evOrganizer.trim() ||
+      !evDate ||
+      !evVenue.trim() ||
+      !evDescription.trim()
+    ) {
       setEvError("Fill in title, organizer, date, venue and description.");
       return;
     }
@@ -871,141 +848,7 @@ export default function Dashboard() {
             <p className="truncate text-sm text-muted-foreground">{user.email}</p>
           </div>
         </div>
-
-        <div className="mt-6 grid grid-cols-3 gap-3">
-          <div className="rounded-xl bg-primary/5 p-4 text-center">
-            <p className="text-2xl font-extrabold text-foreground">{registeredEvents.length}</p>
-            <p className="pt-0.5 text-xs font-semibold text-muted-foreground">Registered events</p>
-          </div>
-          <div className="rounded-xl bg-primary/5 p-4 text-center">
-            <p className="text-2xl font-extrabold text-foreground">{savedOpportunities.length}</p>
-            <p className="pt-0.5 text-xs font-semibold text-muted-foreground">
-              Saved opportunities
-            </p>
-          </div>
-          <div className="rounded-xl bg-primary/5 p-4 text-center">
-            <p className="text-2xl font-extrabold text-foreground">{joinedClubs.length}</p>
-            <p className="pt-0.5 text-xs font-semibold text-muted-foreground">Joined clubs</p>
-          </div>
-        </div>
       </Card>
-
-      {/* Registered events / Saved opportunities / Joined clubs ------------ */}
-      <div className="grid min-w-0 gap-6 lg:grid-cols-3">
-        <Card className="min-w-0 p-6 border-border/70 shadow-sm">
-          <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <CalendarCheck className="size-5 shrink-0 text-primary" aria-hidden="true" />
-            Registered events
-          </h2>
-          {registeredEvents.length === 0 ? (
-            <p className="pt-3 text-sm text-muted-foreground">
-              No events yet.{" "}
-              <Link
-                to="/events"
-                className="font-semibold text-primary underline underline-offset-4"
-              >
-                Browse events
-              </Link>
-              .
-            </p>
-          ) : (
-            <ul className="mt-4 space-y-2">
-              {registeredEvents.map((e) => (
-                <li key={e.id}>
-                  <div className="flex items-start gap-2 rounded-xl border border-border/70 bg-card/60 p-3 transition-colors hover:border-border">
-                    <Link to={`/events/${e.id}`} className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold hover:text-primary transition-colors">
-                        {e.title}
-                      </p>
-                      <p className="pt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="size-3 shrink-0" aria-hidden="true" />
-                        {formatDate(e.date)}
-                      </p>
-                    </Link>
-                    <RemoveButton
-                      label="Remove from registered events"
-                      onRemove={() => toggleEventRegistration(e.id)}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card className="min-w-0 p-6 border-border/70 shadow-sm">
-          <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Bookmark className="size-5 shrink-0 text-primary" aria-hidden="true" />
-            Saved opportunities
-          </h2>
-          {savedOpportunities.length === 0 ? (
-            <p className="pt-3 text-sm text-muted-foreground">
-              No opportunities yet.{" "}
-              <Link
-                to="/opportunities"
-                className="font-semibold text-primary underline underline-offset-4"
-              >
-                Browse opportunities
-              </Link>
-              .
-            </p>
-          ) : (
-            <ul className="mt-4 space-y-2">
-              {savedOpportunities.map((o) => (
-                <li key={o.id}>
-                  <div className="flex items-start gap-2 rounded-xl border border-border/70 bg-card/60 p-3 transition-colors hover:border-border">
-                    <Link to={`/opportunities/${o.id}`} className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold hover:text-primary transition-colors">
-                        {o.title}
-                      </p>
-                      <p className="pt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="size-3 shrink-0" aria-hidden="true" />
-                        Due {formatDate(o.deadline)}
-                      </p>
-                    </Link>
-                    <RemoveButton
-                      label="Remove from saved opportunities"
-                      onRemove={() => toggleOpportunitySave(o.id)}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card className="min-w-0 p-6 border-border/70 shadow-sm">
-          <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Users className="size-5 shrink-0 text-primary" aria-hidden="true" />
-            Joined clubs
-          </h2>
-          {joinedClubs.length === 0 ? (
-            <p className="pt-3 text-sm text-muted-foreground">
-              No clubs yet.{" "}
-              <Link to="/clubs" className="font-semibold text-primary underline underline-offset-4">
-                Browse clubs
-              </Link>
-              .
-            </p>
-          ) : (
-            <ul className="mt-4 space-y-2">
-              {joinedClubs.map((c) => (
-                <li key={c.id}>
-                  <div className="flex items-start gap-2 rounded-xl border border-border/70 bg-card/60 p-3 transition-colors hover:border-border">
-                    <Link to={`/clubs/${c.id}`} className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold hover:text-primary transition-colors">
-                        {c.name}
-                      </p>
-                      <p className="pt-0.5 truncate text-xs text-muted-foreground">{c.tagline}</p>
-                    </Link>
-                    <RemoveButton label="Leave club" onRemove={() => toggleClubMembership(c.id)} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-3">
         {/* My Notice Submissions ------------------------------------------ */}
@@ -1137,16 +980,19 @@ export default function Dashboard() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
+            aria-label="Title"
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description"
+            aria-label="Description"
             rows={3}
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
           />
           <select
+            aria-label="Notice category"
             value={category}
             onChange={(e) => setCategory(e.target.value as Notice["category"])}
             className={`${fieldClass} box-border min-w-0 max-w-full`}
@@ -1161,6 +1007,7 @@ export default function Dashboard() {
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             placeholder="Department"
+            aria-label="Department"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <div className="sm:col-span-2">
@@ -1174,11 +1021,13 @@ export default function Dashboard() {
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
                 placeholder="https://…"
+                aria-label="Link"
                 className="min-h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
               />
             </div>
           </div>
           <select
+            aria-label="Related club"
             value={clubId}
             onChange={(e) => setClubId(e.target.value)}
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
@@ -1246,15 +1095,18 @@ export default function Dashboard() {
             value={evTitle}
             onChange={(e) => setEvTitle(e.target.value)}
             placeholder="Event title"
+            aria-label="Event title"
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
           />
           <input
             value={evOrganizer}
             onChange={(e) => setEvOrganizer(e.target.value)}
             placeholder="Organizer"
+            aria-label="Organizer"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <select
+            aria-label="Related club"
             value={evClubId}
             onChange={(e) => setEvClubId(e.target.value)}
             className={`${fieldClass} box-border min-w-0 max-w-full`}
@@ -1276,12 +1128,14 @@ export default function Dashboard() {
             value={evVenue}
             onChange={(e) => setEvVenue(e.target.value)}
             placeholder="Venue"
+            aria-label="Venue"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <textarea
             value={evDescription}
             onChange={(e) => setEvDescription(e.target.value)}
             placeholder="Description"
+            aria-label="Description"
             rows={3}
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
           />
@@ -1289,11 +1143,13 @@ export default function Dashboard() {
             value={evEligibility}
             onChange={(e) => setEvEligibility(e.target.value)}
             placeholder="Eligibility (e.g. Open to all students)"
+            aria-label="Eligibility"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <div>
             <label className="text-xs font-bold text-foreground/80">
-              Registration link <span className="font-normal text-muted-foreground">(optional)</span>
+              Registration link{" "}
+              <span className="font-normal text-muted-foreground">(optional)</span>
             </label>
             <div className="mt-1 flex min-w-0 items-center gap-2 rounded-xl border border-input bg-card px-4 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-colors">
               <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -1302,6 +1158,7 @@ export default function Dashboard() {
                 value={evRegistrationUrl}
                 onChange={(e) => setEvRegistrationUrl(e.target.value)}
                 placeholder="https://…"
+                aria-label="Link"
                 className="min-h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
               />
             </div>
@@ -1346,21 +1203,25 @@ export default function Dashboard() {
             value={opTitle}
             onChange={(e) => setOpTitle(e.target.value)}
             placeholder="Opportunity title"
+            aria-label="Opportunity title"
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
           />
           <input
             value={opOrganization}
             onChange={(e) => setOpOrganization(e.target.value)}
             placeholder="Organization"
+            aria-label="Organization"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <input
             value={opPosition}
             onChange={(e) => setOpPosition(e.target.value)}
             placeholder="Position / role"
+            aria-label="Position / role"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <select
+            aria-label="Opportunity type"
             value={opType}
             onChange={(e) => setOpType(e.target.value as Opportunity["type"])}
             className={`${fieldClass} box-border min-w-0 max-w-full`}
@@ -1375,6 +1236,7 @@ export default function Dashboard() {
             value={opLocation}
             onChange={(e) => setOpLocation(e.target.value)}
             placeholder="Location (e.g. On campus, Remote)"
+            aria-label="Location"
             className={`${fieldClass} box-border min-w-0 max-w-full`}
           />
           <input
@@ -1387,6 +1249,7 @@ export default function Dashboard() {
             value={opDescription}
             onChange={(e) => setOpDescription(e.target.value)}
             placeholder="Description"
+            aria-label="Description"
             rows={3}
             className={`${fieldClass} box-border min-w-0 max-w-full sm:col-span-2`}
           />
@@ -1401,6 +1264,7 @@ export default function Dashboard() {
                 value={opApplyUrl}
                 onChange={(e) => setOpApplyUrl(e.target.value)}
                 placeholder="https://…"
+                aria-label="Link"
                 className="min-h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
               />
             </div>

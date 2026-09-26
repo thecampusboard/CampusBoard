@@ -1,9 +1,11 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import { ArrowLeft, History, Link2, Megaphone, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, History, Link2, Megaphone, Users } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
-import { EngagementToggle } from "@/components/engagement-toggle";
+import { DescriptionText } from "@/components/description-text";
+import { ExternalActionLink } from "@/components/external-action-link";
+import { InterestButton } from "@/components/interest-button";
 
 import { useContent } from "@/lib/content";
 import { formatDate, formatEventTimeRange, publicNotices, publicEvents } from "@/lib/data";
@@ -16,7 +18,7 @@ import { ImageGallery } from "@/components/image-gallery";
 
 export default function ClubDetail() {
   const { clubId } = useParams<{ clubId: string }>();
-  const { clubs, events, notices, joinedClubIds, toggleClubMembership } = useContent();
+  const { clubs, events, notices } = useContent();
   const club = clubs.find((c) => c.id === clubId);
 
   usePageMeta(
@@ -58,14 +60,14 @@ export default function ClubDetail() {
   const clubNotices = publicNotices(notices).filter((n) => n.clubId === club.id);
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+    <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-6">
       <Link
         to="/clubs"
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="size-4" /> Back to clubs
       </Link>
-      <Card className="shadow-bento rounded-2xl border-border p-6 sm:p-8">
+      <Card className="shadow-bento rounded-2xl border-border p-4 sm:p-8">
         {club.gallery.length > 0 ? (
           <ImageGallery
             images={club.gallery.map((path) => publicStorageUrl("content-images", path))}
@@ -92,23 +94,19 @@ export default function ClubDetail() {
             </span>
           )}
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight [overflow-wrap:anywhere]">
               {club.name}
             </h1>
-            <p className="pt-1 text-sm font-semibold text-muted-foreground">{club.tagline}</p>
+            <p className="pt-1 text-sm font-semibold text-muted-foreground [overflow-wrap:anywhere]">
+              {club.tagline}
+            </p>
           </div>
         </div>
 
-        <p className="pt-4 text-base leading-relaxed">{club.about}</p>
-        <div className="pt-4">
-          <EngagementToggle
-            active={joinedClubIds.has(club.id)}
-            onToggle={() => toggleClubMembership(club.id)}
-            icon={UserPlus}
-            label="Join Club"
-            activeLabel="Joined"
-            redirectTo={`/clubs/${club.id}`}
-          />
+        <DescriptionText text={club.about} className="pt-4" />
+        <div className="flex flex-wrap items-center gap-3 pt-4">
+          <InterestButton kind="club" targetId={club.id} targetName={club.name} />
+          <ExternalActionLink href={club.joinUrl} label="Join" variant="outline" />
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-1 pt-3">
           {club.members > 0 ? (
@@ -136,7 +134,7 @@ export default function ClubDetail() {
                   href={s.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold transition-colors hover:bg-accent"
+                  className="inline-flex min-h-10 max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold transition-colors hover:bg-accent"
                 >
                   <Link2 className="size-3.5" aria-hidden="true" />
                   {s.label}
@@ -155,7 +153,7 @@ export default function ClubDetail() {
               {club.announcements.map((a, i) => (
                 <li
                   key={i}
-                  className="rounded-xl bg-secondary/50 p-3 text-sm leading-relaxed text-foreground"
+                  className="rounded-xl bg-secondary/50 p-3 text-sm leading-relaxed text-foreground whitespace-pre-line [overflow-wrap:anywhere]"
                 >
                   {a}
                 </li>
@@ -170,7 +168,10 @@ export default function ClubDetail() {
             <ul className="pt-2 space-y-1">
               {upcomingEvents.map((e) => (
                 <li key={e.id} className="text-sm">
-                  <Link to={`/events/${e.id}`} className="font-semibold underline">
+                  <Link
+                    to={`/events/${e.id}`}
+                    className="font-semibold underline [overflow-wrap:anywhere]"
+                  >
                     {e.title}
                   </Link>{" "}
                   — {formatDate(e.date)}

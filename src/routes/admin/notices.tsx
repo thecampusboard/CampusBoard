@@ -361,7 +361,9 @@ export default function AdminNoticesPage() {
   return (
     <div className="space-y-6">
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
-        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Notices</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">
+          Notices
+        </h1>
         <p className="pt-2 text-sm text-muted-foreground">
           Notices you publish directly go live immediately. Student submissions are reviewed under
           Approvals.
@@ -418,7 +420,7 @@ export default function AdminNoticesPage() {
           }
         />
       ) : (
-        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
+        <Card role="list" className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((n) => (
             <li key={n.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               <span

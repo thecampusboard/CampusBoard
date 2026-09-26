@@ -15,6 +15,8 @@ import Events from "@/routes/events";
 import EventDetail from "@/routes/events.$eventId";
 import Clubs from "@/routes/clubs";
 import ClubDetail from "@/routes/clubs.$clubId";
+import Chapters from "@/routes/chapters";
+import ChapterDetail from "@/routes/chapters.$chapterId";
 import Opportunities from "@/routes/opportunities";
 import OpportunityDetail from "@/routes/opportunities.$opportunityId";
 import CalendarPage from "@/routes/calendar";
@@ -39,6 +41,8 @@ const AdminOverviewPage = lazy(() => import("@/routes/admin/overview"));
 const AdminNoticesPage = lazy(() => import("@/routes/admin/notices"));
 const AdminEventsPage = lazy(() => import("@/routes/admin/events"));
 const AdminClubsPage = lazy(() => import("@/routes/admin/clubs"));
+const AdminChaptersPage = lazy(() => import("@/routes/admin/chapters"));
+const AdminInterestsPage = lazy(() => import("@/routes/admin/interests"));
 const AdminOpportunitiesPage = lazy(() => import("@/routes/admin/opportunities"));
 const AdminBuySellPage = lazy(() => import("@/routes/admin/buy-sell"));
 const AdminApprovalsPage = lazy(() => import("@/routes/admin/approvals"));
@@ -148,7 +152,7 @@ function PublicShell() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteNav />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full min-w-0 max-w-7xl flex-1 px-4 pt-5 pb-10 sm:px-6 sm:pt-6 lg:px-8">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
@@ -173,6 +177,8 @@ export default function App() {
             <Route path="/events/:eventId" element={<EventDetail />} />
             <Route path="/clubs" element={<Clubs />} />
             <Route path="/clubs/:clubId" element={<ClubDetail />} />
+            <Route path="/chapters" element={<Chapters />} />
+            <Route path="/chapters/:chapterId" element={<ChapterDetail />} />
             <Route path="/opportunities" element={<Opportunities />} />
             <Route path="/opportunities/:opportunityId" element={<OpportunityDetail />} />
             <Route path="/calendar" element={<CalendarPage />} />
@@ -222,6 +228,8 @@ export default function App() {
             <Route path="notices" element={<AdminNoticesPage />} />
             <Route path="events" element={<AdminEventsPage />} />
             <Route path="clubs" element={<AdminClubsPage />} />
+            <Route path="chapters" element={<AdminChaptersPage />} />
+            <Route path="interests" element={<AdminInterestsPage />} />
             <Route path="opportunities" element={<AdminOpportunitiesPage />} />
             <Route path="buy-sell" element={<AdminBuySellPage />} />
             <Route path="approvals" element={<AdminApprovalsPage />} />

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DescriptionPreview } from "@/components/description-text";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useContent } from "@/lib/content";
 import { OPPORTUNITY_TYPES, formatDate, publicOpportunities } from "@/lib/data";
@@ -75,7 +76,7 @@ export default function OpportunitiesPage() {
       </div>
 
       {/* Search */}
-      <div className="shadow-bento rounded-xl bg-card border border-border flex px-5 items-center gap-3 h-14">
+      <div className="shadow-bento rounded-xl bg-card border border-border flex px-4 sm:px-5 items-center gap-3 h-14">
         <Search className="text-primary size-5 shrink-0" />
         <input
           placeholder="Search by title, organization, or skills…"
@@ -89,12 +90,12 @@ export default function OpportunitiesPage() {
       {/* Type filter tabs */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
         <Tabs value={type} onValueChange={setType}>
-          <TabsList className="rounded-full bg-secondary/60 p-1 gap-1 h-10 flex-wrap">
+          <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-2xl bg-secondary/60 p-1 sm:w-auto">
             {["all", ...OPPORTUNITY_TYPES].map((t) => (
               <TabsTrigger
                 key={t}
                 value={t}
-                className="rounded-full px-4 text-sm capitalize"
+                className="min-h-9 rounded-full px-3 text-sm capitalize sm:px-4"
               >
                 {TYPE_LABELS[t] ?? t}
               </TabsTrigger>
@@ -117,7 +118,11 @@ export default function OpportunitiesPage() {
       ) : error && publicOpportunities(opportunities).length === 0 ? (
         <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
           <p className="text-destructive font-medium">{error}</p>
-          <button type="button" onClick={refresh} className="mt-4 inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">
+          <button
+            type="button"
+            onClick={refresh}
+            className="mt-4 inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+          >
             Try again
           </button>
         </Card>
@@ -128,7 +133,10 @@ export default function OpportunitiesPage() {
           {(query || type !== "all") && (
             <button
               type="button"
-              onClick={() => { setQuery(""); setType("all"); }}
+              onClick={() => {
+                setQuery("");
+                setType("all");
+              }}
               className="mt-4 inline-flex h-9 items-center rounded-lg border border-input bg-card px-4 text-sm font-medium hover:bg-accent"
             >
               Clear filters
@@ -138,33 +146,48 @@ export default function OpportunitiesPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {activeOpps.map((o) => {
-            const accent: { bg: string; text: string } = ACCENT_COLORS[o.accent as keyof typeof ACCENT_COLORS] ?? { bg: "bg-violet-50", text: "text-violet-600" };
+            const accent: { bg: string; text: string } = ACCENT_COLORS[
+              o.accent as keyof typeof ACCENT_COLORS
+            ] ?? { bg: "bg-violet-50", text: "text-violet-600" };
             return (
-              <Link key={o.id} to={`/opportunities/${o.id}`}>
-                <Card className="shadow-bento rounded-xl bg-card border-border p-5 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className={`rounded-xl ${accent!.bg} ${accent!.text} flex justify-center items-center size-12 shrink-0`}>
+              <Link key={o.id} to={`/opportunities/${o.id}`} className="block rounded-xl">
+                <Card className="shadow-bento rounded-xl bg-card border-border p-4 sm:p-5 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div
+                      className={`rounded-xl ${accent!.bg} ${accent!.text} flex justify-center items-center size-12 shrink-0`}
+                    >
                       <Briefcase className="size-5" />
                     </div>
                     <CardContent className="flex p-0 flex-col flex-1 gap-2 min-w-0">
                       <div className="flex justify-between items-start gap-3">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="secondary" className={`rounded-full ${accent!.bg} ${accent!.text} text-[10px] capitalize`}>
+                            <Badge
+                              variant="secondary"
+                              className={`rounded-full ${accent!.bg} ${accent!.text} text-[10px] capitalize`}
+                            >
                               {o.type}
                             </Badge>
                             {o.featured && (
-                              <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary text-[10px]">
+                              <Badge
+                                variant="secondary"
+                                className="rounded-full bg-primary/10 text-primary text-[10px]"
+                              >
                                 Featured
                               </Badge>
                             )}
                           </div>
-                          <h3 className="font-semibold text-foreground text-lg mt-1 truncate">{o.title}</h3>
-                          <p className="text-muted-foreground text-sm">{o.organization} · {o.position}</p>
+                          <h3 className="font-semibold text-foreground text-base sm:text-lg mt-1 line-clamp-2 [overflow-wrap:anywhere]">
+                            {o.title}
+                          </h3>
+                          <p className="text-muted-foreground text-sm [overflow-wrap:anywhere]">
+                            {o.organization} · {o.position}
+                          </p>
                         </div>
                         <ChevronRight className="text-muted-foreground size-5 shrink-0 mt-2" />
                       </div>
-                      <div className="flex items-center gap-4 text-muted-foreground text-xs flex-wrap">
+                      <DescriptionPreview text={o.description} lines={2} className="text-sm" />
+                      <div className="flex items-center gap-x-4 gap-y-1 text-muted-foreground text-xs flex-wrap">
                         <span className="flex items-center gap-1">
                           <MapPin className="size-3.5" />
                           {o.location}
@@ -173,17 +196,24 @@ export default function OpportunitiesPage() {
                           <Calendar className="size-3.5" />
                           Deadline: {formatDate(o.deadline)}
                         </span>
-                        {o.stipend && <span className="font-medium text-emerald-600">{o.stipend}</span>}
+                        {o.stipend && (
+                          <span className="font-medium text-emerald-600">{o.stipend}</span>
+                        )}
                       </div>
                       {o.skills.length > 0 && (
                         <div className="flex gap-1.5 flex-wrap mt-1">
                           {o.skills.slice(0, 4).map((s) => (
-                            <span key={s} className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-secondary-foreground">
+                            <span
+                              key={s}
+                              className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-secondary-foreground"
+                            >
                               {s}
                             </span>
                           ))}
                           {o.skills.length > 4 && (
-                            <span className="text-muted-foreground text-[10px]">+{o.skills.length - 4} more</span>
+                            <span className="text-muted-foreground text-[10px]">
+                              +{o.skills.length - 4} more
+                            </span>
                           )}
                         </div>
                       )}
@@ -197,13 +227,17 @@ export default function OpportunitiesPage() {
             <>
               <h3 className="font-semibold text-muted-foreground text-sm mt-4">Past deadlines</h3>
               {expiredOpps.map((o) => (
-                <Link key={o.id} to={`/opportunities/${o.id}`}>
+                <Link key={o.id} to={`/opportunities/${o.id}`} className="block rounded-xl">
                   <Card className="shadow-bento rounded-xl bg-card border-border p-4 opacity-60 hover:opacity-80 transition-opacity">
                     <div className="flex items-center gap-3">
                       <Briefcase className="text-muted-foreground size-5 shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-foreground text-sm truncate">{o.title}</h3>
-                        <p className="text-muted-foreground text-xs">{o.organization} · Deadline: {formatDate(o.deadline)}</p>
+                        <h3 className="font-semibold text-foreground text-sm truncate">
+                          {o.title}
+                        </h3>
+                        <p className="text-muted-foreground text-xs">
+                          {o.organization} · Deadline: {formatDate(o.deadline)}
+                        </p>
                       </div>
                       <ChevronRight className="text-muted-foreground size-4 shrink-0" />
                     </div>

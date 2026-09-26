@@ -43,9 +43,7 @@ export default function BuySellPage() {
     <div className="space-y-6">
       <Card className="flex flex-wrap items-end justify-between gap-4 p-6 sm:p-8 border-border/70 shadow-sm">
         <div>
-          <p className="text-xs font-bold tracking-widest text-primary uppercase">
-            Buy & Sell
-          </p>
+          <p className="text-xs font-bold tracking-widest text-primary uppercase">Buy & Sell</p>
           <h1 className="pt-2 text-3xl font-display font-extrabold tracking-tight sm:text-4xl text-foreground">
             Campus marketplace
           </h1>
@@ -126,10 +124,7 @@ export default function BuySellPage() {
               : null;
             return (
               <li key={l.id}>
-                <Link
-                  to={`/buy-sell/${l.id}`}
-                  className="group block h-full"
-                >
+                <Link to={`/buy-sell/${l.id}`} className="group block h-full">
                   <Card className="flex h-full flex-col overflow-hidden border-border/70 bg-card p-0 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md">
                     <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted/60">
                       {coverImage ? (
@@ -159,7 +154,9 @@ export default function BuySellPage() {
                         {formatPrice(l.price)}
                       </span>
                       <span className="mt-auto flex items-center justify-between gap-2 pt-4 text-xs font-medium text-muted-foreground border-t border-border/40">
-                        <span className="rounded-md bg-muted px-2 py-0.5 font-medium">{l.condition}</span>
+                        <span className="rounded-md bg-muted px-2 py-0.5 font-medium">
+                          {l.condition}
+                        </span>
                         <span className="truncate">{l.sellerName}</span>
                       </span>
                     </div>

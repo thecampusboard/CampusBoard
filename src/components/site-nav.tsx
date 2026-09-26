@@ -16,13 +16,14 @@ import {
   LogIn,
   ChevronDown,
   Info,
-  School,
+  Layers,
   Mail,
 } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,7 @@ const NAV = [
   { to: "/notices", label: "Notices", exact: false, icon: Megaphone },
   { to: "/events", label: "Events", exact: false, icon: CalendarDays },
   { to: "/clubs", label: "Clubs", exact: false, icon: Users },
+  { to: "/chapters", label: "Chapters", exact: false, icon: Layers },
   { to: "/opportunities", label: "Opportunities", exact: false, icon: Briefcase },
   { to: "/calendar", label: "Calendar", exact: false, icon: CalendarRange },
   { to: "/about", label: "About", exact: false, icon: Info },
@@ -76,32 +78,32 @@ export function SiteNav() {
       className={cn(
         // Glassmorphic: translucent + blurred + saturated so content
         // scrolling underneath stays subtly visible, with a hairline
-        // border and soft shadow standing in for a hard edge. Falls back
-        // to a fully opaque bg-background (still on-brand) in the rare
-        // case backdrop-filter isn't supported, so contrast never breaks.
-        "sticky top-0 z-40 border-b border-border/60 bg-background/95 shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-xl backdrop-saturate-150",
-        "supports-[backdrop-filter]:bg-background/70",
+        // border and soft shadow standing in for a hard edge. The base
+        // background is the opaque theme colour; only when backdrop-filter
+        // is supported is it made translucent (80% — enough that text stays
+        // readable over any page background, image or gradient).
+        "sticky top-0 z-40 border-b border-border/50 bg-background shadow-[0_4px_24px_-10px_rgba(15,23,42,0.18)]",
+        "supports-[backdrop-filter]:bg-background/80 supports-[backdrop-filter]:backdrop-blur-xl supports-[backdrop-filter]:backdrop-saturate-150",
       )}
     >
+      {/* Three-column grid: logo left, links truly centred, controls right.
+          The two outer columns are equal (1fr) so the centre column sits in
+          the exact middle of the bar regardless of how wide either side is. */}
       <nav
         aria-label="Main"
-        className="mx-auto flex max-w-[1400px] items-center px-4 sm:px-6 h-[64px] sm:h-[72px]"
+        className="mx-auto grid h-16 max-w-[1400px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 sm:h-[72px] sm:px-6 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:gap-6"
       >
         {/* Logo */}
         <Link
           to="/"
           aria-label="CampusBoard home"
-          className="inline-flex shrink-0 items-center gap-2"
+          className="inline-flex min-w-0 items-center justify-self-start rounded-lg"
         >
-          <School className="text-primary size-7" />
-          <span className="font-bold text-lg tracking-tight">
-            <span className="text-foreground">Campus</span>
-            <span className="text-primary">Board</span>
-          </span>
+          <BrandLogo size="md" />
         </Link>
 
         {/* Desktop nav links */}
-        <div className="hidden items-center gap-1 ml-10 h-full lg:flex">
+        <div className="hidden items-center justify-center gap-0.5 xl:flex">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
@@ -109,7 +111,7 @@ export function SiteNav() {
               end={item.exact}
               className={({ isActive }) =>
                 cn(
-                  "px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center h-full",
+                  "relative rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground",
                   isActive && "font-semibold text-primary",
                 )
               }
@@ -120,12 +122,12 @@ export function SiteNav() {
         </div>
 
         {/* Right side actions */}
-        <div className="flex ml-auto items-center gap-3">
+        <div className="flex items-center justify-end gap-2 sm:gap-3">
           {/* Search */}
           <Link
             to="/search"
             aria-label="Search CampusBoard"
-            className="text-foreground hover:text-primary transition-colors"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-foreground transition-colors hover:bg-accent hover:text-primary"
           >
             <Search className="size-5" aria-hidden="true" />
           </Link>
@@ -216,7 +218,7 @@ export function SiteNav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="grid size-9 shrink-0 place-items-center rounded-lg border border-input bg-card lg:hidden sm:size-10"
+            className="grid size-9 shrink-0 place-items-center rounded-lg border border-input bg-card xl:hidden sm:size-10"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
@@ -225,7 +227,7 @@ export function SiteNav() {
 
       {/* Mobile menu */}
       {open ? (
-        <div className="border-t border-border bg-card px-4 pb-4 lg:hidden">
+        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-border/60 px-4 pb-4 sm:max-h-[calc(100dvh-4.5rem)] xl:hidden">
           <ul className="grid gap-1 pt-3 sm:grid-cols-2">
             {NAV.map((item) => {
               const Icon = item.icon;
@@ -328,15 +330,9 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <School className="text-primary size-5" />
-              <span className="font-bold text-base tracking-tight">
-                <span className="text-foreground">Campus</span>
-                <span className="text-primary">Board</span>
-              </span>
-            </div>
+            <BrandLogo size="sm" />
             <p className="text-sm text-muted-foreground max-w-xs">
-              All campus updates, one place. Notices, events, clubs, and opportunities.
+              All campus updates, one place. Notices, events, clubs, chapters, and opportunities.
             </p>
           </div>
           <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
@@ -359,6 +355,12 @@ export function SiteFooter() {
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
                 Clubs
+              </Link>
+              <Link
+                to="/chapters"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Chapters
               </Link>
             </div>
             <div className="flex flex-col gap-2">

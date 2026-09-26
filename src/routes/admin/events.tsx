@@ -302,9 +302,7 @@ export default function AdminEventsPage() {
     const q = search.trim().toLowerCase();
     const list = events
       .filter((e) => (statusFilter === "rejected" ? e.status === "rejected" : true))
-      .filter((e) =>
-        q ? `${e.title} ${e.organizer} ${e.venue}`.toLowerCase().includes(q) : true,
-      );
+      .filter((e) => (q ? `${e.title} ${e.organizer} ${e.venue}`.toLowerCase().includes(q) : true));
     switch (sort) {
       case "date_desc":
         return [...list].sort((a, b) => b.date.localeCompare(a.date));
@@ -320,7 +318,9 @@ export default function AdminEventsPage() {
   return (
     <div className="space-y-6">
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
-        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Events</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">
+          Events
+        </h1>
         <p className="pt-2 text-sm text-muted-foreground">
           Create, edit and remove campus events. Set a real start time so Google Calendar links come
           out right.
@@ -359,7 +359,7 @@ export default function AdminEventsPage() {
           }
         />
       ) : (
-        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
+        <Card role="list" className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               <span

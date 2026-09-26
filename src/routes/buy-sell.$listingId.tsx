@@ -11,6 +11,7 @@ import { formatDate, formatPrice, isListingActive, listingExpiryDate } from "@/l
 import { listingIcon } from "@/lib/icons";
 import { usePageMeta } from "@/lib/seo";
 import { logEvent } from "@/lib/analytics";
+import { DescriptionText } from "@/components/description-text";
 import { ImageGallery } from "@/components/image-gallery";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 
@@ -46,7 +47,10 @@ export default function ListingDetail() {
         <p className="pt-2 text-sm text-muted-foreground">
           This listing may still be awaiting Admin approval, or is no longer available.
         </p>
-        <Link to="/buy-sell" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+        <Link
+          to="/buy-sell"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+        >
           <ArrowLeft className="size-4" /> Back to marketplace
         </Link>
       </Card>
@@ -122,16 +126,28 @@ export default function ListingDetail() {
         ) : null}
 
         <div className="mt-4 flex items-center gap-3 border-y border-border/50 py-3 text-xs sm:text-sm text-muted-foreground font-medium">
-          <span>Condition: <strong className="text-foreground font-semibold">{listing.condition}</strong></span>
+          <span>
+            Condition:{" "}
+            <strong className="text-foreground font-semibold">{listing.condition}</strong>
+          </span>
           <span>·</span>
-          <span>Posted: <strong className="text-foreground font-semibold">{formatDate(listing.postedOn)}</strong></span>
+          <span>
+            Posted:{" "}
+            <strong className="text-foreground font-semibold">
+              {formatDate(listing.postedOn)}
+            </strong>
+          </span>
           <span>·</span>
-          <span>Seller: <strong className="text-foreground font-semibold">{listing.sellerName}</strong></span>
+          <span>
+            Seller: <strong className="text-foreground font-semibold">{listing.sellerName}</strong>
+          </span>
         </div>
 
         <div className="pt-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</h2>
-          <p className="pt-2 text-base leading-relaxed text-foreground/90 whitespace-pre-line">{listing.description}</p>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Description
+          </h2>
+          <DescriptionText text={listing.description} className="pt-2" />
         </div>
 
         <div className="flex flex-wrap gap-3 pt-6 border-t border-border/50 mt-6">

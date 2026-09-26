@@ -108,8 +108,12 @@ export default function AdminAnalyticsPage() {
                   <ul className="mt-3 space-y-2 border-t border-border/50 pt-2.5">
                     {rows.map((r) => (
                       <li key={r.event_type} className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground font-medium">{EVENT_LABEL[r.event_type]}</span>
-                        <span className="font-bold text-foreground">{r.total.toLocaleString()}</span>
+                        <span className="text-muted-foreground font-medium">
+                          {EVENT_LABEL[r.event_type]}
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {r.total.toLocaleString()}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -143,7 +147,9 @@ export default function AdminAnalyticsPage() {
                       <Badge variant="secondary" className="shrink-0 text-xs">
                         {ENTITY_LABEL[r.entity_type]}
                       </Badge>
-                      <span className="shrink-0 text-xs font-bold text-muted-foreground">{r.views} views</span>
+                      <span className="shrink-0 text-xs font-bold text-muted-foreground">
+                        {r.views} views
+                      </span>
                     </li>
                   );
                 })}

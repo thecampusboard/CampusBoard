@@ -144,9 +144,12 @@ export function HolidayCalendar() {
             <p className="text-xs font-bold tracking-widest text-primary uppercase">
               College holidays
             </p>
-            <h2 className="pt-1 text-2xl font-display font-extrabold tracking-tight text-foreground">Holiday calendar</h2>
+            <h2 className="pt-1 text-2xl font-display font-extrabold tracking-tight text-foreground">
+              Holiday calendar
+            </h2>
             <p className="pt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Official academic and campus holidays in a simple month view. Select any date to see holiday details.
+              Official academic and campus holidays in a simple month view. Select any date to see
+              holiday details.
             </p>
           </div>
           {isAdmin ? (
@@ -322,7 +325,9 @@ export function HolidayCalendar() {
                   </span>
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold text-foreground">{holiday.name}</span>
+                  <span className="block truncate text-sm font-bold text-foreground">
+                    {holiday.name}
+                  </span>
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {holiday.description || format(new Date(`${holiday.date}T00:00:00`), "EEEE")}
                   </span>

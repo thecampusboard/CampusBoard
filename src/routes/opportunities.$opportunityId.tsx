@@ -2,7 +2,6 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import {
   ArrowLeft,
-  Bookmark,
   Briefcase,
   Calendar,
   GraduationCap,
@@ -12,8 +11,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { ProtectedAction } from "@/components/protected-action";
-import { EngagementToggle } from "@/components/engagement-toggle";
+import { DescriptionText } from "@/components/description-text";
+import { ExternalActionLink } from "@/components/external-action-link";
 import { useContent } from "@/lib/content";
 import { formatDate } from "@/lib/data";
 import { usePageMeta } from "@/lib/seo";
@@ -32,13 +31,13 @@ function InfoRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex min-w-0 items-start gap-3">
       <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-foreground">
         {icon}
       </span>
-      <div>
+      <div className="min-w-0">
         <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">{label}</p>
-        <p className="text-sm font-semibold">{value}</p>
+        <p className="text-sm font-semibold [overflow-wrap:anywhere]">{value}</p>
       </div>
     </div>
   );
@@ -46,7 +45,7 @@ function InfoRow({
 
 export default function OpportunityDetail() {
   const { opportunityId } = useParams<{ opportunityId: string }>();
-  const { opportunities, savedOpportunityIds, toggleOpportunitySave } = useContent();
+  const { opportunities } = useContent();
   const opportunity = opportunities.find((o) => o.id === opportunityId);
 
   usePageMeta(
@@ -79,7 +78,7 @@ export default function OpportunityDetail() {
   const deadlinePassed = new Date(opportunity.deadline + "T23:59:59") < new Date();
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+    <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-6">
       <Link
         to="/opportunities"
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
@@ -88,7 +87,7 @@ export default function OpportunityDetail() {
       </Link>
       <Card className="shadow-bento rounded-2xl border-border overflow-hidden">
         <div className="h-2 w-full bg-primary" />
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
               {opportunity.organization} · {opportunity.type}
@@ -103,12 +102,14 @@ export default function OpportunityDetail() {
               </Badge>
             )}
           </div>
-          <h1 className="pt-2 text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+          <h1 className="pt-2 text-2xl sm:text-3xl font-bold text-foreground tracking-tight [overflow-wrap:anywhere]">
             {opportunity.title}
           </h1>
-          <p className="pt-1 text-sm font-semibold text-muted-foreground">{opportunity.position}</p>
+          <p className="pt-1 text-sm font-semibold text-muted-foreground [overflow-wrap:anywhere]">
+            {opportunity.position}
+          </p>
 
-          <div className="mt-6 grid gap-5 rounded-2xl bg-secondary/50 p-5 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 rounded-2xl bg-secondary/50 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5">
             <InfoRow
               icon={<MapPin className="size-4" aria-hidden="true" />}
               label="Location"
@@ -167,38 +168,21 @@ export default function OpportunityDetail() {
             <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">
               About this role
             </h2>
-            <p className="pt-2 text-base leading-relaxed whitespace-pre-line text-foreground">
-              {opportunity.description}
-            </p>
+            <DescriptionText text={opportunity.description} className="pt-2" />
           </div>
 
           <div className="pt-6">
             {hasRealUrl(opportunity.applyUrl) && !deadlinePassed ? (
-              <ProtectedAction
+              <ExternalActionLink
                 href={opportunity.applyUrl}
-                label="Apply Now"
-                lockedLabel="Login to Apply"
-                onProceed={() => logEvent("opportunity", opportunity.id, "apply_click")}
+                label="Apply"
+                onClick={() => logEvent("opportunity", opportunity.id, "apply_click")}
               />
-            ) : deadlinePassed ? (
+            ) : deadlinePassed && hasRealUrl(opportunity.applyUrl) ? (
               <p className="text-sm font-semibold text-muted-foreground">
                 Applications for this opportunity have closed.
               </p>
-            ) : (
-              <p className="text-sm font-semibold text-muted-foreground">
-                No application link has been added yet.
-              </p>
-            )}
-          </div>
-          <div className="pt-3">
-            <EngagementToggle
-              active={savedOpportunityIds.has(opportunity.id)}
-              onToggle={() => toggleOpportunitySave(opportunity.id)}
-              icon={Bookmark}
-              label="Save to My Dashboard"
-              activeLabel="Saved"
-              redirectTo={`/opportunities/${opportunity.id}`}
-            />
+            ) : null}
           </div>
         </div>
       </Card>

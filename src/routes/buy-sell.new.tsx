@@ -98,7 +98,9 @@ export default function BuySellNew() {
     return (
       <div className="mx-auto max-w-md py-8">
         <Card className="p-6 sm:p-8 text-center border-border/70 shadow-sm">
-          <h1 className="text-2xl font-display font-extrabold tracking-tight">Login to post a listing</h1>
+          <h1 className="text-2xl font-display font-extrabold tracking-tight">
+            Login to post a listing
+          </h1>
           <p className="pt-2 text-sm text-muted-foreground">
             Sign in with your college email to post on the Buy & Sell marketplace.
           </p>
@@ -228,10 +230,10 @@ export default function BuySellNew() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-xl space-y-6 py-4">
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
-        <p className="text-xs font-bold tracking-widest text-primary uppercase">
-          Buy & Sell
-        </p>
-        <h1 className="pt-2 text-3xl font-display font-extrabold tracking-tight sm:text-4xl text-foreground">Post an item</h1>
+        <p className="text-xs font-bold tracking-widest text-primary uppercase">Buy & Sell</p>
+        <h1 className="pt-2 text-3xl font-display font-extrabold tracking-tight sm:text-4xl text-foreground">
+          Post an item
+        </h1>
         <p className="pt-2 text-sm text-muted-foreground">
           Listings cost {formatPrice(LISTING_FEE)} and stay live for {LISTING_DURATION_DAYS} days
           once Admin approves your payment.
@@ -262,143 +264,143 @@ export default function BuySellNew() {
               </div>
             </div>
 
-          <div>
-            <label htmlFor="title" className="text-sm font-bold">
-              Title
-            </label>
-            <input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className={fieldClass}
-              placeholder="e.g. Engineering Mathematics Book"
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="category" className="text-sm font-bold">
-                Category
-              </label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value as Listing["category"])}
-                className={fieldClass}
-              >
-                {LISTING_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="condition" className="text-sm font-bold">
-                Condition
-              </label>
-              <select
-                id="condition"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value as Listing["condition"])}
-                className={fieldClass}
-              >
-                {LISTING_CONDITIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="description" className="text-sm font-bold">
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className={fieldClass + " min-h-24 py-2"}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="price" className="text-sm font-bold">
-              Price (₹)
-            </label>
-            <input
-              id="price"
-              type="number"
-              min={0}
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className={fieldClass}
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label htmlFor="sellerName" className="text-sm font-bold">
-                Your name
+              <label htmlFor="title" className="text-sm font-bold">
+                Title
               </label>
               <input
-                id="sellerName"
-                value={sellerName}
-                onChange={(e) => setSellerName(e.target.value)}
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={fieldClass}
+                placeholder="e.g. Engineering Mathematics Book"
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="category" className="text-sm font-bold">
+                  Category
+                </label>
+                <select
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as Listing["category"])}
+                  className={fieldClass}
+                >
+                  {LISTING_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="condition" className="text-sm font-bold">
+                  Condition
+                </label>
+                <select
+                  id="condition"
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value as Listing["condition"])}
+                  className={fieldClass}
+                >
+                  {LISTING_CONDITIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="description" className="text-sm font-bold">
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className={fieldClass + " min-h-24 py-2"}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="price" className="text-sm font-bold">
+                Price (₹)
+              </label>
+              <input
+                id="price"
+                type="number"
+                min={0}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
                 className={fieldClass}
               />
             </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="sellerName" className="text-sm font-bold">
+                  Your name
+                </label>
+                <input
+                  id="sellerName"
+                  value={sellerName}
+                  onChange={(e) => setSellerName(e.target.value)}
+                  className={fieldClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="sellerPhone" className="text-sm font-bold">
+                  Phone number
+                </label>
+                <input
+                  id="sellerPhone"
+                  value={sellerPhone}
+                  onChange={(e) => setSellerPhone(e.target.value)}
+                  className={fieldClass}
+                  placeholder="98XXXXXX21"
+                />
+              </div>
+            </div>
+
             <div>
-              <label htmlFor="sellerPhone" className="text-sm font-bold">
-                Phone number
+              <span className="text-sm font-bold">Photos (optional)</span>
+              <label
+                htmlFor="images"
+                className="mt-1 flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input bg-card px-4 text-sm font-semibold text-muted-foreground hover:bg-accent"
+              >
+                <Upload className="size-4" aria-hidden="true" />
+                {imageFiles.length > 0 ? `${imageFiles.length} photo(s) selected` : "Upload photos"}
               </label>
               <input
-                id="sellerPhone"
-                value={sellerPhone}
-                onChange={(e) => setSellerPhone(e.target.value)}
-                className={fieldClass}
-                placeholder="98XXXXXX21"
+                id="images"
+                type="file"
+                accept="image/*"
+                multiple
+                className="sr-only"
+                onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
               />
             </div>
-          </div>
 
-          <div>
-            <span className="text-sm font-bold">Photos (optional)</span>
-            <label
-              htmlFor="images"
-              className="mt-1 flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input bg-card px-4 text-sm font-semibold text-muted-foreground hover:bg-accent"
+            {error ? (
+              <p role="alert" className="text-sm font-semibold text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="min-h-11 w-full rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.99] disabled:opacity-60"
             >
-              <Upload className="size-4" aria-hidden="true" />
-              {imageFiles.length > 0 ? `${imageFiles.length} photo(s) selected` : "Upload photos"}
-            </label>
-            <input
-              id="images"
-              type="file"
-              accept="image/*"
-              multiple
-              className="sr-only"
-              onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
-            />
-          </div>
-
-          {error ? (
-            <p role="alert" className="text-sm font-semibold text-destructive">
-              {error}
-            </p>
-          ) : null}
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="min-h-11 w-full rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.99] disabled:opacity-60"
-          >
-            {submitting ? "Saving…" : "Continue to payment"}
-          </button>
-        </form>
-      </Card>
+              {submitting ? "Saving…" : "Continue to payment"}
+            </button>
+          </form>
+        </Card>
       ) : null}
 
       {step === "payment" ? (
@@ -447,7 +449,9 @@ export default function BuySellNew() {
       {step === "screenshot" ? (
         <Card className="space-y-4 p-6 sm:p-8 text-center border-border/70 shadow-sm">
           <form className="space-y-4" onSubmit={handleScreenshotSubmit}>
-            <h2 className="text-2xl font-display font-extrabold tracking-tight">Upload payment screenshot</h2>
+            <h2 className="text-2xl font-display font-extrabold tracking-tight">
+              Upload payment screenshot
+            </h2>
             <p className="text-sm text-muted-foreground">
               Admin verifies your payment from this screenshot before approving the listing.
             </p>

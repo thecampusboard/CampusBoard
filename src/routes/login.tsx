@@ -7,6 +7,7 @@ import { AuthActionError, useAuth } from "@/lib/auth";
 import { isValidHttpUrl, readPendingExternalAction, safeRedirectPath } from "@/lib/utils";
 import { usePageMeta } from "@/lib/seo";
 import { GoogleIcon } from "@/components/google-icon";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   clearLoginAttempts,
   formatLockoutRemaining,
@@ -54,7 +55,7 @@ export default function LoginPage() {
 
   usePageMeta(
     "Login — CampusBoard",
-    "Sign in to register for events, apply to opportunities and view seller contacts.",
+    "Sign in to show interest in clubs and chapters, submit updates and view seller contacts.",
     { noindex: true },
   );
 
@@ -101,19 +102,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md py-8">
-      <div className="shadow-bento rounded-2xl bg-card border border-border p-6 sm:p-8">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="rounded-xl bg-primary text-primary-foreground flex justify-center items-center size-10">
-            <span className="font-bold text-sm">CB</span>
-          </div>
-          <span className="font-bold text-lg">Campus<span className="text-primary">Board</span></span>
+    <div className="mx-auto max-w-md py-4 sm:py-8">
+      <div className="shadow-bento rounded-2xl bg-card border border-border p-5 sm:p-8">
+        <div className="mb-6">
+          <BrandLogo size="lg" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
         <p className="pt-1 text-sm text-muted-foreground">
           {action
             ? `Sign in to continue to "${action}".`
-            : "Reading is always free. Sign in for registrations, applications and seller contacts."}
+            : "Reading is always free. Sign in to show interest in clubs and chapters, submit updates and use Buy & Sell."}
         </p>
 
         <button

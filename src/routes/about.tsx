@@ -6,7 +6,6 @@ import {
   CalendarDays,
   Code2,
   Heart,
-  School,
   Sparkles,
   Target,
   Users,
@@ -14,6 +13,7 @@ import {
 
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/lib/seo";
+import { BrandLogo } from "@/components/brand-logo";
 
 const WHAT_WE_DO = [
   {
@@ -82,7 +82,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="flex flex-col gap-4 text-center pt-4">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <School className="text-primary size-10" />
+          <BrandLogo size="xl" showWordmark={false} />
         </div>
         <p className="font-bold uppercase text-primary text-xs tracking-[0.22em]">About</p>
         <h1 className="font-bold text-foreground text-4xl sm:text-5xl tracking-tight">

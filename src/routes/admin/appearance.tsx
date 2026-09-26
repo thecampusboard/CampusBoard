@@ -119,7 +119,9 @@ export default function AdminAppearancePage() {
   return (
     <div className="space-y-6">
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
-        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Appearance</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">
+          Appearance
+        </h1>
         <p className="max-w-2xl pt-2 text-sm leading-relaxed text-muted-foreground">
           Customize the homepage hero banner image and campus showcase gallery.
         </p>

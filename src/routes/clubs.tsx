@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DescriptionPreview } from "@/components/description-text";
 import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { publicClubs } from "@/lib/data";
@@ -52,7 +53,7 @@ export default function ClubsPage() {
       </div>
 
       {/* Search */}
-      <div className="shadow-bento rounded-xl bg-card border border-border flex px-5 items-center gap-3 h-14">
+      <div className="shadow-bento rounded-xl bg-card border border-border flex px-4 sm:px-5 items-center gap-3 h-14">
         <Search className="text-primary size-5 shrink-0" />
         <input
           placeholder="Search clubs by name or interest…"
@@ -105,12 +106,14 @@ export default function ClubsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((c) => {
-            const accent: { bg: string; text: string } = ACCENT_ICONS[c.accent as keyof typeof ACCENT_ICONS] ?? { bg: "bg-blue-50", text: "text-blue-600" };
+            const accent: { bg: string; text: string } = ACCENT_ICONS[
+              c.accent as keyof typeof ACCENT_ICONS
+            ] ?? { bg: "bg-blue-50", text: "text-blue-600" };
             return (
-              <Link key={c.id} to={`/clubs/${c.id}`}>
+              <Link key={c.id} to={`/clubs/${c.id}`} className="block h-full rounded-xl">
                 <Card className="shadow-bento rounded-xl bg-card border-border p-5 h-full hover:shadow-md transition-shadow flex flex-col gap-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between gap-3 min-w-0">
+                    <div className="flex min-w-0 items-center gap-3">
                       {c.imagePath ? (
                         <img
                           src={publicStorageUrl("content-images", c.imagePath)}
@@ -118,7 +121,9 @@ export default function ClubsPage() {
                           className="size-12 rounded-xl object-cover shrink-0"
                         />
                       ) : (
-                        <div className={`rounded-xl ${accent!.bg} ${accent!.text} flex justify-center items-center size-12 shrink-0`}>
+                        <div
+                          className={`rounded-xl ${accent!.bg} ${accent!.text} flex justify-center items-center size-12 shrink-0`}
+                        >
                           <Users className="size-6" />
                         </div>
                       )}
@@ -129,9 +134,9 @@ export default function ClubsPage() {
                     </div>
                     <ChevronRight className="text-muted-foreground size-5 shrink-0 mt-1" />
                   </div>
-                  <CardContent className="p-0 flex flex-col gap-2">
-                    <p className="text-muted-foreground text-sm line-clamp-2">{c.about}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
+                  <CardContent className="p-0 flex flex-1 flex-col gap-2">
+                    <DescriptionPreview text={c.about} lines={3} />
+                    <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Users className="size-3.5" />
                         {c.members} members
@@ -139,7 +144,10 @@ export default function ClubsPage() {
                       {c.founded && <span>Founded {c.founded}</span>}
                     </div>
                     {c.recruitment && (
-                      <Badge variant="secondary" className="rounded-full bg-emerald-50 text-emerald-600 text-[10px] w-fit mt-1">
+                      <Badge
+                        variant="secondary"
+                        className="mt-1 h-auto w-fit max-w-full rounded-full bg-emerald-50 text-emerald-600 text-[10px] whitespace-normal"
+                      >
                         Recruiting: {c.recruitment}
                       </Badge>
                     )}

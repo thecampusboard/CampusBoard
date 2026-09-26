@@ -21,7 +21,10 @@ interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
-  ({ value: controlledValue, defaultValue = "", onValueChange, className, children, ...props }, ref) => {
+  (
+    { value: controlledValue, defaultValue = "", onValueChange, className, children, ...props },
+    ref,
+  ) => {
     const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
     const value = controlledValue ?? uncontrolled;
     const handleChange = React.useCallback(

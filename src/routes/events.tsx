@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DescriptionPreview } from "@/components/description-text";
 import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { formatEventTimeRange, publicEvents } from "@/lib/data";
@@ -74,9 +75,7 @@ export default function EventsPage() {
           <p className="font-bold uppercase text-violet-600 text-xs tracking-[0.22em]">
             Campus Calendar
           </p>
-          <h1 className="font-bold text-foreground text-3xl sm:text-4xl tracking-tight">
-            Events
-          </h1>
+          <h1 className="font-bold text-foreground text-3xl sm:text-4xl tracking-tight">Events</h1>
           <p className="text-muted-foreground text-base">
             Discover talks, festivals, workshops and student activities
           </p>
@@ -97,14 +96,19 @@ export default function EventsPage() {
             />
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div
+          className="flex items-center gap-2 flex-wrap"
+          role="group"
+          aria-label="Filter events by date"
+        >
           <span className="font-medium text-muted-foreground text-sm mr-2">Filter by</span>
           {WHEN_FILTERS.map((f) => (
             <button
               key={f}
               type="button"
               onClick={() => setWhen(f)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              aria-pressed={when === f}
+              className={`min-h-9 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 when === f
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-accent"
@@ -153,7 +157,10 @@ export default function EventsPage() {
           {(query || when !== "All") && (
             <button
               type="button"
-              onClick={() => { setQuery(""); setWhen("All"); }}
+              onClick={() => {
+                setQuery("");
+                setWhen("All");
+              }}
               className="mt-4 inline-flex h-9 items-center rounded-lg border border-input bg-card px-4 text-sm font-medium hover:bg-accent"
             >
               Clear filters
@@ -164,29 +171,36 @@ export default function EventsPage() {
         <div className="flex flex-col gap-3">
           {filtered.map((e) => {
             const { day, month, weekday } = dateBlock(e.date);
-            const accent: { bg: string; text: string } = ACCENT_COLORS[e.accent as keyof typeof ACCENT_COLORS] ?? { bg: "bg-violet-50", text: "text-violet-600" };
+            const accent: { bg: string; text: string } = ACCENT_COLORS[
+              e.accent as keyof typeof ACCENT_COLORS
+            ] ?? { bg: "bg-violet-50", text: "text-violet-600" };
             const timeRange = formatEventTimeRange(e);
             return (
-              <Link key={e.id} to={`/events/${e.id}`}>
-                <Card className="shadow-bento rounded-xl bg-card border-border flex p-4 flex-row gap-5 hover:shadow-md transition-shadow">
-                  <div className={`text-center rounded-lg ${accent!.bg} flex p-2 flex-col justify-center items-center shrink-0 w-20`}>
+              <Link key={e.id} to={`/events/${e.id}`} className="block rounded-xl">
+                <Card className="shadow-bento rounded-xl bg-card border-border flex p-3 sm:p-4 flex-row gap-3 sm:gap-5 hover:shadow-md transition-shadow">
+                  <div
+                    className={`text-center rounded-lg ${accent!.bg} flex p-2 flex-col justify-center items-center shrink-0 w-16 sm:w-20 self-start`}
+                  >
                     <span className={`font-bold uppercase ${accent!.text} text-xs`}>{month}</span>
                     <span className="font-bold text-foreground text-3xl">{day}</span>
                     <span className="text-muted-foreground text-xs">{weekday}</span>
                   </div>
                   <CardContent className="flex p-0 flex-col flex-1 gap-2 min-w-0">
-                    <div className="flex justify-between items-start gap-4">
+                    <div className="flex justify-between items-start gap-2 sm:gap-4">
                       <div className="flex flex-col gap-1 min-w-0">
-                        <span className={`font-semibold uppercase ${accent!.text} text-xs tracking-wide`}>
+                        <span
+                          className={`font-semibold uppercase truncate ${accent!.text} text-xs tracking-wide`}
+                        >
                           {e.organizer.length > 30 ? e.organizer.slice(0, 30) + "…" : e.organizer}
                         </span>
-                        <h3 className="font-semibold text-foreground text-lg truncate">
+                        <h3 className="font-semibold text-foreground text-base sm:text-lg line-clamp-2 [overflow-wrap:anywhere]">
                           {e.title}
                         </h3>
                       </div>
                       <ChevronRight className="text-muted-foreground mt-1 size-5 shrink-0" />
                     </div>
-                    <div className="text-muted-foreground text-sm flex items-center gap-5 flex-wrap">
+                    <DescriptionPreview text={e.description} lines={2} />
+                    <div className="text-muted-foreground text-sm flex items-center gap-x-5 gap-y-1 flex-wrap">
                       {timeRange && (
                         <span className="flex items-center gap-2">
                           <Clock className={`${accent!.text} size-4`} />
@@ -194,14 +208,17 @@ export default function EventsPage() {
                         </span>
                       )}
                       {e.venue && (
-                        <span className="flex items-center gap-2">
+                        <span className="flex min-w-0 items-center gap-2">
                           <MapPin className={`${accent!.text} size-4`} />
                           {e.venue}
                         </span>
                       )}
                     </div>
                     {e.featured && (
-                      <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary text-[10px] w-fit">
+                      <Badge
+                        variant="secondary"
+                        className="rounded-full bg-primary/10 text-primary text-[10px] w-fit"
+                      >
                         Featured
                       </Badge>
                     )}

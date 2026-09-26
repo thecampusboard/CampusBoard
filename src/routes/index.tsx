@@ -11,6 +11,7 @@ import {
   Compass,
   FileText,
   GraduationCap,
+  Layers,
   MapPin,
   Phone,
   Search,
@@ -42,14 +43,14 @@ const QUICK_LINKS = [
   {
     label: "Academic Portal",
     icon: GraduationCap,
-    href: "#",
+    href: "https://myupes-beta.upes.ac.in/oneportal/app/auth/login",
     bg: "bg-blue-50",
     border: "border-blue-100",
     iconColor: "text-primary",
     chevronColor: "text-primary",
   },
   {
-    label: "Mess Menu",
+    label: "Food Court",
     icon: Utensils,
     href: "#",
     bg: "bg-amber-50",
@@ -67,9 +68,9 @@ const QUICK_LINKS = [
     chevronColor: "text-muted-foreground",
   },
   {
-    label: "Forms & Docs",
+    label: "Findit: Lost & Found",
     icon: FileText,
-    href: "#",
+    href: "https://campus-findit-gamma.vercel.app/",
     bg: "bg-violet-50",
     border: "border-violet-100",
     iconColor: "text-violet-600",
@@ -78,7 +79,7 @@ const QUICK_LINKS = [
   {
     label: "Library",
     icon: BookOpen,
-    href: "#",
+    href: "https://library.ddn.upes.ac.in/",
     bg: "bg-orange-50",
     border: "border-orange-100",
     iconColor: "text-orange-600",
@@ -167,6 +168,7 @@ export default function Home() {
     notices: allNotices,
     events: allEvents,
     clubs: allClubs,
+    chapters: allChapters,
     opportunities: allOpportunities,
     listings: allListings,
     appearance,
@@ -181,10 +183,11 @@ export default function Home() {
         notices: allNotices,
         events: allEvents,
         clubs: allClubs,
+        chapters: allChapters,
         opportunities: allOpportunities,
         listings: allListings,
       }),
-    [allNotices, allEvents, allClubs, allOpportunities, allListings],
+    [allNotices, allEvents, allClubs, allChapters, allOpportunities, allListings],
   );
 
   const notices = useMemo(
@@ -220,6 +223,7 @@ export default function Home() {
   );
 
   const clubs = useMemo(() => publicClubs(allClubs).slice(0, 4), [allClubs]);
+  const chapters = useMemo(() => allChapters.slice(0, 4), [allChapters]);
 
   const heroImageUrl = appearance.heroImagePath
     ? publicStorageUrl("content-images", appearance.heroImagePath)
@@ -249,19 +253,19 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-4">
       {/* ─── Hero ─── */}
-      <section className="shadow-bento rounded-2xl border border-border relative h-[280px] sm:h-[330px] overflow-hidden">
+      <section className="shadow-bento rounded-2xl border border-border relative flex items-center min-h-[300px] sm:min-h-[330px] overflow-hidden">
         <img
           src={heroRenderUrl}
           alt="Campus view"
           className="absolute inset-0 size-full object-cover"
           onError={() => setHeroImageFailed(true)}
         />
-        <div className="bg-[linear-gradient(90deg,oklch(0.12_0.08_255/.96),oklch(0.12_0.08_255/.82)_38%,transparent_78%)] absolute inset-0" />
-        <div className="flex relative z-10 p-6 sm:p-8 flex-col justify-center gap-4 h-full max-w-[700px]">
-          <div className="font-semibold text-cyan-300 text-xs tracking-[0.18em]">
+        <div className="absolute inset-0 bg-[oklch(0.12_0.08_255/.86)] sm:bg-[linear-gradient(90deg,oklch(0.12_0.08_255/.96),oklch(0.12_0.08_255/.82)_38%,transparent_78%)]" />
+        <div className="flex relative z-10 w-full p-5 sm:p-8 flex-col justify-center gap-4 max-w-[700px]">
+          <div className="font-semibold text-cyan-300 text-[11px] sm:text-xs tracking-[0.14em] sm:tracking-[0.18em]">
             ALL CAMPUS UPDATES, ONE PLACE
           </div>
-          <h1 className="font-bold text-white text-3xl sm:text-[40px] leading-[1.05]">
+          <h1 className="font-bold text-white text-[1.75rem] leading-[1.1] sm:text-[40px] sm:leading-[1.05]">
             Everything happening on campus. <span className="text-cyan-300">One place.</span>
           </h1>
           <p className="text-white/85 text-sm">
@@ -271,9 +275,10 @@ export default function Home() {
             onSubmit={handleSearch}
             className="shadow-bento rounded-full bg-white flex pr-4 pl-4 items-center gap-3 w-full max-w-[620px] h-11"
           >
-            <Search className="text-muted-foreground size-4 shrink-0" />
+            <Search className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
             <input
-              placeholder="Search notices, events, clubs, internships and more..."
+              placeholder="Search notices, events, clubs…"
+              aria-label="Search CampusBoard"
               className="bg-transparent text-foreground text-sm outline-none flex-1 min-w-0"
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -312,18 +317,21 @@ export default function Home() {
           <Link
             key={tile.key}
             to={STAT_LINKS[tile.key] ?? "/"}
-            className={`shadow-bento rounded-xl ${tile.bg} border ${tile.border} flex p-4 justify-between items-center hover:shadow-md transition-shadow`}
+            className={`shadow-bento rounded-xl ${tile.bg} border ${tile.border} flex p-3 sm:p-4 justify-between items-center gap-2 hover:shadow-md transition-shadow`}
           >
-            <div className="flex items-center gap-3">
-              <tile.icon className={`${tile.iconColor} size-6`} />
-              <div>
+            <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+              <tile.icon className={`${tile.iconColor} size-6 shrink-0`} aria-hidden="true" />
+              <div className="min-w-0">
                 <div className="font-bold text-2xl">{stats[tile.key]}</div>
-                <div className="font-semibold uppercase text-muted-foreground text-[10px] tracking-wide">
+                <div className="font-semibold uppercase text-muted-foreground text-[10px] tracking-wide leading-tight">
                   {tile.label}
                 </div>
               </div>
             </div>
-            <ChevronRight className={`${tile.chevronColor} size-4`} />
+            <ChevronRight
+              className={`${tile.chevronColor} size-4 shrink-0 hidden sm:block`}
+              aria-hidden="true"
+            />
           </Link>
         ))}
       </section>
@@ -341,20 +349,20 @@ export default function Home() {
               href={link.href}
               target={link.href !== "#" ? "_blank" : undefined}
               rel={link.href !== "#" ? "noopener noreferrer" : undefined}
-              className={`rounded-lg ${link.bg} border ${link.border} flex p-3 justify-between items-center hover:shadow-sm transition-shadow`}
+              className={`rounded-lg ${link.bg} border ${link.border} flex min-h-11 p-3 justify-between items-center gap-1 hover:shadow-sm transition-shadow`}
             >
-              <span className="flex items-center gap-2">
-                <link.icon className={`${link.iconColor} size-4`} />
-                <span className="font-semibold text-xs">{link.label}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <link.icon className={`${link.iconColor} size-4 shrink-0`} aria-hidden="true" />
+                <span className="font-semibold text-xs truncate">{link.label}</span>
               </span>
-              <ChevronRight className={`${link.chevronColor} size-4`} />
+              <ChevronRight className={`${link.chevronColor} size-4 shrink-0`} aria-hidden="true" />
             </a>
           ))}
         </div>
       </Card>
 
       {/* ─── Today on Campus + Important Notices ─── */}
-      <section className="grid gap-4 lg:grid-cols-[60fr_40fr]">
+      <section className="grid gap-4 grid-cols-[minmax(0,1fr)] lg:grid-cols-[60fr_40fr]">
         {/* Today on Campus */}
         <Card className="shadow-bento rounded-xl border-border p-5">
           <div className="border-b border-border flex pb-3 justify-between items-center">
@@ -372,18 +380,18 @@ export default function Home() {
                 <Link
                   key={e.id}
                   to={`/events/${e.id}`}
-                  className={`flex pt-3 pr-3 pb-3 pl-3 items-center gap-4 hover:bg-accent/30 rounded-lg transition-colors ${i < todaySchedule.length - 1 ? "border-b border-border" : ""}`}
+                  className={`flex p-2 sm:p-3 items-center gap-3 sm:gap-4 hover:bg-accent/30 rounded-lg transition-colors ${i < todaySchedule.length - 1 ? "border-b border-border" : ""}`}
                 >
-                  <div className="font-semibold text-center rounded-lg bg-blue-50 text-primary text-xs p-2 w-20 shrink-0">
+                  <div className="font-semibold text-center rounded-lg bg-blue-50 text-primary text-xs p-2 w-[4.5rem] sm:w-20 shrink-0">
                     {formatTimeRange(e)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm truncate">{e.title}</div>
-                    <div className="text-muted-foreground text-xs">{e.organizer}</div>
+                    <div className="text-muted-foreground text-xs truncate">{e.organizer}</div>
                     {e.venue && (
-                      <div className="text-muted-foreground text-xs flex mt-1 items-center gap-1">
-                        <MapPin className="text-primary size-3 shrink-0" />
-                        {e.venue}
+                      <div className="text-muted-foreground text-xs flex mt-1 items-center gap-1 min-w-0">
+                        <MapPin className="text-primary size-3 shrink-0" aria-hidden="true" />
+                        <span className="truncate">{e.venue}</span>
                       </div>
                     )}
                   </div>
@@ -439,7 +447,7 @@ export default function Home() {
       </section>
 
       {/* ─── Upcoming Events + Latest Opportunities ─── */}
-      <section className="grid gap-4 lg:grid-cols-[60fr_40fr]">
+      <section className="grid gap-4 grid-cols-[minmax(0,1fr)] lg:grid-cols-[60fr_40fr]">
         {/* Upcoming Events */}
         <Card className="shadow-bento rounded-xl border-border p-5">
           <div className="flex justify-between items-center mb-3">
@@ -461,7 +469,7 @@ export default function Home() {
                   <Link
                     key={e.id}
                     to={`/events/${e.id}`}
-                    className="flex flex-col rounded-lg border border-border p-3 hover:shadow-sm transition-shadow"
+                    className="flex min-w-0 flex-col rounded-lg border border-border p-3 hover:shadow-sm transition-shadow"
                   >
                     <div className="font-bold text-primary text-lg">
                       {day}
@@ -529,14 +537,52 @@ export default function Home() {
         </Card>
       </section>
 
+      {/* ─── Chapters ─── */}
+      <Card className="shadow-bento rounded-xl border-border p-5">
+        <div className="flex justify-between items-center gap-3 mb-3">
+          <h2 className="font-bold flex min-w-0 items-center gap-2">
+            <Layers className="text-primary size-5 shrink-0" aria-hidden="true" />
+            <span className="truncate">Chapters</span>
+          </h2>
+          <Link to="/chapters" className="font-semibold text-primary text-xs shrink-0">
+            Explore Chapters →
+          </Link>
+        </div>
+        {chapters.length > 0 ? (
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+            {chapters.map((c) => (
+              <Link
+                key={c.id}
+                to={`/chapters/${c.id}`}
+                className="rounded-lg border border-border flex p-3 justify-between items-center gap-1 hover:shadow-sm transition-shadow"
+              >
+                <div className="min-w-0">
+                  <span className="rounded-full bg-violet-50 text-violet-600 flex mb-2 justify-center items-center size-8">
+                    <Layers className="size-4" aria-hidden="true" />
+                  </span>
+                  <div className="font-semibold text-xs truncate">{c.name}</div>
+                  <div className="text-muted-foreground text-[10px] truncate">{c.tagline}</div>
+                </div>
+                <ChevronRight
+                  className="text-muted-foreground size-4 shrink-0"
+                  aria-hidden="true"
+                />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="py-8 text-center text-muted-foreground text-sm">No chapters yet.</div>
+        )}
+      </Card>
+
       {/* ─── Clubs ─── */}
       <Card className="shadow-bento rounded-xl border-border p-5">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="font-bold flex items-center gap-2">
-            <Users className="text-primary size-5" />
-            Clubs & Societies
+        <div className="flex justify-between items-center gap-3 mb-3">
+          <h2 className="font-bold flex min-w-0 items-center gap-2">
+            <Users className="text-primary size-5 shrink-0" />
+            <span className="truncate">Clubs & Societies</span>
           </h2>
-          <Link to="/clubs" className="font-semibold text-primary text-xs">
+          <Link to="/clubs" className="font-semibold text-primary text-xs shrink-0">
             Explore Clubs →
           </Link>
         </div>
@@ -546,7 +592,7 @@ export default function Home() {
               <Link
                 key={c.id}
                 to={`/clubs/${c.id}`}
-                className="rounded-lg border border-border flex p-3 justify-between items-center hover:shadow-sm transition-shadow"
+                className="rounded-lg border border-border flex p-3 justify-between items-center gap-1 hover:shadow-sm transition-shadow"
               >
                 <div className="min-w-0">
                   <span

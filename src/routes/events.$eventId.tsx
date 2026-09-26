@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import {
   ArrowLeft,
   Calendar,
-  CalendarCheck,
   CalendarPlus,
   Clock,
   GraduationCap,
@@ -14,7 +13,8 @@ import {
 } from "lucide-react";
 
 import { ProtectedAction } from "@/components/protected-action";
-import { EngagementToggle } from "@/components/engagement-toggle";
+import { DescriptionText } from "@/components/description-text";
+import { ExternalActionLink } from "@/components/external-action-link";
 import { useContent } from "@/lib/content";
 import { formatDate, formatEventTimeRange } from "@/lib/data";
 import { googleCalendarUrl } from "@/lib/auth";
@@ -34,13 +34,13 @@ function InfoRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex min-w-0 items-start gap-3">
       <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-foreground">
         {icon}
       </span>
-      <div>
+      <div className="min-w-0">
         <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">{label}</p>
-        <p className="text-sm font-semibold">{value}</p>
+        <p className="text-sm font-semibold [overflow-wrap:anywhere]">{value}</p>
       </div>
     </div>
   );
@@ -48,7 +48,7 @@ function InfoRow({
 
 export default function EventDetail() {
   const { eventId } = useParams<{ eventId: string }>();
-  const { events, clubs, registeredEventIds, toggleEventRegistration } = useContent();
+  const { events, clubs } = useContent();
   const event = events.find((e) => e.id === eventId);
   const club = event?.clubId ? clubs.find((c) => c.id === event.clubId) : undefined;
 
@@ -99,7 +99,7 @@ export default function EventDetail() {
     : false;
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+    <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-6">
       <Link
         to="/events"
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
@@ -108,7 +108,7 @@ export default function EventDetail() {
       </Link>
       <Card className="shadow-bento rounded-2xl border-border overflow-hidden">
         <div className="h-2 w-full bg-primary" />
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
               {event.organizer}
@@ -120,7 +120,7 @@ export default function EventDetail() {
               </Badge>
             )}
           </div>
-          <h1 className="pt-2 text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+          <h1 className="pt-2 text-2xl sm:text-3xl font-bold text-foreground tracking-tight [overflow-wrap:anywhere]">
             {event.title}
           </h1>
           {club && (
@@ -133,7 +133,7 @@ export default function EventDetail() {
             </Link>
           )}
 
-          <div className="mt-6 grid gap-5 rounded-2xl bg-secondary/50 p-5 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 rounded-2xl bg-secondary/50 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5">
             <InfoRow
               icon={<Calendar className="size-4" aria-hidden="true" />}
               label="Date"
@@ -179,42 +179,27 @@ export default function EventDetail() {
             <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase">
               About this event
             </h2>
-            <p className="pt-2 text-base leading-relaxed whitespace-pre-line text-foreground">
-              {event.description}
-            </p>
+            <DescriptionText text={event.description} className="pt-2" />
           </div>
 
           <div className="flex flex-wrap gap-3 pt-6">
             {hasRealUrl(event.registrationUrl) && !deadlinePassed ? (
-              <ProtectedAction
+              <ExternalActionLink
                 href={event.registrationUrl}
-                label="Register Now"
-                lockedLabel="Login to Register"
-                onProceed={() => logEvent("event", event.id, "register_click")}
+                label="Register"
+                onClick={() => logEvent("event", event.id, "register_click")}
               />
-            ) : deadlinePassed ? (
+            ) : deadlinePassed && hasRealUrl(event.registrationUrl) ? (
               <p className="text-sm font-semibold text-muted-foreground">
                 Registration for this event has closed.
               </p>
-            ) : (
-              <p className="text-sm font-semibold text-muted-foreground">
-                No registration link has been added yet.
-              </p>
-            )}
+            ) : null}
             <ProtectedAction
               href={calendarUrl}
               label="Add to Google Calendar"
               lockedLabel="Login to add to Calendar"
               variant="outline"
               icon={<CalendarPlus className="size-4" aria-hidden="true" />}
-            />
-            <EngagementToggle
-              active={registeredEventIds.has(event.id)}
-              onToggle={() => toggleEventRegistration(event.id)}
-              icon={CalendarCheck}
-              label="Register in My Dashboard"
-              activeLabel="Registered"
-              redirectTo={`/events/${event.id}`}
             />
           </div>
         </div>

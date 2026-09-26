@@ -1,4 +1,4 @@
-import type { CampusEvent, Club, Listing, Notice, Opportunity } from "@/lib/data";
+import type { CampusEvent, Chapter, Club, Listing, Notice, Opportunity } from "@/lib/data";
 
 /**
  * Supabase rows are snake_case (matching the SQL in supabase/migrations/);
@@ -73,6 +73,7 @@ export interface ClubRow {
   faculty_lead: string | null;
   image_path: string | null;
   is_draft: boolean | null;
+  join_url: string | null;
 }
 
 export interface OpportunityRow {
@@ -188,7 +189,46 @@ export const fromClubRow = (r: ClubRow): Club => ({
   ...(r.head_name ? { headName: r.head_name } : {}),
   ...(r.faculty_lead ? { facultyLead: r.faculty_lead } : {}),
   ...(r.image_path ? { imagePath: r.image_path } : {}),
+  ...(r.join_url ? { joinUrl: r.join_url } : {}),
   isDraft: r.is_draft ?? false,
+});
+
+export interface ChapterRow {
+  id: string;
+  name: string;
+  tagline: string;
+  about: string;
+  accent: Chapter["accent"];
+  members: number;
+  founded: string | null;
+  recruitment: string | null;
+  faculty_mentor: string;
+  chapter_heads: string[] | null;
+  join_url: string | null;
+  announcements: string[] | null;
+  gallery: string[] | null;
+  socials: { label: string; url: string }[] | null;
+  past_events: { title: string; date: string }[] | null;
+  image_path: string | null;
+}
+
+export const fromChapterRow = (r: ChapterRow): Chapter => ({
+  id: r.id,
+  name: r.name,
+  tagline: r.tagline,
+  about: r.about,
+  accent: r.accent,
+  members: r.members,
+  founded: r.founded ?? "",
+  recruitment: r.recruitment ?? "",
+  facultyMentor: r.faculty_mentor ?? "",
+  chapterHeads: r.chapter_heads ?? [],
+  announcements: r.announcements ?? [],
+  gallery: r.gallery ?? [],
+  socials: r.socials ?? [],
+  pastEvents: r.past_events ?? [],
+  ...(r.image_path ? { imagePath: r.image_path } : {}),
+  ...(r.join_url ? { joinUrl: r.join_url } : {}),
 });
 
 export const fromOpportunityRow = (r: OpportunityRow): Opportunity => ({

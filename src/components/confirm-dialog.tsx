@@ -24,11 +24,14 @@ export function ConfirmDeleteDialog({
   trigger,
   title = "Delete this?",
   description = "This can't be undone.",
+  confirmLabel = "Delete",
   onConfirm,
 }: {
   trigger: ReactNode;
   title?: string;
-  description?: string;
+  description?: ReactNode;
+  /** Text on the destructive button. Defaults to "Delete". */
+  confirmLabel?: string;
   onConfirm: () => Promise<void> | void;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,7 +51,9 @@ export function ConfirmDeleteDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription asChild>
+            <div>{description}</div>
+          </AlertDialogDescription>
         </AlertDialogHeader>
         {error ? (
           <p role="alert" className="text-sm font-semibold text-destructive">
@@ -74,7 +79,11 @@ export function ConfirmDeleteDialog({
             }}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : "Delete"}
+            {pending ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              confirmLabel
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

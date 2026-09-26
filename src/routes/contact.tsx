@@ -81,9 +81,9 @@ export default function ContactPage() {
       </header>
 
       {/* Main grid */}
-      <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
+      <div className="grid gap-6 sm:gap-8 grid-cols-[minmax(0,1fr)] lg:grid-cols-[1.6fr_1fr]">
         {/* Contact form card */}
-        <Card className="shadow-[0px_8px_24px_rgba(0,0,0,0.06)] rounded-2xl border-border p-6 sm:p-8">
+        <Card className="shadow-[0px_8px_24px_rgba(0,0,0,0.06)] rounded-2xl border-border p-5 sm:p-8">
           {!sent ? (
             <>
               <CardHeader className="p-0 mb-6">
@@ -182,7 +182,7 @@ export default function ContactPage() {
         </Card>
 
         {/* Contact info card */}
-        <Card className="shadow-[0px_8px_24px_rgba(0,0,0,0.05)] rounded-2xl bg-secondary/50 border-border p-6 sm:p-8 h-fit">
+        <Card className="shadow-[0px_8px_24px_rgba(0,0,0,0.05)] rounded-2xl bg-secondary/50 border-border p-5 sm:p-8 h-fit min-w-0">
           <CardHeader className="p-0 mb-6">
             <div className="rounded-xl bg-card text-primary flex justify-center items-center size-11 mb-2 shadow-sm">
               <Headphones className="size-5" />
@@ -197,13 +197,13 @@ export default function ContactPage() {
           <CardContent className="flex p-0 flex-col gap-6">
             <div className="flex items-start gap-4">
               <Mail className="text-primary mt-0.5 size-5 shrink-0" />
-              <div className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="font-semibold uppercase text-muted-foreground text-xs tracking-wide">
                   Email
                 </span>
                 <a
                   href="mailto:thecampusboard.in@gmail.com"
-                  className="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                  className="font-medium text-foreground break-all hover:text-primary hover:underline transition-colors"
                 >
                   thecampusboard.in@gmail.com
                 </a>
@@ -211,7 +211,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-start gap-4">
               <MapPin className="text-purple-500 mt-0.5 size-5 shrink-0" />
-              <div className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="font-semibold uppercase text-muted-foreground text-xs tracking-wide">
                   Address
                 </span>
@@ -220,7 +220,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-start gap-4">
               <Clock3 className="text-amber-500 mt-0.5 size-5 shrink-0" />
-              <div className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="font-semibold uppercase text-muted-foreground text-xs tracking-wide">
                   Hours
                 </span>

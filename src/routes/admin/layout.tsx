@@ -6,13 +6,14 @@ import {
   Megaphone,
   CalendarDays,
   Users,
+  Layers,
+  HandHeart,
   UserCog,
   Briefcase,
   ShieldCheck,
   Menu,
   ArrowLeftFromLine,
   LogOut,
-  School,
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
@@ -20,6 +21,7 @@ import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { BrandLogo } from "@/components/brand-logo";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface AdminNavItem {
@@ -31,8 +33,9 @@ interface AdminNavItem {
 }
 
 /**
- * The Admin sidebar/nav — intentionally ONLY these seven sections, matching
- * the high-fidelity admin screens. Buy & Sell moderation, Appearance and
+ * The Admin sidebar/nav — a short list of primary sections, matching the
+ * high-fidelity admin screens (Chapters and Interest sit next to Clubs and
+ * Approvals, the content types they relate to). Buy & Sell moderation, Appearance and
  * Analytics still exist and are still fully reachable (routes are untouched
  * in App.tsx, and Overview links out to Buy & Sell directly) — they're just
  * not primary nav items here, so don't re-add them to this array.
@@ -42,6 +45,8 @@ const ADMIN_NAV: AdminNavItem[] = [
   { to: "/admin/notices", label: "Notices", icon: Megaphone },
   { to: "/admin/events", label: "Events", icon: CalendarDays },
   { to: "/admin/clubs", label: "Clubs", icon: Users },
+  { to: "/admin/chapters", label: "Chapters", icon: Layers },
+  { to: "/admin/interests", label: "Interest", icon: HandHeart },
   { to: "/admin/opportunities", label: "Opportunities", icon: Briefcase },
   { to: "/admin/approvals", label: "Approvals", icon: ShieldCheck, badge: true },
   { to: "/admin/users", label: "Users", icon: UserCog },
@@ -170,14 +175,8 @@ export default function AdminLayout() {
     <div className="flex min-h-screen bg-secondary/30">
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-8 border-r border-border bg-card p-4 lg:flex">
-        <Link to="/" className="flex items-center gap-2 px-1">
-          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-            <School className="size-5" aria-hidden="true" />
-          </span>
-          <span className="text-lg font-bold tracking-tight">
-            <span className="text-foreground">Campus</span>
-            <span className="text-primary">Board</span>
-          </span>
+        <Link to="/" aria-label="CampusBoard home" className="flex items-center px-1">
+          <BrandLogo size="md" />
         </Link>
 
         <div className="flex-1 overflow-y-auto">
@@ -209,13 +208,13 @@ export default function AdminLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-4 sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-3 sm:px-6">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
               <button
                 type="button"
                 aria-label="Open admin navigation"
-                className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-accent lg:hidden"
+                className="grid size-10 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-accent lg:hidden"
               >
                 <Menu className="size-5" aria-hidden="true" />
               </button>
@@ -225,15 +224,10 @@ export default function AdminLayout() {
               <Link
                 to="/"
                 onClick={() => setMobileNavOpen(false)}
-                className="mb-6 flex items-center gap-2 px-1"
+                aria-label="CampusBoard home"
+                className="mb-6 flex items-center px-1"
               >
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <School className="size-5" aria-hidden="true" />
-                </span>
-                <span className="text-lg font-bold tracking-tight">
-                  <span className="text-foreground">Campus</span>
-                  <span className="text-primary">Board</span>
-                </span>
+                <BrandLogo size="md" />
               </Link>
               <SidebarNav pendingCount={pendingCount} onNavigate={() => setMobileNavOpen(false)} />
               <div className="mt-6 flex flex-col gap-1 border-t border-border pt-4">
@@ -270,7 +264,7 @@ export default function AdminLayout() {
           </span>
         </header>
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="min-w-0 flex-1 p-3 sm:p-6 lg:p-8">
           <Suspense
             fallback={
               <Card className="border-border/70 p-6 text-sm text-muted-foreground sm:p-8">

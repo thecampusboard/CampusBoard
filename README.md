@@ -17,9 +17,27 @@ npm run dev
 ```
 
 Run every file in `supabase/migrations/` against your Supabase project, in
-order (001 → 013), then optionally `supabase/seed.sql` for demo content.
+order (001 → 020), then optionally `supabase/seed.sql` for demo content.
 
 To remove only the demo content later, run `supabase/seed-remove.sql`.
+
+### Chapters, interest submissions and user removal
+
+- **Chapters** (`018_chapters.sql`) are a separate, student-run content type from Clubs, with their
+  own `/chapters` pages and Admin → Chapters management.
+- **"Interested to Join"** (`019_community_interests.sql`) replaces the old "Join Club" toggle.
+  Students leave an interest submission; Admin reviews them under Admin → Interest. Nothing here
+  manages real membership.
+- **Removing a user** (`020_admin_user_removal.sql` + the `admin-delete-user` Edge Function) needs
+  the Supabase Auth Admin API, so it runs server-side. Deploy the function once:
+
+  ```sh
+  supabase functions deploy admin-delete-user
+  ```
+
+  The service-role key is injected into the function by Supabase and is never present in the
+  browser bundle. The function re-checks that the caller is an Admin and refuses to delete the
+  caller's own account; a database trigger refuses to remove the last Admin.
 
 ### Admin bulk Excel import
 

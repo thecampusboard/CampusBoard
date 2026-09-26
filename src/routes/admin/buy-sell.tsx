@@ -140,7 +140,7 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit listing</DialogTitle>
         </DialogHeader>
@@ -331,7 +331,9 @@ export default function AdminBuySellPage() {
   return (
     <div className="space-y-6">
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
-        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Buy & Sell</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">
+          Buy & Sell
+        </h1>
         <p className="pt-2 text-sm text-muted-foreground">
           Every listing regardless of status. New student submissions are reviewed under Approvals.
         </p>
@@ -369,7 +371,7 @@ export default function AdminBuySellPage() {
           hint="Try a different search or status."
         />
       ) : (
-        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
+        <Card role="list" className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((l) => {
             const cover = l.images?.[0] ? publicStorageUrl("listing-images", l.images[0]) : null;
             const expiry = listingExpiryDate(l);

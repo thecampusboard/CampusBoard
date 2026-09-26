@@ -4,6 +4,7 @@ import { ArrowLeft, Bell, ExternalLink, Paperclip } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { DescriptionText } from "@/components/description-text";
 
 import { useAuth } from "@/lib/auth";
 import { useContent } from "@/lib/content";
@@ -70,7 +71,10 @@ export default function NoticeDetail() {
         <p className="pt-2 text-sm text-muted-foreground">
           This notice may still be awaiting Admin approval, or is no longer available.
         </p>
-        <Link to="/notices" className="pt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+        <Link
+          to="/notices"
+          className="pt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+        >
           <ArrowLeft className="size-4" /> Back to notices
         </Link>
       </Card>
@@ -80,34 +84,53 @@ export default function NoticeDetail() {
   const club = notice.clubId ? clubs.find((c) => c.id === notice.clubId) : undefined;
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6">
-      <Link to="/notices" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+    <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-6">
+      <Link
+        to="/notices"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeft className="size-4" /> Back to notices
       </Link>
-      <Card className="shadow-bento rounded-2xl border-border p-6 sm:p-8">
+      <Card className="shadow-bento rounded-2xl border-border p-4 sm:p-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="rounded-xl bg-primary/10 text-primary flex justify-center items-center size-10 shrink-0">
             <Bell className="size-5" />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary text-[10px] capitalize">
+            <Badge
+              variant="secondary"
+              className="rounded-full bg-primary/10 text-primary text-[10px] capitalize"
+            >
               {notice.category}
             </Badge>
             <span className="text-muted-foreground text-xs">{notice.department}</span>
           </div>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{notice.title}</h1>
-        <p className="mt-1 text-sm font-semibold text-muted-foreground">{formatDate(notice.date)}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight [overflow-wrap:anywhere]">
+          {notice.title}
+        </h1>
+        <p className="mt-1 text-sm font-semibold text-muted-foreground">
+          {formatDate(notice.date)}
+        </p>
         {notice.status !== "approved" ? (
-          <p className={"mt-2 text-xs font-bold " + (notice.status === "rejected" ? "text-destructive" : "text-amber-600")}>
+          <p
+            className={
+              "mt-2 text-xs font-bold " +
+              (notice.status === "rejected" ? "text-destructive" : "text-amber-600")
+            }
+          >
             Status: {notice.status} — only visible to you and Admin.
-            {notice.status === "rejected" && notice.rejectionReason ? ` Reason: ${notice.rejectionReason}` : ""}
+            {notice.status === "rejected" && notice.rejectionReason
+              ? ` Reason: ${notice.rejectionReason}`
+              : ""}
           </p>
         ) : null}
-        <p className="mt-5 text-base leading-relaxed text-foreground">{notice.description}</p>
+        <DescriptionText text={notice.description} className="mt-5" />
         {notice.filePath ? (
           fileLoading ? (
-            <p className="mt-4 text-sm font-semibold text-muted-foreground">Preparing attachment…</p>
+            <p className="mt-4 text-sm font-semibold text-muted-foreground">
+              Preparing attachment…
+            </p>
           ) : fileUrl ? (
             notice.fileType === "Image" ? (
               <img
@@ -120,14 +143,16 @@ export default function NoticeDetail() {
                 href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold hover:bg-accent transition-colors"
+                className="mt-5 inline-flex min-h-11 max-w-full items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold hover:bg-accent transition-colors"
               >
                 <Paperclip className="size-4 shrink-0" aria-hidden="true" />
                 {notice.fileLabel ?? "Download attachment"}
               </a>
             )
           ) : fileError ? (
-            <p role="alert" className="mt-4 text-sm font-semibold text-destructive">{fileError}</p>
+            <p role="alert" className="mt-4 text-sm font-semibold text-destructive">
+              {fileError}
+            </p>
           ) : null
         ) : null}
         {club ? (
@@ -144,10 +169,11 @@ export default function NoticeDetail() {
               href={notice.externalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <ExternalLink className="size-4" aria-hidden="true" />
               Open external link
+              <span className="sr-only">(opens in a new tab)</span>
             </a>
           </div>
         ) : null}

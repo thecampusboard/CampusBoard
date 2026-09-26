@@ -62,14 +62,19 @@ export default function AdminOverviewPage() {
   const rejectedNoticesCount = notices.filter((n) => n.status === "rejected").length;
   const rejectedEventsCount = events.filter((e) => e.status === "rejected").length;
   const rejectedOpportunitiesCount = opportunities.filter((o) => o.status === "rejected").length;
-  const anyRejected = rejectedNoticesCount > 0 || rejectedEventsCount > 0 || rejectedOpportunitiesCount > 0;
+  const anyRejected =
+    rejectedNoticesCount > 0 || rejectedEventsCount > 0 || rejectedOpportunitiesCount > 0;
 
   return (
     <div className="space-y-6">
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
         <p className="text-xs font-bold tracking-widest text-primary uppercase">Admin</p>
-        <h1 className="pt-2 text-3xl font-display font-extrabold tracking-tight sm:text-4xl text-foreground">Content overview</h1>
-        <p className="pt-1 text-sm text-muted-foreground">Manage approvals, live postings, and campus directory records.</p>
+        <h1 className="pt-2 text-3xl font-display font-extrabold tracking-tight sm:text-4xl text-foreground">
+          Content overview
+        </h1>
+        <p className="pt-1 text-sm text-muted-foreground">
+          Manage approvals, live postings, and campus directory records.
+        </p>
       </Card>
 
       {pendingTotal > 0 ? (
@@ -88,10 +93,14 @@ export default function AdminOverviewPage() {
               <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
                 {pendingNotices.length} notice{pendingNotices.length === 1 ? "" : "s"} ·{" "}
                 {pendingEvents.length} event{pendingEvents.length === 1 ? "" : "s"} ·{" "}
-                {pendingOpportunities.length} opportunit{pendingOpportunities.length === 1 ? "y" : "ies"}
+                {pendingOpportunities.length} opportunit
+                {pendingOpportunities.length === 1 ? "y" : "ies"}
               </p>
             </div>
-            <ArrowRight className="size-4 shrink-0 text-amber-700 dark:text-amber-300 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            <ArrowRight
+              className="size-4 shrink-0 text-amber-700 dark:text-amber-300 group-hover:translate-x-1 transition-transform"
+              aria-hidden="true"
+            />
           </Card>
         </Link>
       ) : null}
@@ -197,7 +206,10 @@ export default function AdminOverviewPage() {
                   <p className="text-2xl font-extrabold text-foreground">{c.count}</p>
                   <p className="text-xs font-semibold text-muted-foreground">{c.label}</p>
                 </div>
-                <ArrowRight className="size-4 shrink-0 text-muted-foreground group-hover:translate-x-1 group-hover:text-primary transition-all" aria-hidden="true" />
+                <ArrowRight
+                  className="size-4 shrink-0 text-muted-foreground group-hover:translate-x-1 group-hover:text-primary transition-all"
+                  aria-hidden="true"
+                />
               </Card>
             </Link>
           </li>

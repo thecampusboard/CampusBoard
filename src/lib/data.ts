@@ -95,6 +95,34 @@ export interface Club {
   imagePath?: string;
   /** True for a row created via bulk Excel import that Admin hasn't reviewed/saved yet. Excluded from every public listing until Admin opens it in the edit dialog and saves — see publicClubs(). */
   isDraft?: boolean;
+  /** Optional Admin-provided external "Join" link (e.g. a Google Form). CampusBoard just links out to it — it doesn't manage membership. */
+  joinUrl?: string;
+}
+
+/**
+ * A student-run community, separate from Clubs (which are managed by SEE).
+ * Chapters are run by students and regulated by a faculty mentor and one or
+ * more chapter heads. Lives in its own `chapters` table.
+ */
+export interface Chapter {
+  id: string;
+  name: string;
+  tagline: string;
+  about: string;
+  accent: Accent;
+  members: number;
+  founded: string;
+  recruitment: string;
+  facultyMentor: string;
+  chapterHeads: string[];
+  announcements: string[];
+  gallery: string[];
+  socials: { label: string; url: string }[];
+  pastEvents: { title: string; date: string }[];
+  /** Storage object path (in the public `content-images` bucket) for a custom chapter image. */
+  imagePath?: string;
+  /** Optional Admin-provided external "Join" link. */
+  joinUrl?: string;
 }
 
 export type OpportunityType =
@@ -449,7 +477,8 @@ export function formatEventTimeRange(
   return event.time ?? "";
 }
 
-export type SearchResultType = "NOTICE" | "EVENT" | "CLUB" | "OPPORTUNITY" | "BUY & SELL";
+export type SearchResultType =
+  "NOTICE" | "EVENT" | "CLUB" | "CHAPTER" | "OPPORTUNITY" | "BUY & SELL";
 
 export interface SearchResult {
   type: SearchResultType;
@@ -463,6 +492,7 @@ export interface SearchSource {
   notices: Notice[];
   events: CampusEvent[];
   clubs: Club[];
+  chapters: Chapter[];
   opportunities: Opportunity[];
   listings: Listing[];
 }
@@ -517,6 +547,18 @@ export function globalSearch(query: string, source: SearchSource): SearchResult[
       }),
     );
 
+  source.chapters
+    .filter((c) => hit(c.name, c.tagline, c.about, c.facultyMentor, c.chapterHeads.join(" ")))
+    .forEach((c) =>
+      results.push({
+        type: "CHAPTER",
+        id: c.id,
+        title: c.name,
+        subtitle: c.tagline,
+        to: `/chapters/${c.id}`,
+      }),
+    );
+
   publicNotices(source.notices)
     .filter((n) => hit(n.title, n.description, n.category, n.department))
     .forEach((n) =>
@@ -548,6 +590,7 @@ export const SEARCH_TYPES: SearchResultType[] = [
   "NOTICE",
   "EVENT",
   "CLUB",
+  "CHAPTER",
   "OPPORTUNITY",
   "BUY & SELL",
 ];

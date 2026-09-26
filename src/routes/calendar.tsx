@@ -90,12 +90,20 @@ export default function CalendarPage() {
       ) : error && sorted.length === 0 ? (
         <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
           <p className="text-destructive font-medium">{error}</p>
-          <button type="button" onClick={refresh} className="mt-4 inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">Try again</button>
+          <button
+            type="button"
+            onClick={refresh}
+            className="mt-4 inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+          >
+            Try again
+          </button>
         </Card>
       ) : sorted.length === 0 ? (
         <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
           <h3 className="font-semibold text-foreground text-lg">No events on the calendar yet</h3>
-          <p className="text-muted-foreground text-sm mt-2">Check back soon for upcoming campus dates.</p>
+          <p className="text-muted-foreground text-sm mt-2">
+            Check back soon for upcoming campus dates.
+          </p>
         </Card>
       ) : (
         <Card className="shadow-bento rounded-2xl border-border divide-y divide-border p-2">

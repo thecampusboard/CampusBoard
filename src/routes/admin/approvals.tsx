@@ -53,7 +53,10 @@ function PendingNoticeRow({
   return (
     <li className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 space-y-2">
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+        <Badge
+          variant="outline"
+          className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
+        >
           {notice.category}
         </Badge>
         <span className="text-xs text-muted-foreground font-medium">{notice.department}</span>
@@ -173,16 +176,22 @@ function PendingListingRow({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+            <Badge
+              variant="outline"
+              className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
+            >
               {listing.listingType}
             </Badge>
             <span className="text-xs text-muted-foreground font-medium">{listing.category}</span>
           </div>
           <p className="text-base font-bold text-foreground pt-1">{listing.title}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">{listing.description}</p>
-          <p className="pt-1.5 text-base font-extrabold text-foreground">{formatPrice(listing.price)}</p>
+          <p className="pt-1.5 text-base font-extrabold text-foreground">
+            {formatPrice(listing.price)}
+          </p>
           <p className="text-xs text-muted-foreground">
-            Seller: <strong className="text-foreground">{listing.sellerName}</strong> · {listing.sellerPhone}
+            Seller: <strong className="text-foreground">{listing.sellerName}</strong> ·{" "}
+            {listing.sellerPhone}
           </p>
           {listing.submittedOn ? (
             <p className="text-xs text-muted-foreground">
@@ -302,7 +311,10 @@ function PendingEventRow({
   return (
     <li className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 space-y-2">
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+        <Badge
+          variant="outline"
+          className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
+        >
           {formatDate(event.date)}
         </Badge>
         <span className="text-xs text-muted-foreground font-medium">{event.venue}</span>
@@ -416,7 +428,10 @@ function PendingOpportunityRow({
   return (
     <li className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 space-y-2">
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+        <Badge
+          variant="outline"
+          className="border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
+        >
           {opportunity.type}
         </Badge>
         <span className="text-xs text-muted-foreground font-medium">
@@ -546,7 +561,9 @@ export default function AdminApprovalsPage() {
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
         <h2 className="text-xl font-bold tracking-tight text-foreground">
           Pending notices{" "}
-          <span className="text-sm font-semibold text-muted-foreground">({pendingNotices.length})</span>
+          <span className="text-sm font-semibold text-muted-foreground">
+            ({pendingNotices.length})
+          </span>
         </h2>
         {pendingNotices.length === 0 ? (
           <p className="pt-4 text-sm text-muted-foreground">No notices waiting for review.</p>
@@ -562,7 +579,9 @@ export default function AdminApprovalsPage() {
       <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
         <h2 className="text-xl font-bold tracking-tight text-foreground">
           Pending events{" "}
-          <span className="text-sm font-semibold text-muted-foreground">({pendingEvents.length})</span>
+          <span className="text-sm font-semibold text-muted-foreground">
+            ({pendingEvents.length})
+          </span>
         </h2>
         {pendingEvents.length === 0 ? (
           <p className="pt-4 text-sm text-muted-foreground">No events waiting for review.</p>
