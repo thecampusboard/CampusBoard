@@ -290,7 +290,7 @@ export function BulkImportDialog({ kind, clubs = [], onImported }: BulkImportDia
                 type="button"
                 onClick={() => void runImport()}
                 disabled={!canImport}
-                className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+                className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
               >
                 Import {validRows.length} record{validRows.length === 1 ? "" : "s"}
               </button>
@@ -318,7 +318,7 @@ export function BulkImportDialog({ kind, clubs = [], onImported }: BulkImportDia
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90"
+                className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90"
               >
                 Done
               </button>

@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, CalendarPlus, Clock, CalendarHeart } from "lucide-react";
+import { CalendarDays, CalendarHeart, CalendarPlus, Clock } from "lucide-react";
 
 import { ProtectedAction } from "@/components/protected-action";
 import { HolidayCalendar } from "@/components/holiday-calendar";
+import { Card } from "@/components/ui/card";
 import { googleCalendarUrl } from "@/lib/auth";
 import { useContent } from "@/lib/content";
 import { formatDate, formatEventTimeRange, formatShortDate, publicEvents } from "@/lib/data";
 import { usePageMeta } from "@/lib/seo";
-import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
 
 export default function CalendarPage() {
   usePageMeta(
@@ -29,13 +29,11 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-5">
-      <header className="bento p-5 sm:p-8">
+      <header className="shadow-bento rounded-2xl bg-card border border-border p-5 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-              Calendar
-            </p>
-            <h1 className="pt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+            <p className="text-xs font-bold tracking-[0.22em] text-primary uppercase">Calendar</p>
+            <h1 className="pt-2 text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
               Campus dates, all in one place
             </h1>
             <p className="max-w-2xl pt-2 text-sm leading-6 text-muted-foreground">
@@ -83,20 +81,24 @@ export default function CalendarPage() {
       {tab === "holidays" ? (
         <HolidayCalendar />
       ) : loading && sorted.length === 0 ? (
-        <div className="space-y-2">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
+        <div className="flex items-center justify-center py-20">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            Loading calendar…
+          </div>
         </div>
       ) : error && sorted.length === 0 ? (
-        <ErrorState hint={error} onRetry={refresh} />
+        <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
+          <p className="text-destructive font-medium">{error}</p>
+          <button type="button" onClick={refresh} className="mt-4 inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">Try again</button>
+        </Card>
       ) : sorted.length === 0 ? (
-        <EmptyState
-          title="No events on the calendar yet"
-          hint="Check back soon for upcoming campus dates."
-        />
+        <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
+          <h3 className="font-semibold text-foreground text-lg">No events on the calendar yet</h3>
+          <p className="text-muted-foreground text-sm mt-2">Check back soon for upcoming campus dates.</p>
+        </Card>
       ) : (
-        <ol className="bento divide-y divide-border p-2">
+        <Card className="shadow-bento rounded-2xl border-border divide-y divide-border p-2">
           {sorted.map((e) => {
             const calendarUrl = googleCalendarUrl({
               title: e.title,
@@ -125,7 +127,7 @@ export default function CalendarPage() {
                     <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
                     {dateRange}
                   </span>
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-blue sm:whitespace-nowrap">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-primary sm:whitespace-nowrap">
                     <Clock className="size-3.5 shrink-0" aria-hidden="true" />
                     {formatEventTimeRange(e)}
                   </span>
@@ -143,7 +145,7 @@ export default function CalendarPage() {
               </li>
             );
           })}
-        </ol>
+        </Card>
       )}
     </div>
   );

@@ -6,6 +6,8 @@ import { supabase, publicStorageUrl } from "@/lib/supabase";
 import { uploadImages } from "@/components/admin/admin-storage";
 import { usePageMeta } from "@/lib/seo";
 
+import { Card } from "@/components/ui/card";
+
 function validateImageFile(file: File): string | null {
   if (!new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]).has(file.type)) {
     return "Must be a JPEG, PNG, WebP or GIF image.";
@@ -115,16 +117,15 @@ export default function AdminAppearancePage() {
     : null;
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-5 sm:p-6">
-        <h1 className="text-2xl font-extrabold">Appearance</h1>
-        <p className="max-w-2xl pt-1 text-sm leading-6 text-muted-foreground">
-          Control the homepage hero background and campus gallery. Changes are published immediately
-          after save.
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Appearance</h1>
+        <p className="max-w-2xl pt-2 text-sm leading-relaxed text-muted-foreground">
+          Customize the homepage hero banner image and campus showcase gallery.
         </p>
-      </div>
+      </Card>
 
-      <section className="bento p-4 sm:p-6 lg:p-8">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
         {error ? (
           <p
             role="alert"
@@ -138,9 +139,9 @@ export default function AdminAppearancePage() {
           <div className="min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-bold">Hero background image</p>
+                <p className="text-sm font-bold text-foreground">Hero background image</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Recommended: landscape image with enough contrast for white hero text.
+                  Recommended: high-resolution landscape photo with balanced contrast.
                 </p>
               </div>
               {heroUrl && heroImageBroken ? (
@@ -157,7 +158,7 @@ export default function AdminAppearancePage() {
             </div>
 
             {heroUrl && !heroImageBroken ? (
-              <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted">
+              <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted shadow-inner">
                 <img
                   src={heroUrl}
                   alt="Current homepage hero background"
@@ -166,7 +167,7 @@ export default function AdminAppearancePage() {
                 />
               </div>
             ) : (
-              <div className="mt-4 grid aspect-[16/8] place-items-center rounded-2xl border border-dashed border-border bg-secondary px-6 text-center">
+              <div className="mt-4 grid aspect-[16/8] place-items-center rounded-2xl border border-dashed border-border bg-secondary/40 px-6 text-center">
                 <div>
                   <ImageIcon className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
                   <p className="mt-2 text-sm font-semibold">Using the default hero illustration</p>
@@ -183,8 +184,8 @@ export default function AdminAppearancePage() {
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl bg-navy px-3.5 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
                 <ImagePlus className="size-4" aria-hidden="true" />
                 <span>{heroUploading ? "Uploading…" : "Upload / replace hero"}</span>
                 <input
@@ -204,7 +205,7 @@ export default function AdminAppearancePage() {
                   type="button"
                   onClick={handleHeroImageRemove}
                   disabled={heroUploading}
-                  className="inline-flex min-h-10 items-center rounded-xl border border-destructive/25 px-3.5 text-sm font-semibold text-destructive hover:bg-destructive/5 disabled:opacity-60"
+                  className="inline-flex min-h-10 items-center rounded-lg border border-destructive/25 px-4 text-sm font-semibold text-destructive hover:bg-destructive/5 disabled:opacity-60"
                 >
                   Remove image
                 </button>
@@ -214,14 +215,14 @@ export default function AdminAppearancePage() {
 
           <div className="min-w-0">
             <div>
-              <p className="text-sm font-bold">
+              <p className="text-sm font-bold text-foreground">
                 Campus gallery{" "}
                 <span className="font-normal text-muted-foreground">
                   ({appearance.campusGalleryPaths.length})
                 </span>
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Images appear in the homepage campus section. Add several to create a richer slider.
+                Images appear in the homepage campus section gallery showcase.
               </p>
             </div>
 
@@ -235,32 +236,32 @@ export default function AdminAppearancePage() {
                     <img
                       src={publicStorageUrl("content-images", path)}
                       alt=""
-                      className="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                      className="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                     />
                     <button
                       type="button"
                       onClick={() => void handleGalleryRemove(path)}
                       aria-label="Remove photo"
-                      className="absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-white/20 bg-navy/85 text-white shadow-sm opacity-100 transition hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky"
+                      className="absolute right-2 top-2 grid size-7 place-items-center rounded-full border border-white/20 bg-background/80 backdrop-blur-sm text-foreground shadow-sm transition hover:bg-destructive hover:text-white"
                     >
-                      <X className="size-4" aria-hidden="true" />
+                      <X className="size-3.5" aria-hidden="true" />
                     </button>
                   </li>
                 ))}
               </ul>
             ) : (
-              <div className="mt-4 grid min-h-44 place-items-center rounded-2xl border border-dashed border-border bg-secondary px-6 text-center">
+              <div className="mt-4 grid min-h-44 place-items-center rounded-2xl border border-dashed border-border bg-secondary/40 px-6 text-center">
                 <div>
                   <ImageIcon className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
                   <p className="mt-2 text-sm font-semibold">No campus photos yet</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    The homepage will use the default illustration.
+                    The homepage will display default campus illustrations.
                   </p>
                 </div>
               </div>
             )}
 
-            <label className="mt-3 flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card px-3 text-sm font-semibold text-muted-foreground hover:bg-accent has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+            <label className="mt-4 flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 text-sm font-semibold text-muted-foreground hover:bg-accent transition-colors has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
               <ImagePlus className="size-4" aria-hidden="true" />
               <span>{galleryUploading ? "Uploading…" : "Add campus photos"}</span>
               <input
@@ -278,7 +279,7 @@ export default function AdminAppearancePage() {
             </label>
           </div>
         </div>
-      </section>
+      </Card>
     </div>
   );
 }

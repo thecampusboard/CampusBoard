@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
 
 const STATUS_LABEL: Record<Listing["status"], string> = {
   payment_pending: "Payment pending",
@@ -39,12 +40,12 @@ const STATUS_LABEL: Record<Listing["status"], string> = {
 };
 
 const STATUS_TONE: Record<Listing["status"], string> = {
-  payment_pending: "bg-secondary text-muted-foreground",
-  payment_submitted: "bg-yellow/30 text-navy",
-  pending_approval: "bg-yellow/30 text-navy",
-  approved: "bg-green/20 text-navy",
+  payment_pending: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  payment_submitted: "bg-sky-500/10 text-sky-700 dark:text-sky-400",
+  pending_approval: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  approved: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
   rejected: "bg-destructive/10 text-destructive",
-  expired: "bg-secondary text-muted-foreground",
+  expired: "bg-muted text-muted-foreground",
 };
 
 function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: React.ReactNode }) {
@@ -225,7 +226,7 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
                             : [...current, path],
                         )
                       }
-                      className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-navy/90 text-white shadow-sm hover:bg-destructive"
+                      className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full border border-border/40 bg-background/90 text-foreground shadow-md backdrop-blur-sm transition hover:bg-destructive hover:text-destructive-foreground"
                       aria-label={removedImages.includes(path) ? "Keep photo" : "Remove photo"}
                     >
                       {removedImages.includes(path) ? (
@@ -287,7 +288,7 @@ function ListingEditDialog({ listing, trigger }: { listing: Listing; trigger: Re
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+              className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting ? "Saving…" : "Save changes"}
             </button>
@@ -328,13 +329,13 @@ export default function AdminBuySellPage() {
   }, [listings, search, status]);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="text-2xl font-extrabold">Buy & Sell</h1>
-        <p className="pt-1 text-sm text-muted-foreground">
-          Every listing regardless of status. New submissions are reviewed under Approvals.
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Buy & Sell</h1>
+        <p className="pt-2 text-sm text-muted-foreground">
+          Every listing regardless of status. New student submissions are reviewed under Approvals.
         </p>
-      </div>
+      </Card>
 
       <AdminToolbar
         search={search}
@@ -368,17 +369,17 @@ export default function AdminBuySellPage() {
           hint="Try a different search or status."
         />
       ) : (
-        <ul className="bento divide-y divide-border p-2">
+        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((l) => {
             const cover = l.images?.[0] ? publicStorageUrl("listing-images", l.images[0]) : null;
             const expiry = listingExpiryDate(l);
             return (
-              <li key={l.id} className="flex flex-wrap items-center gap-3 p-3">
+              <li key={l.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
                 {cover ? (
                   <img src={cover} alt="" className="size-10 shrink-0 rounded-lg object-cover" />
                 ) : (
                   <span
-                    className="grid size-10 shrink-0 place-items-center rounded-lg bg-yellow/25 text-navy"
+                    className="grid size-10 shrink-0 place-items-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400"
                     aria-hidden="true"
                   >
                     <ShoppingBag className="size-4" strokeWidth={1.75} />
@@ -423,7 +424,7 @@ export default function AdminBuySellPage() {
               </li>
             );
           })}
-        </ul>
+        </Card>
       )}
     </div>
   );

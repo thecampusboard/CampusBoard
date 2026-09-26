@@ -17,6 +17,8 @@ import type { Listing } from "@/lib/data";
 import { usePageMeta } from "@/lib/seo";
 import campusBoardUpiQr from "@/assets/campusboard-upi-qr.png";
 
+import { Card } from "@/components/ui/card";
+
 const MAX_IMAGE_FILES = 6;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -38,7 +40,7 @@ async function uploadToBucket(bucket: string, userId: string, listingId: string,
 type Step = "details" | "payment" | "screenshot" | "done";
 
 const fieldClass =
-  "mt-1 min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-blue";
+  "mt-1 min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none transition-colors focus:ring-2 focus:ring-primary/20 focus:border-primary";
 
 export default function BuySellNew() {
   usePageMeta(
@@ -95,18 +97,18 @@ export default function BuySellNew() {
   if (!user) {
     return (
       <div className="mx-auto max-w-md py-8">
-        <div className="bento p-6 sm:p-8 text-center">
-          <h1 className="text-2xl font-extrabold">Login to post a listing</h1>
+        <Card className="p-6 sm:p-8 text-center border-border/70 shadow-sm">
+          <h1 className="text-2xl font-display font-extrabold tracking-tight">Login to post a listing</h1>
           <p className="pt-2 text-sm text-muted-foreground">
             Sign in with your college email to post on the Buy & Sell marketplace.
           </p>
           <Link
             to={`/login?redirect=${encodeURIComponent("/buy-sell/new")}&action=${encodeURIComponent("Post a listing")}`}
-            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90"
+            className="mt-6 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90"
           >
             Go to login
           </Link>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -224,40 +226,41 @@ export default function BuySellNew() {
   };
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-xl space-y-5 py-4">
-      <header className="bento p-6 sm:p-8">
-        <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
+    <div className="mx-auto w-full min-w-0 max-w-xl space-y-6 py-4">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <p className="text-xs font-bold tracking-widest text-primary uppercase">
           Buy & Sell
         </p>
-        <h1 className="pt-2 text-3xl font-extrabold sm:text-4xl">Post an item</h1>
+        <h1 className="pt-2 text-3xl font-display font-extrabold tracking-tight sm:text-4xl text-foreground">Post an item</h1>
         <p className="pt-2 text-sm text-muted-foreground">
           Listings cost {formatPrice(LISTING_FEE)} and stay live for {LISTING_DURATION_DAYS} days
           once Admin approves your payment.
         </p>
-      </header>
+      </Card>
 
       {step === "details" ? (
-        <form className="bento space-y-4 p-6 sm:p-8" onSubmit={handleDetailsSubmit}>
-          <div>
-            <span className="text-sm font-bold">Listing type</span>
-            <div className="mt-1 flex gap-2">
-              {(["Sell", "Buy"] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setListingType(t)}
-                  aria-pressed={listingType === t}
-                  className={
-                    listingType === t
-                      ? "inline-flex min-h-10 items-center rounded-full border border-navy bg-navy px-4 text-xs font-bold text-navy-foreground"
-                      : "inline-flex min-h-10 items-center rounded-full border border-foreground/15 bg-card px-4 text-xs font-bold text-foreground/70"
-                  }
-                >
-                  {t}
-                </button>
-              ))}
+        <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+          <form className="space-y-4" onSubmit={handleDetailsSubmit}>
+            <div>
+              <span className="text-sm font-bold">Listing type</span>
+              <div className="mt-1 flex gap-2">
+                {(["Sell", "Buy"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setListingType(t)}
+                    aria-pressed={listingType === t}
+                    className={
+                      listingType === t
+                        ? "inline-flex min-h-9 items-center rounded-lg bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm"
+                        : "inline-flex min-h-9 items-center rounded-lg border border-border bg-card px-4 text-xs font-semibold text-muted-foreground hover:bg-accent"
+                    }
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
           <div>
             <label htmlFor="title" className="text-sm font-bold">
@@ -390,16 +393,17 @@ export default function BuySellNew() {
           <button
             type="submit"
             disabled={submitting}
-            className="min-h-11 w-full rounded-xl bg-navy text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.99] disabled:opacity-60"
+            className="min-h-11 w-full rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.99] disabled:opacity-60"
           >
             {submitting ? "Saving…" : "Continue to payment"}
           </button>
         </form>
+      </Card>
       ) : null}
 
       {step === "payment" ? (
-        <div className="bento min-w-0 space-y-4 p-5 text-center sm:p-8">
-          <h2 className="break-words text-2xl font-extrabold">
+        <Card className="min-w-0 space-y-5 p-6 text-center sm:p-8 border-border/70 shadow-sm">
+          <h2 className="break-words text-2xl font-display font-extrabold tracking-tight">
             Pay {formatPrice(LISTING_FEE)} for 30 days
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -411,16 +415,16 @@ export default function BuySellNew() {
             alt="UPI QR code to pay ₹20 to CampusBoard"
             width={240}
             height={240}
-            className="mx-auto size-52 max-w-full rounded-2xl border border-border bg-white p-2 sm:size-60"
+            className="mx-auto size-52 max-w-full rounded-2xl border border-border bg-white p-2 sm:size-60 shadow-inner"
           />
           <div className="space-y-1">
             <p className="text-xs font-semibold text-muted-foreground">UPI ID</p>
-            <p className="break-all text-sm font-extrabold text-navy">{UPI_ID}</p>
+            <p className="break-all text-sm font-extrabold text-foreground">{UPI_ID}</p>
           </div>
           <div className="flex flex-col justify-center gap-2 sm:flex-row">
             <a
               href={UPI_URI}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue px-5 text-sm font-bold text-white transition hover:bg-blue/90 active:scale-[0.98]"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-secondary px-5 text-sm font-bold text-secondary-foreground transition hover:bg-secondary/80 active:scale-[0.98]"
             >
               <ExternalLink className="size-4" aria-hidden="true" />
               Open UPI app
@@ -428,7 +432,7 @@ export default function BuySellNew() {
             <button
               type="button"
               onClick={handlePaymentDone}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
             >
               <Check className="size-4" aria-hidden="true" />
               I’ve paid
@@ -437,81 +441,85 @@ export default function BuySellNew() {
           <p className="text-xs text-muted-foreground">
             After paying, continue to upload your payment screenshot for Admin verification.
           </p>
-        </div>
+        </Card>
       ) : null}
 
       {step === "screenshot" ? (
-        <form className="bento space-y-4 p-6 sm:p-8 text-center" onSubmit={handleScreenshotSubmit}>
-          <h2 className="text-2xl font-extrabold">Upload payment screenshot</h2>
-          <p className="text-sm text-muted-foreground">
-            Admin verifies your payment from this screenshot before approving the listing.
-          </p>
-          <label
-            htmlFor="screenshot"
-            className="mx-auto flex min-h-11 max-w-xs cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input bg-card px-4 text-sm font-semibold text-muted-foreground hover:bg-accent"
-          >
-            <Upload className="size-4" aria-hidden="true" />
-            {screenshotFile ? "Screenshot selected" : "Upload screenshot"}
-          </label>
-          <input
-            id="screenshot"
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setScreenshotFile(file);
-                setScreenshotPreview((prev) => {
-                  if (prev) URL.revokeObjectURL(prev);
-                  return URL.createObjectURL(file);
-                });
-              }
-            }}
-          />
-          {screenshotPreview ? (
-            <img
-              src={screenshotPreview}
-              alt="Payment screenshot preview"
-              className="mx-auto max-h-48 rounded-xl border border-border object-contain"
-            />
-          ) : null}
-
-          {error ? (
-            <p role="alert" className="text-sm font-semibold text-destructive">
-              {error}
+        <Card className="space-y-4 p-6 sm:p-8 text-center border-border/70 shadow-sm">
+          <form className="space-y-4" onSubmit={handleScreenshotSubmit}>
+            <h2 className="text-2xl font-display font-extrabold tracking-tight">Upload payment screenshot</h2>
+            <p className="text-sm text-muted-foreground">
+              Admin verifies your payment from this screenshot before approving the listing.
             </p>
-          ) : null}
+            <label
+              htmlFor="screenshot"
+              className="mx-auto flex min-h-11 max-w-xs cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input bg-card px-4 text-sm font-semibold text-muted-foreground hover:bg-accent"
+            >
+              <Upload className="size-4" aria-hidden="true" />
+              {screenshotFile ? "Screenshot selected" : "Upload screenshot"}
+            </label>
+            <input
+              id="screenshot"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setScreenshotFile(file);
+                  setScreenshotPreview((prev) => {
+                    if (prev) URL.revokeObjectURL(prev);
+                    return URL.createObjectURL(file);
+                  });
+                }
+              }}
+            />
+            {screenshotPreview ? (
+              <img
+                src={screenshotPreview}
+                alt="Payment screenshot preview"
+                className="mx-auto max-h-48 rounded-xl border border-border object-contain"
+              />
+            ) : null}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="mx-auto inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-6 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98] disabled:opacity-60"
-          >
-            {submitting ? "Submitting…" : "Submit for approval"}
-          </button>
-        </form>
+            {error ? (
+              <p role="alert" className="text-sm font-semibold text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mx-auto inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98] disabled:opacity-60"
+            >
+              {submitting ? "Submitting…" : "Submit for approval"}
+            </button>
+          </form>
+        </Card>
       ) : null}
 
       {step === "done" ? (
-        <div className="bento space-y-3 p-6 sm:p-8 text-center">
-          <Clock className="mx-auto size-8 text-navy" aria-hidden="true" />
-          <h2 className="text-2xl font-extrabold">
-            Payment submitted — waiting for Admin approval.
+        <Card className="space-y-3 p-6 sm:p-8 text-center border-border/70 shadow-sm">
+          <div className="mx-auto grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+            <Clock className="size-6" aria-hidden="true" />
+          </div>
+          <h2 className="text-2xl font-display font-extrabold tracking-tight">
+            Payment submitted — waiting for Admin approval
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
             Admin verifies your payment and publishes the listing. You'll see it in the marketplace
             once it's approved.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <div className="flex flex-wrap justify-center gap-3 pt-4">
             <Link
               to="/buy-sell"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90"
             >
               Back to marketplace
             </Link>
           </div>
-        </div>
+        </Card>
       ) : null}
     </div>
   );

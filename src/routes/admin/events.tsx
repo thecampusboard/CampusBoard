@@ -1,5 +1,6 @@
 import { forwardRef, useMemo, useState } from "react";
 import type { ButtonHTMLAttributes, FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { CalendarDays, Pencil, Plus, Trash2, Star } from "lucide-react";
 
 import { useContent, slugify } from "@/lib/content";
@@ -9,6 +10,7 @@ import type { CampusEvent } from "@/lib/data";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
 import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
 import { DraftBadge } from "@/components/admin/draft-badge";
+import { SubmissionStatusBadge } from "@/components/submission-status-badge";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
@@ -21,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
 
 type EventDraft = Omit<CampusEvent, "views" | "registerClicks">;
 
@@ -35,6 +38,7 @@ function emptyDraft(): EventDraft {
     eligibility: "Open to all students.",
     registrationUrl: "",
     accent: "blue",
+    status: "approved",
   };
 }
 
@@ -266,7 +270,7 @@ function EventFormDialog({ event, trigger }: { event?: CampusEvent; trigger: Rea
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+              className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting ? "Saving…" : isEdit ? "Save changes" : "Create event"}
             </button>
@@ -288,12 +292,19 @@ export default function AdminEventsPage() {
   const { events, clubs, loading, error, refresh, remove } = useContent();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("date_asc");
+  const [searchParams] = useSearchParams();
+  // Following a "Rejected events" link from Overview shows only those;
+  // otherwise Admin sees everything (pending/rejected carry a status badge
+  // inline — see SubmissionStatusBadge above) — same convention as Notices.
+  const statusFilter = searchParams.get("status");
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = events.filter((e) =>
-      q ? `${e.title} ${e.organizer} ${e.venue}`.toLowerCase().includes(q) : true,
-    );
+    const list = events
+      .filter((e) => (statusFilter === "rejected" ? e.status === "rejected" : true))
+      .filter((e) =>
+        q ? `${e.title} ${e.organizer} ${e.venue}`.toLowerCase().includes(q) : true,
+      );
     switch (sort) {
       case "date_desc":
         return [...list].sort((a, b) => b.date.localeCompare(a.date));
@@ -304,17 +315,17 @@ export default function AdminEventsPage() {
       default:
         return [...list].sort((a, b) => a.date.localeCompare(b.date));
     }
-  }, [events, search, sort]);
+  }, [events, search, sort, statusFilter]);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="text-2xl font-extrabold">Events</h1>
-        <p className="pt-1 text-sm text-muted-foreground">
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Events</h1>
+        <p className="pt-2 text-sm text-muted-foreground">
           Create, edit and remove campus events. Set a real start time so Google Calendar links come
           out right.
         </p>
-      </div>
+      </Card>
 
       <AdminToolbar
         search={search}
@@ -348,11 +359,11 @@ export default function AdminEventsPage() {
           }
         />
       ) : (
-        <ul className="bento divide-y divide-border p-2">
+        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center gap-3 p-3">
+            <li key={e.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               <span
-                className="grid size-10 shrink-0 place-items-center rounded-lg bg-green/25 text-navy"
+                className="grid size-10 shrink-0 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                 aria-hidden="true"
               >
                 <CalendarDays className="size-4" strokeWidth={1.75} />
@@ -364,6 +375,7 @@ export default function AdminEventsPage() {
                 </p>
               </div>
               {e.isDraft ? <DraftBadge /> : null}
+              {e.status !== "approved" ? <SubmissionStatusBadge status={e.status} /> : null}
               {e.featured ? (
                 <Badge variant="secondary" className="gap-1">
                   <Star className="size-3 fill-current" aria-hidden="true" />
@@ -401,28 +413,19 @@ export default function AdminEventsPage() {
               </div>
             </li>
           ))}
-        </ul>
+        </Card>
       )}
     </div>
   );
 }
 
-/**
- * The trigger passed to `<DialogTrigger asChild>` — Radix clones this
- * element and merges in its own `onClick`/`aria-*`/`ref` props so the click
- * opens the dialog. Those props only reach the DOM button if this component
- * actually accepts and forwards them; a bare `function CreateButton()` with
- * no props parameter silently drops the injected onClick, which is why the
- * button used to render but do nothing when clicked. Accepting props (and
- * forwarding the ref, which Slot also needs) is what makes it work.
- */
 const CreateButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(
   ({ className, ...props }, ref) => (
     <button
       ref={ref}
       type="button"
       className={cn(
-        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]",
+        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]",
         className,
       )}
       {...props}

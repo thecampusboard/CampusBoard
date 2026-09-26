@@ -6,6 +6,9 @@ import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { CardSkeleton, ErrorState } from "@/components/bento";
 
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
 type EntityType = "notice" | "event" | "club" | "opportunity" | "listing";
 type EventType = "view" | "register_click" | "apply_click" | "contact_reveal";
 
@@ -74,21 +77,21 @@ export default function AdminAnalyticsPage() {
   const topOverall = (top ?? []).sort((a, b) => b.views - a.views).slice(0, 10);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="flex items-center gap-2 text-2xl font-extrabold">
-          <BarChart3 className="size-6 shrink-0" aria-hidden="true" />
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="flex items-center gap-2.5 text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">
+          <BarChart3 className="size-7 text-primary" aria-hidden="true" />
           Analytics
         </h1>
-        <p className="pt-1 text-sm text-muted-foreground">
-          Engagement per content type, plus your most-viewed pages.
+        <p className="pt-2 text-sm text-muted-foreground">
+          Engagement per content type, plus your most-viewed pages across the student body.
         </p>
-      </div>
+      </Card>
 
       {error ? (
         <ErrorState hint={error} />
       ) : breakdown === null ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <CardSkeleton />
           <CardSkeleton />
         </div>
@@ -100,53 +103,53 @@ export default function AdminAnalyticsPage() {
               const total = rows.reduce((sum, r) => sum + r.total, 0);
               if (total === 0) return null;
               return (
-                <div key={entity} className="bento p-5">
-                  <p className="text-sm font-bold">{ENTITY_LABEL[entity]}</p>
-                  <ul className="mt-2 space-y-1">
+                <Card key={entity} className="p-5 border-border/70 shadow-sm">
+                  <p className="text-sm font-bold text-foreground">{ENTITY_LABEL[entity]}</p>
+                  <ul className="mt-3 space-y-2 border-t border-border/50 pt-2.5">
                     {rows.map((r) => (
                       <li key={r.event_type} className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">{EVENT_LABEL[r.event_type]}</span>
-                        <span className="font-bold">{r.total.toLocaleString()}</span>
+                        <span className="text-muted-foreground font-medium">{EVENT_LABEL[r.event_type]}</span>
+                        <span className="font-bold text-foreground">{r.total.toLocaleString()}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Card>
               );
             })}
           </div>
 
-          <section className="bento p-6 sm:p-8">
-            <h2 className="flex items-center gap-2 text-lg font-bold">
-              <Eye className="size-4 shrink-0" aria-hidden="true" />
+          <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Eye className="size-4 text-primary shrink-0" aria-hidden="true" />
               Most viewed
             </h2>
             {topOverall.length === 0 ? (
               <p className="pt-3 text-sm text-muted-foreground">No views recorded yet.</p>
             ) : (
-              <ol className="mt-3 space-y-1.5">
+              <ol className="mt-4 divide-y divide-border/50">
                 {topOverall.map((r, i) => {
                   const title = titleFor(r.entity_type, r.entity_id);
                   return (
                     <li
                       key={`${r.entity_type}-${r.entity_id}`}
-                      className="flex items-center gap-3 text-sm"
+                      className="flex items-center gap-3 py-2.5 text-sm"
                     >
                       <span className="w-5 shrink-0 text-right text-xs font-bold text-muted-foreground">
                         {i + 1}
                       </span>
-                      <span className="min-w-0 flex-1 truncate font-semibold">
+                      <span className="min-w-0 flex-1 truncate font-semibold text-foreground">
                         {title ?? r.entity_id}
                       </span>
-                      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-bold text-muted-foreground">
+                      <Badge variant="secondary" className="shrink-0 text-xs">
                         {ENTITY_LABEL[r.entity_type]}
-                      </span>
-                      <span className="shrink-0 text-xs font-bold">{r.views} views</span>
+                      </Badge>
+                      <span className="shrink-0 text-xs font-bold text-muted-foreground">{r.views} views</span>
                     </li>
                   );
                 })}
               </ol>
             )}
-          </section>
+          </Card>
         </>
       )}
     </div>

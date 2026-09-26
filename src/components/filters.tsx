@@ -53,10 +53,10 @@ export function ChipFilter({
 }) {
   const chip = (active: boolean) =>
     cn(
-      "inline-flex min-h-9 items-center rounded-full border px-4 text-xs font-bold transition-colors",
+      "inline-flex min-h-9 items-center rounded-lg border px-4 text-xs font-semibold transition-all",
       active
-        ? "border-navy bg-navy text-navy-foreground"
-        : "border-foreground/15 bg-card text-foreground/70 hover:border-foreground/40 hover:text-foreground",
+        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+        : "border-border/70 bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground",
     );
 
   return (

@@ -31,10 +31,10 @@ export function ProtectedAction({
   const navigate = useNavigate();
 
   const base =
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all focus-visible:outline-2";
+    "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold transition-all focus-visible:outline-2";
   const styles =
     variant === "primary"
-      ? "bg-navy text-navy-foreground hover:bg-navy/90 active:scale-[0.98]"
+      ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98]"
       : "border border-border bg-card text-foreground hover:bg-accent active:scale-[0.98]";
 
   if (!user) {

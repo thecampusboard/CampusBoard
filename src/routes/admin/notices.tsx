@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
 
 type NoticeDraft = Omit<
   Notice,
@@ -326,7 +327,7 @@ function NoticeFormDialog({ notice, trigger }: { notice?: Notice; trigger: React
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+              className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting ? "Saving…" : isEdit ? "Save changes" : "Publish notice"}
             </button>
@@ -358,14 +359,14 @@ export default function AdminNoticesPage() {
   }, [notices, search, status]);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="text-2xl font-extrabold">Notices</h1>
-        <p className="pt-1 text-sm text-muted-foreground">
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Notices</h1>
+        <p className="pt-2 text-sm text-muted-foreground">
           Notices you publish directly go live immediately. Student submissions are reviewed under
           Approvals.
         </p>
-      </div>
+      </Card>
 
       <AdminToolbar
         search={search}
@@ -391,7 +392,7 @@ export default function AdminNoticesPage() {
               trigger={
                 <button
                   type="button"
-                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
                 >
                   <Plus className="size-4" aria-hidden="true" />
                   New notice
@@ -417,11 +418,11 @@ export default function AdminNoticesPage() {
           }
         />
       ) : (
-        <ul className="bento divide-y divide-border p-2">
+        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((n) => (
-            <li key={n.id} className="flex flex-wrap items-center gap-3 p-3">
+            <li key={n.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               <span
-                className="grid size-10 shrink-0 place-items-center rounded-lg bg-orange/20 text-navy"
+                className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
                 aria-hidden="true"
               >
                 <Megaphone className="size-4" strokeWidth={1.75} />
@@ -464,7 +465,7 @@ export default function AdminNoticesPage() {
               </div>
             </li>
           ))}
-        </ul>
+        </Card>
       )}
     </div>
   );

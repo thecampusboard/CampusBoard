@@ -76,6 +76,45 @@ type NoticeContentPatch = Partial<
   >
 >;
 
+type EventContentPatch = Partial<
+  Pick<
+    CampusEvent,
+    | "title"
+    | "organizer"
+    | "clubId"
+    | "date"
+    | "endDate"
+    | "startTime"
+    | "endTime"
+    | "venue"
+    | "description"
+    | "eligibility"
+    | "registrationDeadline"
+    | "registrationUrl"
+    | "contact"
+    | "accent"
+  >
+>;
+
+type OpportunityContentPatch = Partial<
+  Pick<
+    Opportunity,
+    | "title"
+    | "organization"
+    | "position"
+    | "type"
+    | "location"
+    | "eligibility"
+    | "yearsBranches"
+    | "description"
+    | "skills"
+    | "stipend"
+    | "deadline"
+    | "applyUrl"
+    | "accent"
+  >
+>;
+
 interface ContentValue {
   notices: Notice[];
   events: CampusEvent[];
@@ -86,6 +125,10 @@ interface ContentValue {
   pendingListings: Listing[];
   /** Notice submissions awaiting Admin approval. Populated for Admin only. */
   pendingNotices: Notice[];
+  /** Event submissions awaiting Admin approval. Populated for Admin only. */
+  pendingEvents: CampusEvent[];
+  /** Opportunity submissions awaiting Admin approval. Populated for Admin only. */
+  pendingOpportunities: Opportunity[];
   /** Homepage hero image + campus gallery. Falls back to DEFAULT_APPEARANCE (no custom image) until an Admin configures one. */
   appearance: SiteAppearance;
   loading: boolean;
@@ -111,17 +154,59 @@ interface ContentValue {
   resubmitNotice: (id: string, patch: NoticeContentPatch) => Promise<void>;
   /** Admin approves or rejects a pending notice. A reason is required to reject. */
   reviewNotice: (id: string, decision: "approved" | "rejected", reason?: string) => Promise<void>;
-  addEvent: (e: Omit<CampusEvent, "views" | "registerClicks">) => Promise<void>;
+  /** Admin creates an event — publishes immediately (status defaults to 'approved'). */
+  addEvent: (
+    e: Omit<CampusEvent, "views" | "registerClicks" | "status" | "createdBy" | "reviewedAt" | "rejectionReason">,
+  ) => Promise<void>;
   updateEvent: (
     id: string,
     patch: Partial<Omit<CampusEvent, "id" | "views" | "registerClicks">>,
   ) => Promise<void>;
+  /** Student submits an event for review — always starts 'pending'; Admin must approve it. */
+  submitEvent: (
+    e: Omit<
+      CampusEvent,
+      "views" | "registerClicks" | "status" | "createdBy" | "reviewedAt" | "rejectionReason" | "featured" | "isDraft"
+    >,
+  ) => Promise<void>;
+  /** Student edits the content of their OWN pending/rejected event and resubmits it — always lands back at 'pending' for a fresh review. */
+  resubmitEvent: (id: string, patch: EventContentPatch) => Promise<void>;
+  /** Admin approves or rejects a pending event. A reason is required to reject. */
+  reviewEvent: (id: string, decision: "approved" | "rejected", reason?: string) => Promise<void>;
   addClub: (c: Club) => Promise<void>;
   updateClub: (id: string, patch: Partial<Omit<Club, "id">>) => Promise<void>;
-  addOpportunity: (o: Omit<Opportunity, "views" | "applyClicks">) => Promise<void>;
+  /** Admin creates an opportunity — publishes immediately (status defaults to 'approved'). */
+  addOpportunity: (
+    o: Omit<
+      Opportunity,
+      "views" | "applyClicks" | "status" | "createdBy" | "reviewedAt" | "rejectionReason"
+    >,
+  ) => Promise<void>;
   updateOpportunity: (
     id: string,
     patch: Partial<Omit<Opportunity, "id" | "views" | "applyClicks">>,
+  ) => Promise<void>;
+  /** Student submits an opportunity for review — always starts 'pending'; Admin must approve it. */
+  submitOpportunity: (
+    o: Omit<
+      Opportunity,
+      | "views"
+      | "applyClicks"
+      | "status"
+      | "createdBy"
+      | "reviewedAt"
+      | "rejectionReason"
+      | "featured"
+      | "isDraft"
+    >,
+  ) => Promise<void>;
+  /** Student edits the content of their OWN pending/rejected opportunity and resubmits it — always lands back at 'pending' for a fresh review. */
+  resubmitOpportunity: (id: string, patch: OpportunityContentPatch) => Promise<void>;
+  /** Admin approves or rejects a pending opportunity. A reason is required to reject. */
+  reviewOpportunity: (
+    id: string,
+    decision: "approved" | "rejected",
+    reason?: string,
   ) => Promise<void>;
   /** Student submits a new Buy & Sell listing — starts as payment_pending. */
   addListing: (
@@ -165,6 +250,18 @@ interface ContentValue {
   rejectListing: (id: string, reason: string) => Promise<void>;
   /** Deletes one row from one table — pass the table the record actually belongs to, so this is a single targeted delete rather than a blind sweep across every content table. RLS still rejects anything the session isn't allowed to delete. */
   remove: (entity: ManagedEntity, id: string) => Promise<void>;
+  /** Event ids the signed-in student has personally registered for (a bookmark kept inside CampusBoard — separate from the event's own external "Register Now" link). Empty when signed out. */
+  registeredEventIds: Set<string>;
+  /** Opportunity ids the signed-in student has saved. Empty when signed out. */
+  savedOpportunityIds: Set<string>;
+  /** Club ids the signed-in student has joined (personal bookkeeping — separate from the club's own admin-set member count). Empty when signed out. */
+  joinedClubIds: Set<string>;
+  /** Toggles the signed-in student's registration for an event on/off. */
+  toggleEventRegistration: (eventId: string) => Promise<void>;
+  /** Toggles the signed-in student's saved state for an opportunity on/off. */
+  toggleOpportunitySave: (opportunityId: string) => Promise<void>;
+  /** Toggles the signed-in student's membership in a club on/off. */
+  toggleClubMembership: (clubId: string) => Promise<void>;
 }
 
 const ContentContext = createContext<ContentValue | null>(null);
@@ -184,11 +281,11 @@ export function slugify(value: string) {
 const NOTICE_COLUMNS =
   "id, title, description, category, department, years, semesters, date, file_type, file_label, external_url, file_path, featured, views, status, created_by, club_id, rejection_reason, reviewed_at";
 const EVENT_COLUMNS =
-  "id, title, organizer, club_id, date, end_date, time, start_time, end_time, venue, description, eligibility, registration_deadline, registration_url, contact, accent, featured, views, register_clicks, is_draft";
+  "id, title, organizer, club_id, date, end_date, time, start_time, end_time, venue, description, eligibility, registration_deadline, registration_url, contact, accent, featured, views, register_clicks, is_draft, status, created_by, rejection_reason, reviewed_at";
 const CLUB_COLUMNS =
   "id, name, tagline, about, accent, members, founded, recruitment, announcements, gallery, socials, past_events, head_name, faculty_lead, image_path, is_draft";
 const OPPORTUNITY_COLUMNS =
-  "id, title, organization, position, type, location, eligibility, years_branches, description, skills, stipend, deadline, apply_url, accent, featured, views, apply_clicks, is_draft";
+  "id, title, organization, position, type, location, eligibility, years_branches, description, skills, stipend, deadline, apply_url, accent, featured, views, apply_clicks, is_draft, status, created_by, rejection_reason, reviewed_at";
 const LISTING_COLUMNS =
   "id, owner_id, listing_type, title, price, condition, category, description, seller_name, seller_phone, images, payment_screenshot_path, status, rejection_reason, submitted_at, approved_at, views, contact_reveals, created_at";
 
@@ -227,25 +324,42 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [appearance, setAppearance] = useState<SiteAppearance>(DEFAULT_APPEARANCE);
+  const [registeredEventIds, setRegisteredEventIds] = useState<Set<string>>(new Set());
+  const [savedOpportunityIds, setSavedOpportunityIds] = useState<Set<string>>(new Set());
+  const [joinedClubIds, setJoinedClubIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [noticesRes, eventsRes, clubsRes, opportunitiesRes, listingsRes, appearanceRes] =
-      await Promise.all([
-        supabase.from("notices").select(NOTICE_COLUMNS).order("date", { ascending: false }),
-        supabase.from("events").select(EVENT_COLUMNS).order("date", { ascending: true }),
-        supabase.from("clubs").select(CLUB_COLUMNS).order("name", { ascending: true }),
-        supabase
-          .from("opportunities")
-          .select(OPPORTUNITY_COLUMNS)
-          .order("deadline", { ascending: true }),
-        supabase
-          .from("buy_sell_listings_public")
-          .select(LISTING_COLUMNS)
-          .order("created_at", { ascending: false }),
-        supabase.from("site_settings").select("value").eq("key", "appearance").maybeSingle(),
-      ]);
+    const [
+      noticesRes,
+      eventsRes,
+      clubsRes,
+      opportunitiesRes,
+      listingsRes,
+      appearanceRes,
+      eventRegsRes,
+      opportunitySavesRes,
+      clubMembershipsRes,
+    ] = await Promise.all([
+      supabase.from("notices").select(NOTICE_COLUMNS).order("date", { ascending: false }),
+      supabase.from("events").select(EVENT_COLUMNS).order("date", { ascending: true }),
+      supabase.from("clubs").select(CLUB_COLUMNS).order("name", { ascending: true }),
+      supabase
+        .from("opportunities")
+        .select(OPPORTUNITY_COLUMNS)
+        .order("deadline", { ascending: true }),
+      supabase
+        .from("buy_sell_listings_public")
+        .select(LISTING_COLUMNS)
+        .order("created_at", { ascending: false }),
+      supabase.from("site_settings").select("value").eq("key", "appearance").maybeSingle(),
+      // RLS scopes these three to the signed-in user's own rows — an
+      // anon/signed-out session simply gets none back, no error.
+      supabase.from("event_registrations").select("event_id"),
+      supabase.from("opportunity_saves").select("opportunity_id"),
+      supabase.from("club_memberships").select("club_id"),
+    ]);
 
     const failures: string[] = [];
     if (!noticesRes.error) setNotices(((noticesRes.data ?? []) as NoticeRow[]).map(fromNoticeRow));
@@ -278,6 +392,18 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       });
     } else if (appearanceRes.error) failures.push("appearance");
 
+    if (!eventRegsRes.error) {
+      setRegisteredEventIds(new Set((eventRegsRes.data ?? []).map((r) => r.event_id as string)));
+    } else failures.push("your registered events");
+    if (!opportunitySavesRes.error) {
+      setSavedOpportunityIds(
+        new Set((opportunitySavesRes.data ?? []).map((r) => r.opportunity_id as string)),
+      );
+    } else failures.push("your saved opportunities");
+    if (!clubMembershipsRes.error) {
+      setJoinedClubIds(new Set((clubMembershipsRes.data ?? []).map((r) => r.club_id as string)));
+    } else failures.push("your club memberships");
+
     setError(failures.length > 0 ? `Couldn't load: ${failures.join(", ")}.` : null);
   }, []);
 
@@ -298,6 +424,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       listings,
       pendingListings: listings.filter((l) => l.status === "pending_approval"),
       pendingNotices: notices.filter((n) => n.status === "pending"),
+      pendingEvents: events.filter((e) => e.status === "pending"),
+      pendingOpportunities: opportunities.filter((o) => o.status === "pending"),
       appearance,
       loading,
       error,
@@ -460,6 +588,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
             accent: e.accent,
             featured: e.featured ?? false,
             created_by: user.id,
+            status: "approved",
           }),
         );
         await refresh();
@@ -502,6 +631,97 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         // draft (see publicEvents()) — a no-op for an already-published event.
         row["is_draft"] = false;
         throwIfNoRows(await supabase.from("events").update(row).eq("id", id).select("id"));
+        await refresh();
+      },
+
+      submitEvent: async (e) => {
+        if (!user) throw new Error("Login to submit an event.");
+        if (e.registrationUrl && e.registrationUrl !== "#" && !isValidHttpUrl(e.registrationUrl.trim()))
+          throw new Error("Registration URL must start with http:// or https://.");
+        throwIfError(
+          await supabase.from("events").insert({
+            id: e.id,
+            title: e.title,
+            organizer: e.organizer,
+            club_id: e.clubId ?? null,
+            date: e.date,
+            end_date: e.endDate ?? null,
+            time:
+              e.time ??
+              (e.startTime ? `${e.startTime}${e.endTime ? ` – ${e.endTime}` : ""}` : null),
+            start_time: e.startTime ?? null,
+            end_time: e.endTime ?? null,
+            venue: e.venue,
+            description: e.description,
+            eligibility: e.eligibility,
+            registration_deadline: e.registrationDeadline ?? null,
+            registration_url: e.registrationUrl?.trim() || "#",
+            contact: e.contact ?? null,
+            accent: e.accent,
+            created_by: user.id,
+            status: "pending",
+          }),
+        );
+        await refresh();
+      },
+
+      resubmitEvent: async (id, patch) => {
+        if (!user) throw new Error("Login to resubmit an event.");
+        if (
+          patch.registrationUrl &&
+          patch.registrationUrl !== "#" &&
+          !isValidHttpUrl(patch.registrationUrl.trim())
+        ) {
+          throw new Error("Registration URL must start with http:// or https://.");
+        }
+        const row: Record<string, unknown> = { status: "pending" };
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.organizer !== undefined) row["organizer"] = patch.organizer;
+        if (patch.clubId !== undefined) row["club_id"] = patch.clubId || null;
+        if (patch.date !== undefined) row["date"] = patch.date;
+        if (patch.endDate !== undefined) row["end_date"] = patch.endDate || null;
+        if (patch.startTime !== undefined) {
+          row["start_time"] = patch.startTime || null;
+          row["time"] = patch.startTime
+            ? `${patch.startTime}${patch.endTime ? ` – ${patch.endTime}` : ""}`
+            : null;
+        }
+        if (patch.endTime !== undefined) row["end_time"] = patch.endTime || null;
+        if (patch.venue !== undefined) row["venue"] = patch.venue;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.eligibility !== undefined) row["eligibility"] = patch.eligibility;
+        if (patch.registrationDeadline !== undefined)
+          row["registration_deadline"] = patch.registrationDeadline || null;
+        if (patch.registrationUrl !== undefined)
+          row["registration_url"] = patch.registrationUrl?.trim() || "#";
+        if (patch.contact !== undefined) row["contact"] = patch.contact || null;
+        if (patch.accent !== undefined) row["accent"] = patch.accent;
+        throwIfNoRows(
+          await supabase
+            .from("events")
+            .update(row)
+            .eq("id", id)
+            .eq("created_by", user.id)
+            .select("id"),
+        );
+        await refresh();
+      },
+
+      reviewEvent: async (id, decision, reason) => {
+        if (user?.role !== "admin") throw new Error("Only Admin can review an event.");
+        if (decision === "rejected" && !reason?.trim()) {
+          throw new Error("A rejection reason is required.");
+        }
+        throwIfNoRows(
+          await supabase
+            .from("events")
+            .update({
+              status: decision,
+              rejection_reason: decision === "rejected" ? reason!.trim() : null,
+            })
+            .eq("id", id)
+            .select("id"),
+        );
         await refresh();
       },
 
@@ -575,6 +795,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
             accent: o.accent,
             featured: o.featured ?? false,
             created_by: user.id,
+            status: "approved",
           }),
         );
         await refresh();
@@ -603,6 +824,80 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         // draft (see publicOpportunities()) — a no-op for an already-published opportunity.
         row["is_draft"] = false;
         throwIfNoRows(await supabase.from("opportunities").update(row).eq("id", id).select("id"));
+        await refresh();
+      },
+
+      submitOpportunity: async (o) => {
+        if (!user) throw new Error("Login to submit an opportunity.");
+        if (o.applyUrl && o.applyUrl !== "#" && !isValidHttpUrl(o.applyUrl.trim()))
+          throw new Error("Application URL must start with http:// or https://.");
+        throwIfError(
+          await supabase.from("opportunities").insert({
+            id: o.id,
+            title: o.title,
+            organization: o.organization,
+            position: o.position,
+            type: o.type,
+            location: o.location,
+            eligibility: o.eligibility,
+            years_branches: o.yearsBranches,
+            description: o.description,
+            skills: o.skills ?? [],
+            stipend: o.stipend ?? null,
+            deadline: o.deadline,
+            apply_url: o.applyUrl?.trim() || "#",
+            accent: o.accent,
+            created_by: user.id,
+            status: "pending",
+          }),
+        );
+        await refresh();
+      },
+
+      resubmitOpportunity: async (id, patch) => {
+        if (!user) throw new Error("Login to resubmit an opportunity.");
+        if (patch.applyUrl && patch.applyUrl !== "#" && !isValidHttpUrl(patch.applyUrl.trim()))
+          throw new Error("Application URL must start with http:// or https://.");
+        const row: Record<string, unknown> = { status: "pending" };
+        if (patch.title !== undefined) row["title"] = patch.title;
+        if (patch.organization !== undefined) row["organization"] = patch.organization;
+        if (patch.position !== undefined) row["position"] = patch.position;
+        if (patch.type !== undefined) row["type"] = patch.type;
+        if (patch.location !== undefined) row["location"] = patch.location;
+        if (patch.eligibility !== undefined) row["eligibility"] = patch.eligibility;
+        if (patch.yearsBranches !== undefined) row["years_branches"] = patch.yearsBranches;
+        if (patch.description !== undefined) row["description"] = patch.description;
+        if (patch.skills !== undefined) row["skills"] = patch.skills;
+        if (patch.stipend !== undefined) row["stipend"] = patch.stipend || null;
+        if (patch.deadline !== undefined) row["deadline"] = patch.deadline;
+        if (patch.applyUrl !== undefined) row["apply_url"] = patch.applyUrl?.trim() || "#";
+        if (patch.accent !== undefined) row["accent"] = patch.accent;
+        throwIfNoRows(
+          await supabase
+            .from("opportunities")
+            .update(row)
+            .eq("id", id)
+            .eq("created_by", user.id)
+            .select("id"),
+        );
+        await refresh();
+      },
+
+      reviewOpportunity: async (id, decision, reason) => {
+        if (user?.role !== "admin") throw new Error("Only Admin can review an opportunity.");
+        if (decision === "rejected" && !reason?.trim()) {
+          throw new Error("A rejection reason is required.");
+        }
+        throwIfNoRows(
+          await supabase
+            .from("opportunities")
+            .update({
+              status: decision,
+              rejection_reason: decision === "rejected" ? reason!.trim() : null,
+            })
+            .eq("id", id)
+            .select("id"),
+        );
         await refresh();
       },
 
@@ -695,8 +990,87 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         throwIfNoRows(await supabase.from(entity).delete().eq("id", id).select("id"));
         await refresh();
       },
+
+      registeredEventIds,
+      savedOpportunityIds,
+      joinedClubIds,
+
+      toggleEventRegistration: async (eventId) => {
+        if (!user) throw new Error("Login to register for this event.");
+        if (registeredEventIds.has(eventId)) {
+          throwIfNoRows(
+            await supabase
+              .from("event_registrations")
+              .delete()
+              .eq("event_id", eventId)
+              .eq("user_id", user.id)
+              .select("id"),
+          );
+        } else {
+          throwIfError(
+            await supabase
+              .from("event_registrations")
+              .insert({ event_id: eventId, user_id: user.id }),
+          );
+        }
+        await refresh();
+      },
+
+      toggleOpportunitySave: async (opportunityId) => {
+        if (!user) throw new Error("Login to save this opportunity.");
+        if (savedOpportunityIds.has(opportunityId)) {
+          throwIfNoRows(
+            await supabase
+              .from("opportunity_saves")
+              .delete()
+              .eq("opportunity_id", opportunityId)
+              .eq("user_id", user.id)
+              .select("id"),
+          );
+        } else {
+          throwIfError(
+            await supabase
+              .from("opportunity_saves")
+              .insert({ opportunity_id: opportunityId, user_id: user.id }),
+          );
+        }
+        await refresh();
+      },
+
+      toggleClubMembership: async (clubId) => {
+        if (!user) throw new Error("Login to join this club.");
+        if (joinedClubIds.has(clubId)) {
+          throwIfNoRows(
+            await supabase
+              .from("club_memberships")
+              .delete()
+              .eq("club_id", clubId)
+              .eq("user_id", user.id)
+              .select("id"),
+          );
+        } else {
+          throwIfError(
+            await supabase.from("club_memberships").insert({ club_id: clubId, user_id: user.id }),
+          );
+        }
+        await refresh();
+      },
     }),
-    [notices, events, clubs, opportunities, listings, appearance, loading, error, refresh, user],
+    [
+      notices,
+      events,
+      clubs,
+      opportunities,
+      listings,
+      appearance,
+      loading,
+      error,
+      refresh,
+      user,
+      registeredEventIds,
+      savedOpportunityIds,
+      joinedClubIds,
+    ],
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

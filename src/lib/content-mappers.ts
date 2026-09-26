@@ -50,6 +50,10 @@ export interface EventRow {
   views: number;
   register_clicks: number;
   is_draft: boolean | null;
+  status: CampusEvent["status"];
+  created_by: string | null;
+  rejection_reason: string | null;
+  reviewed_at: string | null;
 }
 
 export interface ClubRow {
@@ -90,6 +94,10 @@ export interface OpportunityRow {
   views: number;
   apply_clicks: number;
   is_draft: boolean | null;
+  status: Opportunity["status"];
+  created_by: string | null;
+  rejection_reason: string | null;
+  reviewed_at: string | null;
 }
 
 export interface ListingRow {
@@ -158,6 +166,10 @@ export const fromEventRow = (r: EventRow): CampusEvent => ({
   views: r.views,
   registerClicks: r.register_clicks,
   isDraft: r.is_draft ?? false,
+  status: r.status,
+  ...(r.created_by ? { createdBy: r.created_by } : {}),
+  ...(r.rejection_reason ? { rejectionReason: r.rejection_reason } : {}),
+  ...(r.reviewed_at ? { reviewedAt: r.reviewed_at } : {}),
 });
 
 export const fromClubRow = (r: ClubRow): Club => ({
@@ -198,6 +210,10 @@ export const fromOpportunityRow = (r: OpportunityRow): Opportunity => ({
   views: r.views,
   applyClicks: r.apply_clicks,
   isDraft: r.is_draft ?? false,
+  status: r.status,
+  ...(r.created_by ? { createdBy: r.created_by } : {}),
+  ...(r.rejection_reason ? { rejectionReason: r.rejection_reason } : {}),
+  ...(r.reviewed_at ? { reviewedAt: r.reviewed_at } : {}),
 });
 
 export const fromListingRow = (r: ListingRow): Listing => ({

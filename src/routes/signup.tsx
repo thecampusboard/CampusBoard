@@ -79,9 +79,15 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto max-w-md py-8">
-      <div className="bento p-6 sm:p-8">
-        <h1 className="text-2xl font-extrabold">Create your account</h1>
-        <p className="pt-2 text-sm text-muted-foreground">
+      <div className="shadow-bento rounded-2xl bg-card border border-border p-6 sm:p-8">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="rounded-xl bg-primary text-primary-foreground flex justify-center items-center size-10">
+            <span className="font-bold text-sm">CB</span>
+          </div>
+          <span className="font-bold text-lg">Campus<span className="text-primary">Board</span></span>
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
+        <p className="pt-1 text-sm text-muted-foreground">
           Students only need an account for registrations, applications and seller contacts.
         </p>
 
@@ -96,7 +102,7 @@ export default function SignupPage() {
               type="button"
               onClick={handleGoogleSignup}
               disabled={googleSubmitting}
-              className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-card text-sm font-bold text-foreground disabled:opacity-60"
+              className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-card text-sm font-bold text-foreground disabled:opacity-60 hover:bg-accent transition-colors"
             >
               <GoogleIcon className="size-4" />
               {googleSubmitting ? "Redirecting…" : "Continue with Google"}
@@ -117,7 +123,7 @@ export default function SignupPage() {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-blue"
+                  className="mt-1 min-h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
@@ -130,7 +136,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@campus.edu"
-                  className="mt-1 min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-blue"
+                  className="mt-1 min-h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
@@ -146,7 +152,7 @@ export default function SignupPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     onBlur={() => setPasswordTouched(true)}
                     aria-describedby="password-requirements"
-                    className="min-h-11 w-full rounded-xl border border-input bg-card px-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-blue"
+                    className="min-h-11 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-primary"
                   />
                   <button
                     type="button"
@@ -202,7 +208,7 @@ export default function SignupPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onBlur={() => setConfirmTouched(true)}
                     aria-invalid={confirmTouched && password !== confirmPassword}
-                    className="min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-blue"
+                    className="min-h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 {confirmTouched && password !== confirmPassword ? (
@@ -222,7 +228,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="min-h-11 w-full rounded-xl bg-navy text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+                className="min-h-11 w-full rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
               >
                 {submitting ? "Creating account…" : "Create account"}
               </button>
@@ -232,7 +238,7 @@ export default function SignupPage() {
 
         <p className="pt-4 text-sm text-muted-foreground">
           Already registered?{" "}
-          <Link to="/login" className="font-bold text-blue">
+          <Link to="/login" className="font-bold text-primary">
             Login
           </Link>
         </p>

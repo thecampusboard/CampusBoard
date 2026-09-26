@@ -50,7 +50,7 @@ export function AdminToolbar({
           value={sort}
           onChange={(e) => onSort(e.target.value)}
           aria-label="Sort"
-          className="min-h-10 shrink-0 rounded-xl border border-border bg-card px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue"
+          className="min-h-10 shrink-0 rounded-xl border border-border bg-card px-3 text-sm font-semibold outline-none transition-colors focus:ring-2 focus:ring-primary/20 focus:border-primary"
         >
           {sortOptions.map((o) => (
             <option key={o.value} value={o.value}>
@@ -67,7 +67,7 @@ export function AdminToolbar({
         <button
           type="button"
           onClick={onCreate}
-          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98] sm:ml-auto"
+          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98] sm:ml-auto"
         >
           <Plus className="size-4" aria-hidden="true" />
           {createLabel}

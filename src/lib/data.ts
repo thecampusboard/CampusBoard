@@ -64,6 +64,14 @@ export interface CampusEvent {
   registerClicks: number;
   /** True for a row created via bulk Excel import that Admin hasn't reviewed/saved yet. Excluded from every public listing until Admin opens it in the edit dialog and saves — see publicEvents(). */
   isDraft?: boolean;
+  /** Approval workflow — Admin-authored events default to 'approved'; student submissions start 'pending'. */
+  status: NoticeStatus;
+  /** auth.users id of whoever submitted the event (Admin or student). */
+  createdBy?: string;
+  /** Set by Admin when rejecting a student submission. */
+  rejectionReason?: string;
+  /** ISO timestamp Admin approved/rejected the submission. */
+  reviewedAt?: string;
 }
 
 export interface Club {
@@ -119,6 +127,14 @@ export interface Opportunity {
   applyClicks: number;
   /** True for a row created via bulk Excel import that Admin hasn't reviewed/saved yet. Excluded from every public listing until Admin opens it in the edit dialog and saves — see publicOpportunities(). */
   isDraft?: boolean;
+  /** Approval workflow — Admin-authored opportunities default to 'approved'; student submissions start 'pending'. */
+  status: NoticeStatus;
+  /** auth.users id of whoever submitted the opportunity (Admin or student). */
+  createdBy?: string;
+  /** Set by Admin when rejecting a student submission. */
+  rejectionReason?: string;
+  /** ISO timestamp Admin approved/rejected the submission. */
+  reviewedAt?: string;
 }
 
 export type ListingType = "Buy" | "Sell";
@@ -188,32 +204,88 @@ export function publicListings(listings: Listing[]): Listing[] {
 }
 
 /**
- * Notices visible to everyone: approved only. The raw `notices` array from
- * useContent() also includes the signed-in user's own pending/rejected
- * submissions (RLS lets an author see their own row at any status) — every
- * general/public listing surface (home, /notices, search, a club page)
- * must filter through this before rendering, or a student's own
- * not-yet-reviewed notice would appear to be public.
+ * Campus-local ("Asia/Kolkata") calendar date, as YYYY-MM-DD — matches the
+ * plain `date` columns used throughout (notices.date, events.date/end_date,
+ * opportunities.deadline), which carry no time/timezone component and
+ * represent a campus-local calendar day. Using the campus timezone here
+ * (rather than the browser's or the server's) keeps the expiry cutoff below
+ * from shifting by a day around the UTC boundary.
+ */
+const CAMPUS_TIME_ZONE = "Asia/Kolkata";
+
+function campusToday(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: CAMPUS_TIME_ZONE }).format(new Date());
+}
+
+/** How long expired content stays visible in public listings after its relevant date. */
+export const EXPIRY_GRACE_DAYS = 5;
+
+/** ISO (YYYY-MM-DD) date `graceDays` days before campusToday(). */
+function daysBeforeToday(graceDays: number): string {
+  const [y, m, d] = campusToday().split("-").map(Number) as [number, number, number];
+  const cutoff = new Date(Date.UTC(y, m - 1, d));
+  cutoff.setUTCDate(cutoff.getUTCDate() - graceDays);
+  return cutoff.toISOString().slice(0, 10);
+}
+
+/**
+ * True once `dateStr` (a plain YYYY-MM-DD campus date — a notice's date, an
+ * event's end date, an opportunity's deadline) is more than
+ * EXPIRY_GRACE_DAYS days in the past, campus-local. Plain string comparison
+ * is safe and intentional here: both sides are YYYY-MM-DD, which sorts
+ * identically to a real date comparison without re-parsing into a Date
+ * (which would reintroduce timezone ambiguity).
+ */
+function isExpired(dateStr: string | undefined | null, graceDays = EXPIRY_GRACE_DAYS): boolean {
+  if (!dateStr) return false;
+  return dateStr < daysBeforeToday(graceDays);
+}
+
+/**
+ * Notices visible to everyone: approved, and not more than
+ * EXPIRY_GRACE_DAYS days past their notice date. The raw `notices` array
+ * from useContent() also includes the signed-in user's own pending/rejected
+ * submissions (RLS lets an author see their own row at any status) and, for
+ * Admin, every notice regardless of age — every general/public listing
+ * surface (home, /notices, search, a club page, calendar) must filter
+ * through this before rendering, or a not-yet-reviewed or long-expired
+ * notice would appear to be public. This mirrors the RLS-level cutoff in
+ * supabase/migrations/015_content_expiry.sql, which is what actually keeps
+ * an anonymous/non-owner session from ever fetching the row at all — this
+ * client-side filter additionally keeps expired notices out of these public
+ * surfaces even when an Admin session (which does fetch everything, for
+ * history/management) happens to be browsing the public site.
  */
 export function publicNotices(notices: Notice[]): Notice[] {
-  return notices.filter((n) => n.status === "approved");
+  return notices.filter((n) => n.status === "approved" && !isExpired(n.date));
 }
 
 /**
  * Events visible to everyone: excludes rows created via bulk Excel import
- * that Admin hasn't opened and saved yet (see CampusEvent.isDraft). The
- * raw `events` array from useContent() includes drafts for an Admin
- * session (RLS grants Admin full visibility so they can find and review
- * them) — every general/public listing surface must filter through this
- * before rendering, or an unreviewed import would appear to be published.
+ * that Admin hasn't opened and saved yet (see CampusEvent.isDraft), and
+ * events more than EXPIRY_GRACE_DAYS days past their end date (or their
+ * start date, for a single-day event with no end date). The raw `events`
+ * array from useContent() includes drafts and long-past events for an
+ * Admin session (RLS grants Admin full visibility so they can find, review
+ * and manage history) — every general/public listing surface must filter
+ * through this before rendering. See publicNotices() for why this filter
+ * exists client-side too, alongside the RLS cutoff.
  */
 export function publicEvents(events: CampusEvent[]): CampusEvent[] {
-  return events.filter((e) => !e.isDraft);
+  return events.filter(
+    (e) => !e.isDraft && e.status === "approved" && !isExpired(e.endDate ?? e.date),
+  );
 }
 
-/** Opportunities visible to everyone: excludes unreviewed bulk-import drafts — see publicEvents(). */
+/**
+ * Opportunities visible to everyone: excludes unreviewed bulk-import drafts
+ * (see publicEvents()) and opportunities more than EXPIRY_GRACE_DAYS days
+ * past their application deadline.
+ */
 export function publicOpportunities(opportunities: Opportunity[]): Opportunity[] {
-  return opportunities.filter((o) => !o.isDraft);
+  return opportunities.filter(
+    (o) => !o.isDraft && o.status === "approved" && !isExpired(o.deadline),
+  );
 }
 
 /** Clubs visible to everyone: excludes unreviewed bulk-import drafts — see publicEvents(). */

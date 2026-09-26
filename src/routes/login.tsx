@@ -102,9 +102,15 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md py-8">
-      <div className="bento p-6 sm:p-8">
-        <h1 className="text-2xl font-extrabold">Login to CampusBoard</h1>
-        <p className="pt-2 text-sm text-muted-foreground">
+      <div className="shadow-bento rounded-2xl bg-card border border-border p-6 sm:p-8">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="rounded-xl bg-primary text-primary-foreground flex justify-center items-center size-10">
+            <span className="font-bold text-sm">CB</span>
+          </div>
+          <span className="font-bold text-lg">Campus<span className="text-primary">Board</span></span>
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+        <p className="pt-1 text-sm text-muted-foreground">
           {action
             ? `Sign in to continue to "${action}".`
             : "Reading is always free. Sign in for registrations, applications and seller contacts."}
@@ -114,7 +120,7 @@ export default function LoginPage() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={googleSubmitting}
-          className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-card text-sm font-bold text-foreground disabled:opacity-60"
+          className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-card text-sm font-bold text-foreground disabled:opacity-60 hover:bg-accent transition-colors"
         >
           <GoogleIcon className="size-4" />
           {googleSubmitting ? "Redirecting…" : "Continue with Google"}
@@ -138,7 +144,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@campus.edu"
-              className="mt-1 min-h-11 w-full rounded-xl border border-input bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-blue"
+              className="mt-1 min-h-11 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div>
@@ -152,7 +158,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="min-h-11 w-full rounded-xl border border-input bg-card px-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-blue"
+                className="min-h-11 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-primary"
               />
               <button
                 type="button"
@@ -180,7 +186,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleResend}
               disabled={resendState !== "idle"}
-              className="text-sm font-bold text-blue hover:underline disabled:opacity-60"
+              className="text-sm font-bold text-primary hover:underline disabled:opacity-60"
             >
               {resendState === "sent"
                 ? "Verification email sent — check your inbox."
@@ -193,7 +199,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="min-h-11 w-full rounded-xl bg-navy text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+            className="min-h-11 w-full rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
             {submitting ? "Logging in…" : "Login"}
           </button>
@@ -201,7 +207,7 @@ export default function LoginPage() {
 
         <p className="pt-4 text-sm text-muted-foreground">
           New here?{" "}
-          <Link to="/signup" className="font-bold text-blue">
+          <Link to="/signup" className="font-bold text-primary">
             Create an account
           </Link>
         </p>

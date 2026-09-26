@@ -10,17 +10,16 @@ import {
   Users,
   Briefcase,
   CalendarRange,
-  ShoppingBag,
   Search,
   UserRound,
   UserPlus,
   LogIn,
   ChevronDown,
   Info,
+  School,
+  Mail,
 } from "lucide-react";
 import { useState } from "react";
-
-import campusBoardLogo from "@/assets/campusboard-logo.png";
 
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -32,6 +31,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/**
+ * SiteNav is the ONE shared navbar for every public page. It's rendered a
+ * single time, in App.tsx, above the public route outlet — no page or
+ * route below it renders its own header/nav, so there's exactly one navbar
+ * implementation and one place to change its behavior, links or styling.
+ * (The Admin workspace at /admin uses its own dedicated shell instead —
+ * see routes/admin/layout.tsx — matching the high-fidelity admin screens,
+ * which show a private app sidebar rather than this public marketing nav.)
+ */
+
 const NAV = [
   { to: "/", label: "Home", exact: true, icon: Home },
   { to: "/notices", label: "Notices", exact: false, icon: Megaphone },
@@ -39,8 +48,8 @@ const NAV = [
   { to: "/clubs", label: "Clubs", exact: false, icon: Users },
   { to: "/opportunities", label: "Opportunities", exact: false, icon: Briefcase },
   { to: "/calendar", label: "Calendar", exact: false, icon: CalendarRange },
-  { to: "/buy-sell", label: "Buy & Sell", exact: false, icon: ShoppingBag },
   { to: "/about", label: "About", exact: false, icon: Info },
+  { to: "/contact", label: "Contact", exact: false, icon: Mail },
 ] as const;
 
 /** "Jordan Lee" -> "JL", "Admin" -> "AD". Used for the compact profile control so it never collides visually with the "Admin" panel button. */
@@ -56,9 +65,6 @@ export function SiteNav() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const linkClass =
-    "rounded-lg px-2.5 py-2 text-[13px] font-bold text-foreground/75 transition-colors hover:text-foreground xl:px-3";
-
   const handleLogout = () => {
     logout();
     setOpen(false);
@@ -66,35 +72,46 @@ export function SiteNav() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md">
+    <header
+      className={cn(
+        // Glassmorphic: translucent + blurred + saturated so content
+        // scrolling underneath stays subtly visible, with a hairline
+        // border and soft shadow standing in for a hard edge. Falls back
+        // to a fully opaque bg-background (still on-brand) in the rare
+        // case backdrop-filter isn't supported, so contrast never breaks.
+        "sticky top-0 z-40 border-b border-border/60 bg-background/95 shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-xl backdrop-saturate-150",
+        "supports-[backdrop-filter]:bg-background/70",
+      )}
+    >
       <nav
         aria-label="Main"
-        className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 px-3 py-3 sm:px-6 sm:py-4 lg:grid-cols-[1fr_auto_1fr] lg:gap-2 lg:px-8"
+        className="mx-auto flex max-w-[1400px] items-center px-4 sm:px-6 h-[64px] sm:h-[72px]"
       >
+        {/* Logo */}
         <Link
           to="/"
           aria-label="CampusBoard home"
-          className="inline-flex min-w-0 items-center gap-2 justify-self-start text-xl font-extrabold tracking-tight text-foreground sm:gap-2.5 sm:text-2xl"
+          className="inline-flex shrink-0 items-center gap-2"
         >
-          <img
-            src={campusBoardLogo}
-            alt=""
-            aria-hidden="true"
-            className="size-7 shrink-0 object-contain sm:size-8"
-          />
-          <span className="truncate">
-            Campus<span className="text-blue">Board</span>
+          <School className="text-primary size-7" />
+          <span className="font-bold text-lg tracking-tight">
+            <span className="text-foreground">Campus</span>
+            <span className="text-primary">Board</span>
           </span>
         </Link>
 
-        <div className="hidden items-center gap-0.5 lg:flex">
+        {/* Desktop nav links */}
+        <div className="hidden items-center gap-1 ml-10 h-full lg:flex">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.exact}
               className={({ isActive }) =>
-                cn(linkClass, isActive && "text-foreground underline underline-offset-8")
+                cn(
+                  "px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center h-full",
+                  isActive && "font-semibold text-primary",
+                )
               }
             >
               {item.label}
@@ -102,22 +119,18 @@ export function SiteNav() {
           ))}
         </div>
 
-        <div className="flex shrink-0 items-center justify-self-end gap-1.5">
-          {/* Search — the ONLY control that goes to /search. */}
+        {/* Right side actions */}
+        <div className="flex ml-auto items-center gap-3">
+          {/* Search */}
           <Link
             to="/search"
             aria-label="Search CampusBoard"
-            className="grid size-9 place-items-center rounded-full text-foreground/70 transition-colors hover:bg-accent hover:text-foreground sm:size-10"
+            className="text-foreground hover:text-primary transition-colors"
           >
-            <Search className="size-[18px]" aria-hidden="true" />
+            <Search className="size-5" aria-hidden="true" />
           </Link>
 
-          {/* Account controls — visible from sm up; the same actions are
-              reachable from the mobile menu below, so nothing here is
-              desktop-only functionality. One control per account, not
-              three: Dashboard, Admin (if applicable) and Logout all live
-              inside a single dropdown so there's never a separate
-              "Admin"/profile/logout trio competing for attention. */}
+          {/* Account controls */}
           {user ? (
             <div className="hidden sm:block">
               <DropdownMenu>
@@ -126,12 +139,12 @@ export function SiteNav() {
                     type="button"
                     title={user.name}
                     aria-label={`${user.name}'s account menu`}
-                    className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-foreground/25 bg-card pr-2.5 pl-1 text-[13px] font-bold transition-colors hover:bg-accent"
+                    className="flex items-center gap-2"
                   >
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-navy text-[12px] text-navy-foreground">
+                    <span className="font-semibold rounded-full bg-primary text-primary-foreground text-xs flex justify-center items-center size-8">
                       {initials(user.name)}
                     </span>
-                    <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    <ChevronDown className="text-muted-foreground size-4" aria-hidden="true" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -166,24 +179,23 @@ export function SiteNav() {
               </DropdownMenu>
             </div>
           ) : (
-            <div className="hidden items-center gap-1.5 sm:flex">
+            <div className="hidden items-center gap-2 sm:flex">
               <Link
                 to="/login"
-                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-foreground/30 bg-card px-5 text-[13px] font-bold transition-colors hover:bg-foreground hover:text-background"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-input bg-card px-4 text-sm font-medium transition-colors hover:bg-accent"
               >
-                <UserRound className="size-4" aria-hidden="true" />
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="inline-flex min-h-10 items-center gap-2 rounded-full bg-navy px-5 text-[13px] font-bold text-navy-foreground transition-colors hover:bg-navy/90"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                <UserPlus className="size-4" aria-hidden="true" />
                 Sign up
               </Link>
             </div>
           )}
 
+          {/* Mobile dashboard shortcut (tablets) */}
           <Link
             to={user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/login"}
             aria-label={
@@ -193,24 +205,25 @@ export function SiteNav() {
                   : "Open dashboard"
                 : "Log in to access your dashboard"
             }
-            title={user ? (user.role === "admin" ? "Admin dashboard" : "Dashboard") : "Dashboard"}
-            className="grid size-9 shrink-0 place-items-center rounded-full border border-foreground/20 bg-card text-foreground/75 transition-colors hover:bg-accent hover:text-foreground sm:size-10 lg:hidden"
+            className="grid size-9 shrink-0 place-items-center rounded-full border border-input bg-card text-foreground/75 transition-colors hover:bg-accent hover:text-foreground sm:hidden"
           >
             <LayoutDashboard className="size-[18px]" aria-hidden="true" />
           </Link>
 
+          {/* Mobile hamburger */}
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="grid size-9 shrink-0 place-items-center rounded-full border border-foreground/20 bg-card lg:hidden sm:size-10"
+            className="grid size-9 shrink-0 place-items-center rounded-lg border border-input bg-card lg:hidden sm:size-10"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
       </nav>
 
+      {/* Mobile menu */}
       {open ? (
         <div className="border-t border-border bg-card px-4 pb-4 lg:hidden">
           <ul className="grid gap-1 pt-3 sm:grid-cols-2">
@@ -224,9 +237,8 @@ export function SiteNav() {
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                       cn(
-                        linkClass,
-                        "flex items-center gap-2.5",
-                        isActive && "bg-accent text-foreground",
+                        "rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2.5",
+                        isActive && "bg-accent text-primary font-semibold",
                       )
                     }
                   >
@@ -238,13 +250,11 @@ export function SiteNav() {
             })}
           </ul>
 
-          {/* Account section — full width, always reachable, this is what
-              keeps Dashboard/Admin/Login/Signup/Logout from being
-              desktop-only. */}
+          {/* Account section */}
           <ul className="mt-2 grid gap-1 border-t border-border pt-2 sm:hidden">
             {user ? (
               <>
-                <li className="px-2.5 py-1">
+                <li className="px-3 py-1">
                   <p className="truncate text-sm font-bold">{user.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                 </li>
@@ -252,7 +262,7 @@ export function SiteNav() {
                   <Link
                     to="/dashboard"
                     onClick={() => setOpen(false)}
-                    className={cn(linkClass, "flex items-center gap-2.5")}
+                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground flex items-center gap-2.5 hover:text-foreground"
                   >
                     <UserRound className="size-4" aria-hidden="true" />
                     My Dashboard
@@ -263,7 +273,7 @@ export function SiteNav() {
                     <Link
                       to="/admin"
                       onClick={() => setOpen(false)}
-                      className={cn(linkClass, "flex items-center gap-2.5")}
+                      className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground flex items-center gap-2.5 hover:text-foreground"
                     >
                       <LayoutDashboard className="size-4" aria-hidden="true" />
                       Admin Dashboard
@@ -274,10 +284,7 @@ export function SiteNav() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className={cn(
-                      linkClass,
-                      "flex w-full items-center gap-2.5 text-left text-destructive",
-                    )}
+                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-destructive flex w-full items-center gap-2.5 text-left"
                   >
                     <LogOut className="size-4" aria-hidden="true" />
                     Log out
@@ -290,7 +297,7 @@ export function SiteNav() {
                   <Link
                     to="/login"
                     onClick={() => setOpen(false)}
-                    className={cn(linkClass, "flex items-center gap-2.5")}
+                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground flex items-center gap-2.5 hover:text-foreground"
                   >
                     <LogIn className="size-4" aria-hidden="true" />
                     Login
@@ -300,7 +307,7 @@ export function SiteNav() {
                   <Link
                     to="/signup"
                     onClick={() => setOpen(false)}
-                    className={cn(linkClass, "flex items-center gap-2.5")}
+                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground flex items-center gap-2.5 hover:text-foreground"
                   >
                     <UserPlus className="size-4" aria-hidden="true" />
                     Sign up
@@ -317,17 +324,86 @@ export function SiteNav() {
 
 export function SiteFooter() {
   return (
-    <footer className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="bento flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-bold">
-          © {new Date().getFullYear()} Campus<span className="text-blue">Board</span> — All Campus
-          Updates, At One Place.
-        </p>
-        {/* <div className="flex items-center gap-4">
+    <footer className="border-t border-border bg-card mt-auto">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <School className="text-primary size-5" />
+              <span className="font-bold text-base tracking-tight">
+                <span className="text-foreground">Campus</span>
+                <span className="text-primary">Board</span>
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              All campus updates, one place. Notices, events, clubs, and opportunities.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
+            <div className="flex flex-col gap-2">
+              <p className="font-semibold text-foreground">Quick Links</p>
+              <Link
+                to="/notices"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Notices
+              </Link>
+              <Link
+                to="/events"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Events
+              </Link>
+              <Link
+                to="/clubs"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Clubs
+              </Link>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="font-semibold text-foreground">More</p>
+              <Link
+                to="/opportunities"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Opportunities
+              </Link>
+              <Link
+                to="/calendar"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Calendar
+              </Link>
+              <Link
+                to="/about"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                About
+              </Link>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="font-semibold text-foreground">Support</p>
+              <Link
+                to="/contact"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Contact
+              </Link>
+              <Link
+                to="/search"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Search
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-sm text-muted-foreground">
-            Content published by the campus administration and students.
+            © {new Date().getFullYear()} CampusBoard — All Campus Updates, One Place.
           </p>
-        </div> */}
+        </div>
       </div>
     </footer>
   );

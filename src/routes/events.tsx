@@ -1,15 +1,32 @@
 import { Link } from "react-router-dom";
-import { CalendarDays, MapPin, Star } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { ChipFilter, ResultCount, SearchField } from "@/components/filters";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
-import { formatDate, formatEventTimeRange, publicEvents } from "@/lib/data";
-import { eventIcon } from "@/lib/icons";
-import { EmptyState, ErrorState, SkeletonGrid } from "@/components/bento";
+import { formatEventTimeRange, publicEvents } from "@/lib/data";
 
-const WHEN = ["This week", "This month", "Past"] as const;
+const ACCENT_COLORS: Record<string, { bg: string; text: string }> = {
+  blue: { bg: "bg-blue-50", text: "text-blue-600" },
+  sky: { bg: "bg-sky-50", text: "text-sky-600" },
+  green: { bg: "bg-emerald-50", text: "text-emerald-600" },
+  orange: { bg: "bg-orange-50", text: "text-orange-600" },
+  yellow: { bg: "bg-amber-50", text: "text-amber-600" },
+  purple: { bg: "bg-violet-50", text: "text-violet-600" },
+  pink: { bg: "bg-pink-50", text: "text-pink-600" },
+  navy: { bg: "bg-indigo-50", text: "text-indigo-600" },
+};
+
+function dateBlock(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return {
+    day: d.getDate().toString().padStart(2, "0"),
+    month: d.toLocaleDateString("en-IN", { month: "short" }).toUpperCase(),
+    weekday: d.toLocaleDateString("en-IN", { weekday: "short" }),
+  };
+}
 
 export function withinDays(iso: string, days: number) {
   const now = new Date();
@@ -19,6 +36,8 @@ export function withinDays(iso: string, days: number) {
   return diff >= 0 && diff <= days;
 }
 
+const WHEN_FILTERS = ["All", "This week", "This month", "Past"] as const;
+
 export default function EventsPage() {
   usePageMeta(
     "Campus Events — CampusBoard",
@@ -27,7 +46,7 @@ export default function EventsPage() {
 
   const { events, loading, error, refresh } = useContent();
   const [query, setQuery] = useState("");
-  const [when, setWhen] = useState<string | null>(null);
+  const [when, setWhen] = useState<string>("All");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -48,91 +67,150 @@ export default function EventsPage() {
   }, [events, query, when]);
 
   return (
-    <div className="space-y-5">
-      <header className="bento p-6 sm:p-8">
-        <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-          Events
-        </p>
-        <h1 className="pt-2 text-3xl font-extrabold sm:text-4xl">What's happening on campus</h1>
-      </header>
+    <div className="flex flex-col gap-6">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div className="flex flex-col gap-2">
+          <p className="font-bold uppercase text-violet-600 text-xs tracking-[0.22em]">
+            Campus Calendar
+          </p>
+          <h1 className="font-bold text-foreground text-3xl sm:text-4xl tracking-tight">
+            Events
+          </h1>
+          <p className="text-muted-foreground text-base">
+            Discover talks, festivals, workshops and student activities
+          </p>
+        </div>
+      </div>
 
-      <SearchField
-        value={query}
-        onChange={setQuery}
-        placeholder="Search events, organizers, venues…"
-        label="Search events"
-      />
-      <ChipFilter
-        options={WHEN}
-        value={when}
-        onChange={setWhen}
-        allLabel="All dates"
-        label="Filter events by date"
-      />
-      <ResultCount count={filtered.length} noun="event" />
+      {/* Search + filters */}
+      <Card className="shadow-bento rounded-xl border-border p-4 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="-translate-y-1/2 text-muted-foreground absolute top-1/2 left-3 size-4" />
+            <input
+              placeholder="Search events"
+              className="w-full rounded-lg border border-border bg-background pl-10 pr-4 h-11 text-sm outline-none focus:ring-2 focus:ring-primary"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search events"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium text-muted-foreground text-sm mr-2">Filter by</span>
+          {WHEN_FILTERS.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setWhen(f)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                when === f
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-accent"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </Card>
 
-      {loading && events.length === 0 ? (
-        <SkeletonGrid />
-      ) : error && events.length === 0 ? (
-        <ErrorState hint={error} onRetry={refresh} />
+      {/* Results */}
+      <div className="flex justify-between items-center">
+        <h2 className="font-bold text-foreground text-xl">
+          {when === "Past" ? "Past events" : "Upcoming events"}
+        </h2>
+        <span className="text-muted-foreground text-sm">
+          Showing {filtered.length} event{filtered.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {loading && publicEvents(events).length === 0 ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            Loading events…
+          </div>
+        </div>
+      ) : error && publicEvents(events).length === 0 ? (
+        <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
+          <p className="text-destructive font-medium">{error}</p>
+          <button
+            type="button"
+            onClick={refresh}
+            className="mt-4 inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+          >
+            Try again
+          </button>
+        </Card>
       ) : filtered.length === 0 ? (
-        <EmptyState
-          title="No events found"
-          hint="Try another date range or search."
-          action={
-            (query || when) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setWhen(null);
-                }}
-                className="inline-flex min-h-9 items-center rounded-full border border-foreground/20 bg-card px-4 text-xs font-bold hover:bg-accent"
-              >
-                Clear filters
-              </button>
-            )
-          }
-        />
+        <Card className="shadow-bento rounded-2xl border-border p-8 text-center">
+          <h3 className="font-semibold text-foreground text-lg">No events found</h3>
+          <p className="text-muted-foreground text-sm mt-2">
+            Try adjusting your search or filters.
+          </p>
+          {(query || when !== "All") && (
+            <button
+              type="button"
+              onClick={() => { setQuery(""); setWhen("All"); }}
+              className="mt-4 inline-flex h-9 items-center rounded-lg border border-input bg-card px-4 text-sm font-medium hover:bg-accent"
+            >
+              Clear filters
+            </button>
+          )}
+        </Card>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-3">
           {filtered.map((e) => {
-            const Icon = eventIcon(e.id);
+            const { day, month, weekday } = dateBlock(e.date);
+            const accent: { bg: string; text: string } = ACCENT_COLORS[e.accent as keyof typeof ACCENT_COLORS] ?? { bg: "bg-violet-50", text: "text-violet-600" };
+            const timeRange = formatEventTimeRange(e);
             return (
-              <li key={e.id}>
-                <Link
-                  to={`/events/${e.id}`}
-                  className="bento bento-hover grid h-full grid-cols-[auto_minmax(0,1fr)] gap-4 p-5"
-                >
-                  <span
-                    className="grid size-11 shrink-0 place-items-center rounded-xl bg-green/25 text-navy ring-1 ring-navy/10"
-                    aria-hidden="true"
-                  >
-                    <Icon className="size-5" strokeWidth={1.75} />
-                  </span>
-                  <span className="min-w-0">
-                    {e.featured ? (
-                      <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-yellow/30 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-navy">
-                        <Star className="size-3 fill-current" aria-hidden="true" />
+              <Link key={e.id} to={`/events/${e.id}`}>
+                <Card className="shadow-bento rounded-xl bg-card border-border flex p-4 flex-row gap-5 hover:shadow-md transition-shadow">
+                  <div className={`text-center rounded-lg ${accent!.bg} flex p-2 flex-col justify-center items-center shrink-0 w-20`}>
+                    <span className={`font-bold uppercase ${accent!.text} text-xs`}>{month}</span>
+                    <span className="font-bold text-foreground text-3xl">{day}</span>
+                    <span className="text-muted-foreground text-xs">{weekday}</span>
+                  </div>
+                  <CardContent className="flex p-0 flex-col flex-1 gap-2 min-w-0">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <span className={`font-semibold uppercase ${accent!.text} text-xs tracking-wide`}>
+                          {e.organizer.length > 30 ? e.organizer.slice(0, 30) + "…" : e.organizer}
+                        </span>
+                        <h3 className="font-semibold text-foreground text-lg truncate">
+                          {e.title}
+                        </h3>
+                      </div>
+                      <ChevronRight className="text-muted-foreground mt-1 size-5 shrink-0" />
+                    </div>
+                    <div className="text-muted-foreground text-sm flex items-center gap-5 flex-wrap">
+                      {timeRange && (
+                        <span className="flex items-center gap-2">
+                          <Clock className={`${accent!.text} size-4`} />
+                          {timeRange}
+                        </span>
+                      )}
+                      {e.venue && (
+                        <span className="flex items-center gap-2">
+                          <MapPin className={`${accent!.text} size-4`} />
+                          {e.venue}
+                        </span>
+                      )}
+                    </div>
+                    {e.featured && (
+                      <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary text-[10px] w-fit">
                         Featured
-                      </span>
-                    ) : null}
-                    <span className="block text-lg font-bold">{e.title}</span>
-                    <span className="block pt-1 text-sm text-muted-foreground">{e.organizer}</span>
-                    <span className="flex items-center gap-2 pt-3 text-xs font-semibold">
-                      <CalendarDays className="size-4" aria-hidden="true" />
-                      {formatDate(e.date)} · {formatEventTimeRange(e)}
-                    </span>
-                    <span className="flex items-center gap-2 pt-1 text-xs font-semibold">
-                      <MapPin className="size-4" aria-hidden="true" />
-                      {e.venue}
-                    </span>
-                  </span>
-                </Link>
-              </li>
+                      </Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );

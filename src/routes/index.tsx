@@ -1,37 +1,168 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { ArrowRight, Search, Clock, MapPin, Heart, Star, ExternalLink } from "lucide-react";
-
-import { Bento, BentoHeader, Tag, accentSolid } from "@/components/bento";
-import { ImageGallery } from "@/components/image-gallery";
-import { clubIcon, eventIcon, listingIcon, noticeIcon, opportunityIcon } from "@/lib/icons";
+import { useEffect, useMemo, useState } from "react";
 import {
-  CAMPUS_STAT_TILES,
+  ArrowRight,
+  Bell,
+  BookOpen,
+  BriefcaseBusiness,
+  Bus,
+  CalendarDays,
+  ChevronRight,
+  Compass,
+  FileText,
+  GraduationCap,
+  MapPin,
+  Phone,
+  Search,
+  Star,
+  Users,
+  Utensils,
+  Zap,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
   campusStats,
-  publicListings,
   publicNotices,
   publicEvents,
   publicOpportunities,
   publicClubs,
   formatDate,
-  formatEventTimeRange,
-  formatPrice,
   formatShortDate,
+  formatTime12h,
 } from "@/lib/data";
 import { useContent } from "@/lib/content";
 import { usePageMeta } from "@/lib/seo";
 import { publicStorageUrl } from "@/lib/supabase";
 import campusImage from "@/assets/campus.jpg";
 
+/** Centralized Quick Links config — easy to update without digging through JSX */
+const QUICK_LINKS = [
+  {
+    label: "Academic Portal",
+    icon: GraduationCap,
+    href: "#",
+    bg: "bg-blue-50",
+    border: "border-blue-100",
+    iconColor: "text-primary",
+    chevronColor: "text-primary",
+  },
+  {
+    label: "Mess Menu",
+    icon: Utensils,
+    href: "#",
+    bg: "bg-amber-50",
+    border: "border-amber-100",
+    iconColor: "text-amber-600",
+    chevronColor: "text-muted-foreground",
+  },
+  {
+    label: "Transport",
+    icon: Bus,
+    href: "#",
+    bg: "bg-emerald-50",
+    border: "border-emerald-100",
+    iconColor: "text-emerald-600",
+    chevronColor: "text-muted-foreground",
+  },
+  {
+    label: "Forms & Docs",
+    icon: FileText,
+    href: "#",
+    bg: "bg-violet-50",
+    border: "border-violet-100",
+    iconColor: "text-violet-600",
+    chevronColor: "text-muted-foreground",
+  },
+  {
+    label: "Library",
+    icon: BookOpen,
+    href: "#",
+    bg: "bg-orange-50",
+    border: "border-orange-100",
+    iconColor: "text-orange-600",
+    chevronColor: "text-muted-foreground",
+  },
+  {
+    label: "Helpline",
+    icon: Phone,
+    href: "#",
+    bg: "bg-teal-50",
+    border: "border-teal-100",
+    iconColor: "text-teal-600",
+    chevronColor: "text-muted-foreground",
+  },
+];
+
+const STAT_TILES = [
+  {
+    key: "eventsToday" as const,
+    label: "Events Today",
+    icon: CalendarDays,
+    bg: "bg-blue-50",
+    border: "border-blue-100",
+    iconColor: "text-primary",
+    chevronColor: "text-primary",
+  },
+  {
+    key: "notices" as const,
+    label: "Notices",
+    icon: Bell,
+    bg: "bg-amber-50",
+    border: "border-amber-100",
+    iconColor: "text-amber-500",
+    chevronColor: "text-amber-500",
+  },
+  {
+    key: "opportunities" as const,
+    label: "Open Opportunities",
+    icon: Users,
+    bg: "bg-violet-50",
+    border: "border-violet-100",
+    iconColor: "text-violet-600",
+    chevronColor: "text-violet-600",
+  },
+  {
+    key: "clubs" as const,
+    label: "Active Clubs",
+    icon: Star,
+    bg: "bg-emerald-50",
+    border: "border-emerald-100",
+    iconColor: "text-emerald-600",
+    chevronColor: "text-emerald-600",
+  },
+];
+
+const STAT_LINKS: Record<string, string> = {
+  eventsToday: "/events",
+  notices: "/notices",
+  opportunities: "/opportunities",
+  clubs: "/clubs",
+};
+
+/** Format event time range for today-on-campus display */
+function formatTimeRange(e: { startTime?: string; endTime?: string; time?: string }): string {
+  if (e.startTime) {
+    const start = formatTime12h(e.startTime);
+    const end = e.endTime ? formatTime12h(e.endTime) : "";
+    return end ? `${start}–${end}` : start;
+  }
+  return e.time || "All day";
+}
+
+const NOTICE_DOTS = ["bg-red-500", "bg-blue-500", "bg-emerald-500", "bg-violet-500"];
+
 export default function Home() {
   usePageMeta(
     "CampusBoard — All Campus Updates, One Place.",
-    "Everything happening on campus: official notices, events and fests, clubs, internships and opportunities, calendar and campus buy & sell.",
+    "Everything happening on campus: official notices, events and fests, clubs, internships and opportunities.",
   );
 
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [heroImageFailed, setHeroImageFailed] = useState(false);
+
   const {
     notices: allNotices,
     events: allEvents,
@@ -39,37 +170,56 @@ export default function Home() {
     opportunities: allOpportunities,
     listings: allListings,
     appearance,
+    loading,
   } = useContent();
 
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = publicEvents(allEvents)
-    .filter((e) => e.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 4);
-  const notices = [...publicNotices(allNotices)]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 4);
-  const opportunities = publicOpportunities(allOpportunities)
-    .sort((a, b) => a.deadline.localeCompare(b.deadline))
-    .slice(0, 3);
-  const listings = publicListings(allListings).slice(0, 4);
 
-  // Real "happening today" list — replaces a previously-hardcoded fixed
-  // schedule. Sorted by structured startTime where the event has one (24hr
-  // "HH:MM" sorts correctly as a string); falls back to date-insertion
-  // order for any legacy row that only has the old free-text time, rather
-  // than dropping it.
-  const todaySchedule = publicEvents(allEvents)
-    .filter((e) => e.date <= today && (e.endDate ?? e.date) >= today)
-    .sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? ""));
+  const stats = useMemo(
+    () =>
+      campusStats({
+        notices: allNotices,
+        events: allEvents,
+        clubs: allClubs,
+        opportunities: allOpportunities,
+        listings: allListings,
+      }),
+    [allNotices, allEvents, allClubs, allOpportunities, allListings],
+  );
 
-  const stats = campusStats({
-    notices: allNotices,
-    events: allEvents,
-    clubs: allClubs,
-    opportunities: allOpportunities,
-    listings: allListings,
-  });
+  const notices = useMemo(
+    () => [...publicNotices(allNotices)].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4),
+    [allNotices],
+  );
+
+  const todaySchedule = useMemo(
+    () =>
+      publicEvents(allEvents)
+        .filter((e) => e.date <= today && (e.endDate ?? e.date) >= today)
+        .sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? ""))
+        .slice(0, 4),
+    [allEvents, today],
+  );
+
+  const upcomingEvents = useMemo(
+    () =>
+      publicEvents(allEvents)
+        .filter((e) => e.date >= today)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 4),
+    [allEvents, today],
+  );
+
+  const opportunities = useMemo(
+    () =>
+      publicOpportunities(allOpportunities)
+        .filter((o) => o.deadline >= today)
+        .sort((a, b) => a.deadline.localeCompare(b.deadline))
+        .slice(0, 3),
+    [allOpportunities, today],
+  );
+
+  const clubs = useMemo(() => publicClubs(allClubs).slice(0, 4), [allClubs]);
 
   const heroImageUrl = appearance.heroImagePath
     ? publicStorageUrl("content-images", appearance.heroImagePath)
@@ -78,385 +228,343 @@ export default function Home() {
 
   useEffect(() => {
     setHeroImageFailed(false);
-  }, [appearance.heroImagePath]);
-  const campusGalleryUrls =
-    appearance.campusGalleryPaths.length > 0
-      ? appearance.campusGalleryPaths.map((p) => publicStorageUrl("content-images", p))
-      : [campusImage];
+  }, [heroImageUrl]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          Loading campus updates…
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      {/* HERO ROW ------------------------------------------------------- */}
-      <section className="grid gap-4 sm:gap-5 lg:grid-cols-12">
-        <Bento
-          accent="navy"
-          hover={false}
-          className="relative overflow-hidden p-6 sm:p-8 lg:col-span-7"
-        >
-          <img
-            key={heroRenderUrl}
-            src={heroRenderUrl}
-            alt=""
-            aria-hidden="true"
-            onError={() => setHeroImageFailed(true)}
-            className="absolute inset-0 size-full object-cover opacity-45"
-          />
-          <div
-            className="absolute inset-0 bg-gradient-to-br from-navy/80 via-navy/55 to-navy/20"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(255,255,255,0.08),transparent_38%)]"
-            aria-hidden="true"
-          />
-          <div className="relative">
-            <p className="text-xs font-bold tracking-[0.18em] text-sky uppercase">
-              All campus updates, one place
-            </p>
-            <h1 className="pt-4 text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl">
-              Everything happening
-              <br />
-              on campus. <span className="text-sky">One place.</span>
-            </h1>
-            <p className="max-w-lg pt-4 text-sm text-navy-foreground/75 sm:text-base">
-              Notices, Events, Internships and more — all in one place.
-            </p>
-
-            <form
-              className="pt-6"
-              onSubmit={(e) => {
-                e.preventDefault();
-                navigate(`/search?q=${encodeURIComponent(q)}`);
-              }}
-            >
-              <label htmlFor="hero-search" className="sr-only">
-                Search CampusBoard
-              </label>
-              <div className="flex items-center gap-2 rounded-2xl bg-card p-2 pl-4 transition-shadow focus-within:ring-2 focus-within:ring-sky">
-                <Search className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <input
-                  id="hero-search"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search notices, events, clubs, internships and more..."
-                  className="min-w-0 flex-1 bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                />
-                <button
-                  type="submit"
-                  className="grid size-11 shrink-0 place-items-center rounded-xl bg-navy text-navy-foreground transition hover:bg-navy/90 active:scale-95"
-                  aria-label="Search"
-                >
-                  <ArrowRight className="size-5" aria-hidden="true" />
-                </button>
-              </div>
-            </form>
-
-            <div className="flex flex-wrap gap-3 pt-6">
-              <Link
-                to="/events"
-                className="inline-flex min-h-11 items-center rounded-xl bg-sky px-5 text-sm font-bold text-navy transition-transform active:scale-95"
-              >
-                Explore Campus
-              </Link>
-              <Link
-                to="/notices"
-                className="inline-flex min-h-11 items-center rounded-xl border border-navy-foreground/30 px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy-foreground/10"
-              >
-                View Notices
-              </Link>
-            </div>
+    <div className="flex flex-col gap-4">
+      {/* ─── Hero ─── */}
+      <section className="shadow-bento rounded-2xl border border-border relative h-[280px] sm:h-[330px] overflow-hidden">
+        <img
+          src={heroRenderUrl}
+          alt="Campus view"
+          className="absolute inset-0 size-full object-cover"
+          onError={() => setHeroImageFailed(true)}
+        />
+        <div className="bg-[linear-gradient(90deg,oklch(0.12_0.08_255/.96),oklch(0.12_0.08_255/.82)_38%,transparent_78%)] absolute inset-0" />
+        <div className="flex relative z-10 p-6 sm:p-8 flex-col justify-center gap-4 h-full max-w-[700px]">
+          <div className="font-semibold text-cyan-300 text-xs tracking-[0.18em]">
+            ALL CAMPUS UPDATES, ONE PLACE
           </div>
-        </Bento>
-
-        <div className="grid gap-4 sm:gap-5 lg:col-span-5">
-          <Bento className="overflow-hidden p-0" hover={false}>
-            <div className="relative">
-              <ImageGallery
-                images={campusGalleryUrls}
-                alt="Our Campus"
-                aspect="aspect-[16/9]"
-                className="!rounded-none"
-                autoPlay={campusGalleryUrls.length > 1}
-              />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-navy/85 to-transparent px-4 pt-8 pb-7">
-                <p className="text-lg font-extrabold text-navy-foreground">UPES</p>
-                <Heart className="size-5 text-pink" aria-hidden="true" />
-              </div>
-            </div>
-          </Bento>
-
-          <div className="grid grid-cols-2 gap-4 sm:gap-5">
-            {CAMPUS_STAT_TILES.map((tile) => (
-              <Bento key={tile.key} accent={tile.accent} className="p-4 sm:p-5">
-                <p className="text-3xl font-extrabold text-navy sm:text-4xl">{stats[tile.key]}</p>
-                <p className="pt-1 text-xs font-bold text-navy/70 uppercase">{tile.label}</p>
-              </Bento>
-            ))}
+          <h1 className="font-bold text-white text-3xl sm:text-[40px] leading-[1.05]">
+            Everything happening on campus. <span className="text-cyan-300">One place.</span>
+          </h1>
+          <p className="text-white/85 text-sm">
+            Notices, Events, Internships and more — all in one place.
+          </p>
+          <form
+            onSubmit={handleSearch}
+            className="shadow-bento rounded-full bg-white flex pr-4 pl-4 items-center gap-3 w-full max-w-[620px] h-11"
+          >
+            <Search className="text-muted-foreground size-4 shrink-0" />
+            <input
+              placeholder="Search notices, events, clubs, internships and more..."
+              className="bg-transparent text-foreground text-sm outline-none flex-1 min-w-0"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <button
+              type="submit"
+              aria-label="Submit search"
+              className="rounded-full bg-primary text-primary-foreground flex justify-center items-center size-8 shrink-0"
+            >
+              <ArrowRight className="size-4" />
+            </button>
+          </form>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              className="rounded-full bg-primary pr-5 pl-5"
+              onClick={() => navigate("/calendar")}
+            >
+              <Compass className="mr-2 size-4" />
+              Explore Campus
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full bg-transparent text-white border-white/70 pr-5 pl-5"
+              onClick={() => navigate("/notices")}
+            >
+              <FileText className="mr-1 size-4" />
+              View Notices
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* TODAY + NOTICES ------------------------------------------------ */}
-      <section className="grid gap-4 sm:gap-5 lg:grid-cols-12">
-        <Bento accent="navy" hover={false} className="lg:col-span-5">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pb-4">
-            <h2 className="min-w-0 text-xl font-extrabold">
-              Today
-              <br />
-              on Campus
+      {/* ─── Stat tiles ─── */}
+      <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {STAT_TILES.map((tile) => (
+          <Link
+            key={tile.key}
+            to={STAT_LINKS[tile.key] ?? "/"}
+            className={`shadow-bento rounded-xl ${tile.bg} border ${tile.border} flex p-4 justify-between items-center hover:shadow-md transition-shadow`}
+          >
+            <div className="flex items-center gap-3">
+              <tile.icon className={`${tile.iconColor} size-6`} />
+              <div>
+                <div className="font-bold text-2xl">{stats[tile.key]}</div>
+                <div className="font-semibold uppercase text-muted-foreground text-[10px] tracking-wide">
+                  {tile.label}
+                </div>
+              </div>
+            </div>
+            <ChevronRight className={`${tile.chevronColor} size-4`} />
+          </Link>
+        ))}
+      </section>
+
+      {/* ─── Quick Links ─── */}
+      <Card className="shadow-bento rounded-xl border-border p-4">
+        <div className="font-bold flex items-center gap-2 mb-3">
+          <Zap className="text-primary size-5" />
+          Quick Links
+        </div>
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+          {QUICK_LINKS.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target={link.href !== "#" ? "_blank" : undefined}
+              rel={link.href !== "#" ? "noopener noreferrer" : undefined}
+              className={`rounded-lg ${link.bg} border ${link.border} flex p-3 justify-between items-center hover:shadow-sm transition-shadow`}
+            >
+              <span className="flex items-center gap-2">
+                <link.icon className={`${link.iconColor} size-4`} />
+                <span className="font-semibold text-xs">{link.label}</span>
+              </span>
+              <ChevronRight className={`${link.chevronColor} size-4`} />
+            </a>
+          ))}
+        </div>
+      </Card>
+
+      {/* ─── Today on Campus + Important Notices ─── */}
+      <section className="grid gap-4 lg:grid-cols-[60fr_40fr]">
+        {/* Today on Campus */}
+        <Card className="shadow-bento rounded-xl border-border p-5">
+          <div className="border-b border-border flex pb-3 justify-between items-center">
+            <h2 className="font-bold flex items-center gap-2">
+              <CalendarDays className="text-primary size-5" />
+              Today on Campus
             </h2>
-            <Link to="/calendar" className="shrink-0 text-sm font-semibold text-sky">
+            <Link to="/events" className="font-semibold text-primary text-xs">
               View all →
             </Link>
           </div>
-          {todaySchedule.length === 0 ? (
-            <p className="py-3 text-sm font-semibold text-navy-foreground/70">
-              Nothing on the schedule for today.
-            </p>
-          ) : (
-            <ul className="divide-y divide-navy-foreground/15">
-              {todaySchedule.map((e) => (
-                <li key={e.id} className="py-3">
-                  <Link
-                    to={`/events/${e.id}`}
-                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg transition-opacity hover:opacity-80"
-                  >
-                    <span className="shrink-0 pt-0.5 text-xs font-bold text-sky">
-                      {formatEventTimeRange(e)}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold text-navy-foreground">
-                        {e.title}
-                      </span>
-                      <span className="block truncate text-xs text-navy-foreground/65">
+          {todaySchedule.length > 0 ? (
+            <div>
+              {todaySchedule.map((e, i) => (
+                <Link
+                  key={e.id}
+                  to={`/events/${e.id}`}
+                  className={`flex pt-3 pr-3 pb-3 pl-3 items-center gap-4 hover:bg-accent/30 rounded-lg transition-colors ${i < todaySchedule.length - 1 ? "border-b border-border" : ""}`}
+                >
+                  <div className="font-semibold text-center rounded-lg bg-blue-50 text-primary text-xs p-2 w-20 shrink-0">
+                    {formatTimeRange(e)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm truncate">{e.title}</div>
+                    <div className="text-muted-foreground text-xs">{e.organizer}</div>
+                    {e.venue && (
+                      <div className="text-muted-foreground text-xs flex mt-1 items-center gap-1">
+                        <MapPin className="text-primary size-3 shrink-0" />
                         {e.venue}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          <Link
-            to="/calendar"
-            className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-sky"
-          >
-            View Calendar <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </Bento>
-
-        <Bento accent="orange" hover={false} className="lg:col-span-7">
-          <BentoHeader title="Important Notices" action={{ label: "View All", to: "/notices" }} />
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {notices.map((n) => {
-              const Icon = noticeIcon(n.category);
-              return (
-                <li key={n.id}>
-                  <Link
-                    to={`/notices/${n.id}`}
-                    className="grid h-full grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-xl bg-card/70 p-4 transition-colors hover:bg-card"
-                  >
-                    <span
-                      className="grid size-10 shrink-0 place-items-center rounded-xl bg-orange/25 text-navy ring-1 ring-navy/10"
-                      aria-hidden="true"
-                    >
-                      <Icon className="size-5" strokeWidth={1.75} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="flex flex-wrap items-center gap-2 pb-1.5">
-                        <Tag accent="orange">{n.category}</Tag>
-                        <span className="text-[11px] font-semibold text-muted-foreground">
-                          {n.fileType}
-                        </span>
-                        {n.externalUrl ? (
-                          <ExternalLink
-                            className="size-3.5 text-navy/60"
-                            aria-label="External link"
-                          />
-                        ) : null}
-                      </span>
-                      <span className="block text-sm font-bold">{n.title}</span>
-                      <span className="block pt-1 text-xs text-muted-foreground">
-                        {formatDate(n.date)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Bento>
-      </section>
-
-      {/* EVENTS + OPPORTUNITIES ----------------------------------------- */}
-      <section className="grid gap-4 sm:gap-5 lg:grid-cols-12">
-        <Bento accent="green" hover={false} className="lg:col-span-7">
-          <BentoHeader title="Upcoming Events" action={{ label: "View All", to: "/events" }} />
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {upcoming.map((e) => {
-              const Icon = eventIcon(e.id);
-              return (
-                <li key={e.id}>
-                  <Link
-                    to={`/events/${e.id}`}
-                    className="flex h-full flex-col rounded-xl bg-card/75 p-4 transition-colors hover:bg-card"
-                  >
-                    {e.featured ? (
-                      <span className="mb-2 inline-flex w-fit items-center gap-1 rounded-full bg-yellow/30 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-navy">
-                        <Star className="size-3 fill-current" aria-hidden="true" />
-                        Featured
-                      </span>
-                    ) : null}
-                    <span
-                      className={`mb-3 grid size-11 place-items-center rounded-xl ${accentSolid[e.accent]} text-navy ring-1 ring-navy/10`}
-                      aria-hidden="true"
-                    >
-                      <Icon className="size-5" strokeWidth={1.75} />
-                    </span>
-                    <span className="text-sm font-bold">{e.title}</span>
-                    <span className="pt-1 text-xs font-semibold text-muted-foreground">
-                      {formatShortDate(e.date)}
-                      {e.endDate ? `–${formatShortDate(e.endDate)}` : ""}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{e.venue}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Bento>
-
-        <Bento accent="purple" hover={false} className="lg:col-span-5">
-          <BentoHeader
-            title="Latest Opportunities"
-            action={{ label: "View All", to: "/opportunities" }}
-          />
-          <ul className="space-y-3">
-            {opportunities.map((o) => {
-              const Icon = opportunityIcon(o.type);
-              return (
-                <li key={o.id}>
-                  <Link
-                    to={`/opportunities/${o.id}`}
-                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-xl bg-card/75 p-4 transition-colors hover:bg-card"
-                  >
-                    <span
-                      className="grid size-11 shrink-0 place-items-center rounded-xl bg-purple/30 text-navy ring-1 ring-navy/10"
-                      aria-hidden="true"
-                    >
-                      <Icon className="size-5" strokeWidth={1.75} />
-                    </span>
-
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{o.title}</span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {o.position}
-                      </span>
-                      <span className="block pt-1 text-xs font-semibold text-navy">
-                        Deadline: {formatDate(o.deadline)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Bento>
-      </section>
-
-      {/* CLUBS + BUY & SELL --------------------------------------------- */}
-      <section className="grid gap-4 sm:gap-5 lg:grid-cols-12">
-        <Bento accent="purple" hover={false} className="lg:col-span-5">
-          <BentoHeader
-            title="Clubs & Societies"
-            action={{ label: "Explore Clubs", to: "/clubs" }}
-          />
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {publicClubs(allClubs).map((c) => {
-              const Icon = clubIcon(c.id);
-              return (
-                <li key={c.id}>
-                  <Link
-                    to={`/clubs/${c.id}`}
-                    className="flex h-full flex-col items-start rounded-xl bg-card/75 p-3 transition-colors hover:bg-card"
-                  >
-                    {c.imagePath ? (
-                      <img
-                        src={publicStorageUrl("content-images", c.imagePath)}
-                        alt=""
-                        className="mb-2 size-10 rounded-xl object-cover ring-1 ring-navy/10"
-                      />
-                    ) : (
-                      <span
-                        className={`mb-2 grid size-10 place-items-center rounded-xl ${accentSolid[c.accent]} text-navy ring-1 ring-navy/10`}
-                        aria-hidden="true"
-                      >
-                        <Icon className="size-5" strokeWidth={1.75} />
-                      </span>
+                      </div>
                     )}
-                    <span className="text-xs font-bold">{c.name}</span>
-                    <span className="text-[11px] text-muted-foreground">{c.tagline}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Bento>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground text-sm">
+              No events scheduled for today.
+            </div>
+          )}
+          <Link to="/calendar" className="font-semibold text-primary text-xs inline-flex mt-2">
+            View full Calendar →
+          </Link>
+        </Card>
 
-        <Bento accent="yellow" hover={false} className="lg:col-span-7">
-          <BentoHeader title="Buy & Sell" action={{ label: "View Marketplace", to: "/buy-sell" }} />
-          <p className="-mt-2 pb-3 text-xs font-semibold text-navy/70">
-            Login to view seller contact →
-          </p>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {listings.map((l) => {
-              const Icon = listingIcon(l.id, l.category);
-              return (
-                <li key={l.id}>
+        {/* Important Notices */}
+        <Card className="shadow-bento rounded-xl border-border p-5">
+          <div className="border-b border-border flex pb-3 justify-between items-center">
+            <h2 className="font-bold flex items-center gap-2">
+              <Bell className="text-primary size-5" />
+              Important Notices
+            </h2>
+            <Link to="/notices" className="font-semibold text-primary text-xs">
+              View all →
+            </Link>
+          </div>
+          {notices.length > 0 ? (
+            <div>
+              {notices.map((n, i) => (
+                <Link
+                  key={n.id}
+                  to={`/notices/${n.id}`}
+                  className={`flex pt-3 pr-3 pb-3 pl-3 items-center gap-3 hover:bg-accent/30 rounded-lg transition-colors ${i < notices.length - 1 ? "border-b border-border" : ""}`}
+                >
+                  <span
+                    className={`rounded-full ${NOTICE_DOTS[i % NOTICE_DOTS.length]} size-3 shrink-0`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm truncate">{n.title}</div>
+                    <div className="text-muted-foreground text-xs">
+                      {n.department} · {formatDate(n.date)}
+                    </div>
+                  </div>
+                  <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground text-sm">No notices yet.</div>
+          )}
+        </Card>
+      </section>
+
+      {/* ─── Upcoming Events + Latest Opportunities ─── */}
+      <section className="grid gap-4 lg:grid-cols-[60fr_40fr]">
+        {/* Upcoming Events */}
+        <Card className="shadow-bento rounded-xl border-border p-5">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="font-bold flex items-center gap-2">
+              <CalendarDays className="text-primary size-5" />
+              Upcoming Events
+            </h2>
+            <Link to="/events" className="font-semibold text-primary text-xs">
+              View all →
+            </Link>
+          </div>
+          {upcomingEvents.length > 0 ? (
+            <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+              {upcomingEvents.map((e) => {
+                const d = new Date(e.date + "T00:00:00");
+                const day = d.getDate().toString().padStart(2, "0");
+                const mon = d.toLocaleDateString("en-IN", { month: "short" });
+                return (
                   <Link
-                    to="/buy-sell"
-                    className="flex h-full flex-col rounded-xl bg-card/80 p-4 transition-colors hover:bg-card"
+                    key={e.id}
+                    to={`/events/${e.id}`}
+                    className="flex flex-col rounded-lg border border-border p-3 hover:shadow-sm transition-shadow"
                   >
-                    <span
-                      className={`mb-3 grid size-11 place-items-center rounded-xl ${accentSolid[l.accent]} text-navy ring-1 ring-navy/10`}
-                      aria-hidden="true"
-                    >
-                      <Icon className="size-5" strokeWidth={1.75} />
-                    </span>
-                    <span className="text-sm font-bold">{l.title}</span>
-                    <span className="pt-1 text-sm font-extrabold text-navy">
-                      {formatPrice(l.price)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{l.condition}</span>
+                    <div className="font-bold text-primary text-lg">
+                      {day}
+                      <span className="text-xs">{mon}</span>
+                    </div>
+                    <div className="font-semibold text-xs mt-2 line-clamp-2">{e.title}</div>
+                    <div className="text-muted-foreground text-[10px] mt-1 truncate">
+                      {e.organizer}
+                    </div>
+                    {/* Date range pinned to the bottom of the card regardless of
+                        how many lines the title/organizer above wrap to, so
+                        every card in a row lines up — see mt-auto below. */}
+                    <div className="text-primary text-[10px] mt-auto pt-2">
+                      {e.endDate && e.endDate !== e.date
+                        ? `${formatShortDate(e.date)}–${formatShortDate(e.endDate)}`
+                        : formatShortDate(e.date)}
+                    </div>
                   </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Bento>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground text-sm">
+              No upcoming events.
+            </div>
+          )}
+        </Card>
+
+        {/* Latest Opportunities */}
+        <Card className="shadow-bento rounded-xl border-border p-5">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="font-bold flex items-center gap-2">
+              <BriefcaseBusiness className="text-primary size-5" />
+              Latest Opportunities
+            </h2>
+            <Link to="/opportunities" className="font-semibold text-primary text-xs">
+              View all →
+            </Link>
+          </div>
+          {opportunities.length > 0 ? (
+            <div>
+              {opportunities.map((o, i) => (
+                <Link
+                  key={o.id}
+                  to={`/opportunities/${o.id}`}
+                  className={`flex pt-3 pr-3 pb-3 pl-3 items-center gap-3 hover:bg-accent/30 rounded-lg transition-colors ${i < opportunities.length - 1 ? "border-b border-border" : ""}`}
+                >
+                  <span className="rounded-full bg-violet-50 text-violet-600 flex justify-center items-center size-9 shrink-0">
+                    <GraduationCap className="size-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm truncate">{o.title}</div>
+                    <div className="text-muted-foreground text-xs truncate">{o.position}</div>
+                    <div className="text-primary text-xs">Deadline: {formatDate(o.deadline)}</div>
+                  </div>
+                  <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground text-sm">
+              No open opportunities.
+            </div>
+          )}
+        </Card>
       </section>
 
-      {/* SMALL UTILITY ROW ---------------------------------------------- */}
-      <section className="grid gap-4 sm:grid-cols-3 sm:gap-5">
-        <Bento accent="sky" className="flex items-center gap-3">
-          <Clock className="size-5 shrink-0 text-navy" aria-hidden="true" />
-          <p className="min-w-0 text-sm font-bold text-navy">
-            See what's happening today on the campus calendar.
-          </p>
-        </Bento>
-        <Bento accent="blue" className="flex items-center gap-3">
-          <MapPin className="size-5 shrink-0 text-navy" aria-hidden="true" />
-          <p className="min-w-0 text-sm font-bold text-navy">
-            Find internships and opportunities before the deadline.
-          </p>
-        </Bento>
-        <Bento accent="pink" className="flex items-center gap-3">
-          <Heart className="size-5 shrink-0 text-navy" aria-hidden="true" />
-          <p className="min-w-0 text-sm font-bold text-navy">
-            Explore clubs and join something new this semester.
-          </p>
-        </Bento>
-      </section>
+      {/* ─── Clubs ─── */}
+      <Card className="shadow-bento rounded-xl border-border p-5">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-bold flex items-center gap-2">
+            <Users className="text-primary size-5" />
+            Clubs & Societies
+          </h2>
+          <Link to="/clubs" className="font-semibold text-primary text-xs">
+            Explore Clubs →
+          </Link>
+        </div>
+        {clubs.length > 0 ? (
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+            {clubs.map((c) => (
+              <Link
+                key={c.id}
+                to={`/clubs/${c.id}`}
+                className="rounded-lg border border-border flex p-3 justify-between items-center hover:shadow-sm transition-shadow"
+              >
+                <div className="min-w-0">
+                  <span
+                    className={`rounded-full bg-blue-50 text-primary flex mb-2 justify-center items-center size-8`}
+                  >
+                    <Users className="size-4" />
+                  </span>
+                  <div className="font-semibold text-xs truncate">{c.name}</div>
+                  <div className="text-muted-foreground text-[10px] truncate">{c.tagline}</div>
+                </div>
+                <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="py-8 text-center text-muted-foreground text-sm">No clubs yet.</div>
+        )}
+      </Card>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Briefcase, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { useContent, slugify } from "@/lib/content";
@@ -8,6 +9,7 @@ import type { Opportunity } from "@/lib/data";
 import { AdminToolbar } from "@/components/admin/admin-toolbar";
 import { BulkImportDialog } from "@/components/admin/bulk-import-dialog";
 import { DraftBadge } from "@/components/admin/draft-badge";
+import { SubmissionStatusBadge } from "@/components/submission-status-badge";
 import { Field, fieldClass, UrlField } from "@/components/admin/form-field";
 import { ConfirmDeleteDialog } from "@/components/confirm-dialog";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
@@ -20,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
 
 type OppDraft = Omit<Opportunity, "views" | "applyClicks">;
 
@@ -38,6 +41,7 @@ function emptyDraft(): OppDraft {
     deadline: new Date().toISOString().slice(0, 10),
     applyUrl: "",
     accent: "purple",
+    status: "approved",
   };
 }
 
@@ -253,7 +257,7 @@ function OpportunityFormDialog({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+              className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting ? "Saving…" : isEdit ? "Save changes" : "Create opportunity"}
             </button>
@@ -275,12 +279,19 @@ export default function AdminOpportunitiesPage() {
   const { opportunities, loading, error, refresh, remove } = useContent();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("deadline_asc");
+  const [searchParams] = useSearchParams();
+  // Following a "Rejected opportunities" link from Overview shows only
+  // those; otherwise Admin sees everything (pending/rejected carry a status
+  // badge inline — see SubmissionStatusBadge above) — same convention as Notices.
+  const statusFilter = searchParams.get("status");
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = opportunities.filter((o) =>
-      q ? `${o.title} ${o.organization} ${o.position}`.toLowerCase().includes(q) : true,
-    );
+    const list = opportunities
+      .filter((o) => (statusFilter === "rejected" ? o.status === "rejected" : true))
+      .filter((o) =>
+        q ? `${o.title} ${o.organization} ${o.position}`.toLowerCase().includes(q) : true,
+      );
     switch (sort) {
       case "deadline_desc":
         return [...list].sort((a, b) => b.deadline.localeCompare(a.deadline));
@@ -291,16 +302,16 @@ export default function AdminOpportunitiesPage() {
       default:
         return [...list].sort((a, b) => a.deadline.localeCompare(b.deadline));
     }
-  }, [opportunities, search, sort]);
+  }, [opportunities, search, sort, statusFilter]);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="text-2xl font-extrabold">Opportunities</h1>
-        <p className="pt-1 text-sm text-muted-foreground">
-          Internships, jobs, hackathons and more.
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Opportunities</h1>
+        <p className="pt-2 text-sm text-muted-foreground">
+          Internships, jobs, hackathons and campus hiring announcements.
         </p>
-      </div>
+      </Card>
 
       <AdminToolbar
         search={search}
@@ -318,7 +329,7 @@ export default function AdminOpportunitiesPage() {
               trigger={
                 <button
                   type="button"
-                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
                 >
                   <Plus className="size-4" aria-hidden="true" />
                   New opportunity
@@ -350,11 +361,11 @@ export default function AdminOpportunitiesPage() {
           }
         />
       ) : (
-        <ul className="bento divide-y divide-border p-2">
+        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((o) => (
-            <li key={o.id} className="flex flex-wrap items-center gap-3 p-3">
+            <li key={o.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               <span
-                className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy"
+                className="grid size-10 shrink-0 place-items-center rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400"
                 aria-hidden="true"
               >
                 <Briefcase className="size-4" strokeWidth={1.75} />
@@ -366,6 +377,7 @@ export default function AdminOpportunitiesPage() {
                 </p>
               </div>
               {o.isDraft ? <DraftBadge /> : null}
+              {o.status !== "approved" ? <SubmissionStatusBadge status={o.status} /> : null}
               {o.featured ? <Badge variant="secondary">Featured</Badge> : null}
               <span className="text-xs font-semibold text-muted-foreground">{o.views} views</span>
               <div className="flex shrink-0 gap-1.5">
@@ -398,7 +410,7 @@ export default function AdminOpportunitiesPage() {
               </div>
             </li>
           ))}
-        </ul>
+        </Card>
       )}
     </div>
   );

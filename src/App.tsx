@@ -1,5 +1,5 @@
 import { Component, lazy, Suspense, type ErrorInfo, type ReactNode } from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import { Routes, Route, Link, Outlet, useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/lib/auth";
 import { ContentProvider } from "@/lib/content";
@@ -21,6 +21,7 @@ import CalendarPage from "@/routes/calendar";
 import BuySell from "@/routes/buy-sell";
 import ListingDetail from "@/routes/buy-sell.$listingId";
 import SearchPage from "@/routes/search";
+import ContactPage from "@/routes/contact";
 import LoginPage from "@/routes/login";
 import SignupPage from "@/routes/signup";
 import AuthCallbackPage from "@/routes/auth.callback";
@@ -47,8 +48,14 @@ const AdminAnalyticsPage = lazy(() => import("@/routes/admin/analytics"));
 
 function RouteFallback() {
   return (
-    <div className="bento p-5 text-sm text-muted-foreground sm:p-8" role="status">
-      Loading…
+    <div
+      className="flex items-center justify-center p-12 text-sm text-muted-foreground"
+      role="status"
+    >
+      <div className="flex items-center gap-2">
+        <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        Loading…
+      </div>
     </div>
   );
 }
@@ -68,7 +75,7 @@ function NotFoundPage() {
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground"
           >
             Go home
           </Link>
@@ -90,7 +97,7 @@ function ErrorFallback({ onReset }: { onReset: () => void }) {
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={onReset}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground"
           >
             Try again
           </button>
@@ -130,74 +137,99 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   }
 }
 
+/**
+ * Shell for every PUBLIC page (and the signed-in student's own /dashboard,
+ * which — per the high-fidelity screens — keeps the same public nav rather
+ * than getting a private app shell): the one shared SiteNav, the content
+ * outlet, and SiteFooter. /admin/* deliberately does NOT use this — see
+ * routes/admin/layout.tsx for why.
+ */
+function PublicShell() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteNav />
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-10 sm:px-6 lg:px-8">
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
 export default function App() {
   useSiteStructuredData();
   return (
     <AuthProvider>
       <ContentProvider>
-        <div className="flex min-h-screen flex-col">
-          <SiteNav />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-4 pb-10 sm:px-6 lg:px-8">
-            <ErrorBoundary>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/notices" element={<Notices />} />
-                <Route path="/notices/:noticeId" element={<NoticeDetail />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/events/:eventId" element={<EventDetail />} />
-                <Route path="/clubs" element={<Clubs />} />
-                <Route path="/clubs/:clubId" element={<ClubDetail />} />
-                <Route path="/opportunities" element={<Opportunities />} />
-                <Route path="/opportunities/:opportunityId" element={<OpportunityDetail />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/buy-sell" element={<BuySell />} />
-                <Route
-                  path="/buy-sell/new"
-                  element={
-                    <Suspense fallback={<RouteFallback />}>
-                      <BuySellNew />
-                    </Suspense>
-                  }
-                />
-                <Route path="/buy-sell/:listingId" element={<ListingDetail />} />
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <Suspense fallback={<RouteFallback />}>
-                      <AdminLayout />
-                    </Suspense>
-                  }
-                >
-                  <Route index element={<AdminOverviewPage />} />
-                  <Route path="notices" element={<AdminNoticesPage />} />
-                  <Route path="events" element={<AdminEventsPage />} />
-                  <Route path="clubs" element={<AdminClubsPage />} />
-                  <Route path="opportunities" element={<AdminOpportunitiesPage />} />
-                  <Route path="buy-sell" element={<AdminBuySellPage />} />
-                  <Route path="approvals" element={<AdminApprovalsPage />} />
-                  <Route path="users" element={<AdminUsersPage />} />
-                  <Route path="appearance" element={<AdminAppearancePage />} />
-                  <Route path="analytics" element={<AdminAnalyticsPage />} />
-                </Route>
-                <Route
-                  path="/dashboard"
-                  element={
-                    <Suspense fallback={<RouteFallback />}>
-                      <DashboardPage />
-                    </Suspense>
-                  }
-                />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </ErrorBoundary>
-          </main>
-          <SiteFooter />
-        </div>
+        <Routes>
+          <Route element={<PublicShell />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/notices" element={<Notices />} />
+            <Route path="/notices/:noticeId" element={<NoticeDetail />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:eventId" element={<EventDetail />} />
+            <Route path="/clubs" element={<Clubs />} />
+            <Route path="/clubs/:clubId" element={<ClubDetail />} />
+            <Route path="/opportunities" element={<Opportunities />} />
+            <Route path="/opportunities/:opportunityId" element={<OpportunityDetail />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/buy-sell" element={<BuySell />} />
+            <Route
+              path="/buy-sell/new"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <BuySellNew />
+                </Suspense>
+              }
+            />
+            <Route path="/buy-sell/:listingId" element={<ListingDetail />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <DashboardPage />
+                </Suspense>
+              }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
+          {/* The Admin workspace gets its own dedicated shell (sidebar +
+              topbar) instead of the public SiteNav — see
+              routes/admin/layout.tsx. It has its own internal error
+              boundary too, so a crash inside one admin page doesn't take
+              down the whole app either. */}
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <ErrorBoundary>
+                  <AdminLayout />
+                </ErrorBoundary>
+              </Suspense>
+            }
+          >
+            <Route index element={<AdminOverviewPage />} />
+            <Route path="overview" element={<AdminOverviewPage />} />
+            <Route path="notices" element={<AdminNoticesPage />} />
+            <Route path="events" element={<AdminEventsPage />} />
+            <Route path="clubs" element={<AdminClubsPage />} />
+            <Route path="opportunities" element={<AdminOpportunitiesPage />} />
+            <Route path="buy-sell" element={<AdminBuySellPage />} />
+            <Route path="approvals" element={<AdminApprovalsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="appearance" element={<AdminAppearancePage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+          </Route>
+        </Routes>
         <Toaster />
         <Analytics />
       </ContentProvider>

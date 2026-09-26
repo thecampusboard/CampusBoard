@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
 
 type ClubDraft = Club;
 
@@ -352,7 +353,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
                         onClick={() => removeExistingGalleryPhoto(path)}
                         disabled={submitting}
                         aria-label="Remove gallery photo"
-                        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-white/20 bg-navy/90 text-white shadow-sm transition hover:bg-destructive disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky"
+                        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-border/40 bg-background/90 text-foreground shadow-md backdrop-blur-sm transition hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
@@ -447,7 +448,7 @@ function ClubFormDialog({ club, trigger }: { club?: Club; trigger: React.ReactNo
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex min-h-10 items-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90 disabled:opacity-60"
+              className="inline-flex min-h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting ? "Saving…" : isEdit ? "Save changes" : "Create club"}
             </button>
@@ -470,13 +471,13 @@ export default function AdminClubsPage() {
   }, [clubs, search]);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="text-2xl font-extrabold">Clubs</h1>
-        <p className="pt-1 text-sm text-muted-foreground">
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Clubs</h1>
+        <p className="pt-2 text-sm text-muted-foreground">
           Manage club profiles, galleries and socials.
         </p>
-      </div>
+      </Card>
 
       <AdminToolbar
         search={search}
@@ -491,7 +492,7 @@ export default function AdminClubsPage() {
               trigger={
                 <button
                   type="button"
-                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
                 >
                   <Plus className="size-4" aria-hidden="true" />
                   New club
@@ -515,9 +516,9 @@ export default function AdminClubsPage() {
           hint={clubs.length === 0 ? "Create the first club." : "Try a different search term."}
         />
       ) : (
-        <ul className="bento divide-y divide-border p-2">
+        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((c) => (
-            <li key={c.id} className="flex flex-wrap items-center gap-3 p-3">
+            <li key={c.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               {c.imagePath ? (
                 <img
                   src={publicStorageUrl("content-images", c.imagePath)}
@@ -526,7 +527,7 @@ export default function AdminClubsPage() {
                 />
               ) : (
                 <span
-                  className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy"
+                  className="grid size-10 shrink-0 place-items-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
                   aria-hidden="true"
                 >
                   <Users className="size-4" strokeWidth={1.75} />
@@ -570,7 +571,7 @@ export default function AdminClubsPage() {
               </div>
             </li>
           ))}
-        </ul>
+        </Card>
       )}
     </div>
   );

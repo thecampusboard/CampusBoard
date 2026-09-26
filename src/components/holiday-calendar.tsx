@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
 
 function safeHolidayId() {
   try {
@@ -136,33 +137,32 @@ export function HolidayCalendar() {
   const isAdmin = user?.role === "admin";
 
   return (
-    <div className="space-y-5">
-      <section className="bento overflow-hidden p-4 sm:p-6">
+    <div className="space-y-6">
+      <Card className="overflow-hidden p-6 sm:p-7 border-border/70 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-bold tracking-[0.16em] text-muted-foreground uppercase">
+            <p className="text-xs font-bold tracking-widest text-primary uppercase">
               College holidays
             </p>
-            <h2 className="pt-1 text-2xl font-extrabold tracking-tight">Holiday calendar</h2>
-            <p className="pt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-              College-declared holidays in a simple month view. Select a date to see the holiday
-              details.
+            <h2 className="pt-1 text-2xl font-display font-extrabold tracking-tight text-foreground">Holiday calendar</h2>
+            <p className="pt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Official academic and campus holidays in a simple month view. Select any date to see holiday details.
             </p>
           </div>
           {isAdmin ? (
             <button
               type="button"
               onClick={() => openManage()}
-              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-navy px-3.5 text-sm font-bold text-navy-foreground transition hover:bg-navy/90 active:scale-[0.98]"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
             >
               <Plus className="size-4" aria-hidden="true" />
               Add holiday
             </button>
           ) : null}
         </div>
-      </section>
+      </Card>
 
-      <section className="bento overflow-hidden p-3 sm:p-5">
+      <Card className="overflow-hidden p-4 sm:p-6 border-border/70 shadow-sm">
         <div className="flex items-center justify-between gap-3 px-1 pb-4 sm:px-2">
           <button
             type="button"
@@ -215,7 +215,7 @@ export function HolidayCalendar() {
                 aria-label={`${format(day, "d MMMM yyyy")}${dayHolidays.length ? `, ${dayHolidays.map((h) => h.name).join(", ")}` : ""}`}
               >
                 <span
-                  className={`inline-grid size-7 place-items-center rounded-full text-xs font-bold ${selected ? "bg-navy text-navy-foreground" : ""}`}
+                  className={`inline-grid size-7 place-items-center rounded-full text-xs font-bold ${selected ? "bg-primary text-primary-foreground shadow-sm" : ""}`}
                 >
                   {format(day, "d")}
                 </span>
@@ -297,23 +297,23 @@ export function HolidayCalendar() {
             )}
           </div>
         ) : null}
-      </section>
+      </Card>
 
-      <section className="bento p-4 sm:p-6">
+      <Card className="p-5 sm:p-6 border-border/70 shadow-sm">
         <div className="flex items-center gap-2">
-          <CalendarHeart className="size-5 text-purple" aria-hidden="true" />
-          <h3 className="text-base font-extrabold">Holidays this month</h3>
+          <CalendarHeart className="size-5 text-primary" aria-hidden="true" />
+          <h3 className="text-base font-bold text-foreground">Holidays this month</h3>
         </div>
         {monthHolidays.length > 0 ? (
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
             {monthHolidays.map((holiday) => (
               <button
                 key={holiday.id}
                 type="button"
                 onClick={() => setSelectedDate(holiday.date)}
-                className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition hover:bg-accent"
+                className="flex min-w-0 items-start gap-3 rounded-xl border border-border/70 bg-card p-3 text-left transition hover:border-primary/40 hover:bg-accent/40"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-purple/15 text-center">
+                <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary text-center">
                   <span className="text-[10px] font-bold uppercase">
                     {format(new Date(`${holiday.date}T00:00:00`), "MMM")}
                   </span>
@@ -322,7 +322,7 @@ export function HolidayCalendar() {
                   </span>
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold">{holiday.name}</span>
+                  <span className="block truncate text-sm font-bold text-foreground">{holiday.name}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {holiday.description || format(new Date(`${holiday.date}T00:00:00`), "EEEE")}
                   </span>
@@ -331,8 +331,8 @@ export function HolidayCalendar() {
             ))}
           </div>
         ) : (
-          <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary px-5 py-8 text-center">
-            <p className="text-sm font-semibold">
+          <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/30 px-5 py-8 text-center">
+            <p className="text-sm font-semibold text-foreground">
               No holidays published for {format(month, "MMMM yyyy")}.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -342,7 +342,7 @@ export function HolidayCalendar() {
             </p>
           </div>
         )}
-      </section>
+      </Card>
 
       <Dialog open={manageOpen} onOpenChange={setManageOpen}>
         <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md overflow-y-auto sm:max-h-[90vh]">
@@ -400,7 +400,7 @@ export function HolidayCalendar() {
               type="button"
               onClick={() => void addHoliday()}
               disabled={saving}
-              className="min-h-10 rounded-xl bg-navy px-4 text-sm font-bold text-navy-foreground hover:bg-navy/90 disabled:opacity-60"
+              className="min-h-10 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-60"
             >
               {saving ? "Saving…" : "Add holiday"}
             </button>

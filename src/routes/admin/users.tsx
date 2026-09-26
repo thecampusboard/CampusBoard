@@ -7,6 +7,8 @@ import { AdminToolbar } from "@/components/admin/admin-toolbar";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/bento";
 import { Badge } from "@/components/ui/badge";
 
+import { Card } from "@/components/ui/card";
+
 interface AdminProfileRow {
   id: string;
   name: string;
@@ -15,23 +17,6 @@ interface AdminProfileRow {
   createdAt: string;
 }
 
-/**
- * Read-only: every registered CampusBoard user, for Admin to browse/search.
- *
- * No new backend work was needed for this — `profiles` already has
- * name/email/role/created_at (001_initial_schema.sql), and the existing
- * `profiles_select_own` RLS policy ("id = auth.uid() OR is_admin()") already
- * lets an Admin session select every row directly from the client. No
- * service-role key or server-side function is used or required, and only
- * non-sensitive columns are selected — no password, token, or other auth
- * secret is ever queried.
- *
- * Role changes aren't exposed here: 011_production_hardening.sql
- * deliberately removed the ability to update *any* profile (including an
- * Admin updating someone else's) from the client, so this page doesn't add
- * a control the database wouldn't accept anyway. Promoting/demoting a role
- * still has to be done directly in Supabase, exactly as before this feature.
- */
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminProfileRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,14 +66,13 @@ export default function AdminUsersPage() {
   }, [users, search]);
 
   return (
-    <div className="space-y-5">
-      <div className="bento p-6">
-        <h1 className="text-2xl font-extrabold">Users</h1>
-        <p className="pt-1 text-sm text-muted-foreground">
-          Everyone who has signed up on CampusBoard. Roles are still changed directly in Supabase,
-          not here.
+    <div className="space-y-6">
+      <Card className="p-6 sm:p-8 border-border/70 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground">Users</h1>
+        <p className="pt-2 text-sm text-muted-foreground">
+          Everyone who has registered on CampusBoard. Role privileges are managed securely in Supabase.
         </p>
-      </div>
+      </Card>
 
       <AdminToolbar
         search={search}
@@ -115,17 +99,17 @@ export default function AdminUsersPage() {
           }
         />
       ) : (
-        <ul className="bento divide-y divide-border p-2">
+        <Card className="divide-y divide-border/60 p-2 border-border/70 shadow-sm">
           {filtered.map((u) => (
-            <li key={u.id} className="flex flex-wrap items-center gap-3 p-3">
+            <li key={u.id} className="flex flex-wrap items-center gap-3 p-3 list-none">
               <span
-                className="grid size-10 shrink-0 place-items-center rounded-lg bg-purple/25 text-navy"
+                className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
                 aria-hidden="true"
               >
                 <UserCog className="size-4" strokeWidth={1.75} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{u.name}</p>
+                <p className="truncate text-sm font-bold text-foreground">{u.name}</p>
                 <p className="truncate text-xs text-muted-foreground">{u.email}</p>
               </div>
               <Badge variant={u.role === "admin" ? "default" : "secondary"} className="capitalize">
@@ -134,12 +118,12 @@ export default function AdminUsersPage() {
               <span className="text-xs font-semibold text-muted-foreground">
                 Joined {formatDate(u.createdAt)}
               </span>
-              <span className="hidden shrink-0 font-mono text-[10px] text-muted-foreground/70 sm:inline">
+              <span className="hidden shrink-0 font-mono text-[10px] text-muted-foreground/60 sm:inline">
                 {u.id}
               </span>
             </li>
           ))}
-        </ul>
+        </Card>
       )}
     </div>
   );

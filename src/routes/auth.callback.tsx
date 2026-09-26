@@ -16,6 +16,8 @@ import { usePageMeta } from "@/lib/seo";
  * AuthProvider. We just wait here for that to land, then send the user on
  * to wherever they were headed (?redirect=...) or home.
  */
+import { Card } from "@/components/ui/card";
+
 export default function AuthCallbackPage() {
   usePageMeta("Signing you in — CampusBoard", "Completing Google sign-in.", { noindex: true });
 
@@ -34,9 +36,6 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     if (oauthError || redirected.current || !ready) return;
-    // `ready` only tells us the initial session check resolved; give the
-    // OAuth code-exchange a brief window to complete and update `user`
-    // before giving up and sending the person back to /login.
     const redirectPath = safeRedirectPath(searchParams.get("redirect"));
     const timeout = setTimeout(
       () => {
@@ -55,28 +54,29 @@ export default function AuthCallbackPage() {
   }, [ready, user, oauthError, searchParams, navigate]);
 
   return (
-    <div className="mx-auto max-w-md py-8">
-      <div className="bento p-6 text-center sm:p-8">
+    <div className="mx-auto max-w-md py-12">
+      <Card className="p-6 text-center sm:p-8 border-border/70 shadow-sm">
         {oauthError ? (
           <>
-            <h1 className="text-xl font-extrabold">Sign-in failed</h1>
-            <p className="pt-2 text-sm text-muted-foreground">{oauthError}</p>
+            <h1 className="text-xl font-display font-extrabold tracking-tight">Sign-in failed</h1>
+            <p className="pt-2 text-sm text-destructive">{oauthError}</p>
             <a
               href="/login"
-              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-5 text-sm font-bold text-navy-foreground transition-colors hover:bg-navy/90"
+              className="mt-6 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90"
             >
               Back to login
             </a>
           </>
         ) : (
           <>
-            <h1 className="text-xl font-extrabold">Signing you in…</h1>
+            <div className="mx-auto size-10 animate-spin rounded-full border-2 border-primary border-t-transparent mb-4" />
+            <h1 className="text-xl font-display font-extrabold tracking-tight">Signing you in…</h1>
             <p className="pt-2 text-sm text-muted-foreground">
-              Completing sign-in with Google. This should only take a moment.
+              Completing authentication. This should only take a moment.
             </p>
           </>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
